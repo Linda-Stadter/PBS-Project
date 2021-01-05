@@ -1,0 +1,254 @@
+﻿struct hairNode{
+	float x;
+	float y;
+	float vx;
+	float vy;
+	int dvx;
+	int dvy;
+	int dummy1;
+	int dummy2;
+};
+
+struct circleCollider{
+	float x;
+	float y;
+	float r;
+	int dvx;
+	int dvy;
+	int dummy1;
+	int dummy2;
+	int dummy3;
+};
+
+RWTexture2D<float4> renderTexture;
+RWStructuredBuffer<hairNode> hairNodesBuffer;
+RWStructuredBuffer<uint> visBuffer;
+RWStructuredBuffer<float> debugBuffer;
+RWStructuredBuffer<float2> pivotActual;
+RWStructuredBuffer<circleCollider> circleCollidersBuffer;
+
+int nNodsPerHair;
+int nHairs;
+int nCircleColliders;
+float internodeDistance;
+float2 pivotDestination;
+float dPosRate;				// simulation speed
+float dVelRate;				// strength of forces
+float gravityForce;
+
+int F_TO_I;					// float to int
+float I_TO_F;				// int to float
+
+#pragma kernel calc
+[numthreads(16,8,1)]
+void calc (uint3 id : SV_DispatchThreadID){
+	if (id.x >= nHairs)
+		return;
+	if (id.y >= nNodsPerHair)
+		return;
+	if (id.y == nNodsPerHair - 1)
+		return;
+	int i, nodeIndex, nodeIndex2;
+	float currentDistance, fixImpulse;
+	hairNode node, node2, node3;
+	float2 v, vUp, dv, dvFlex;
+	nodeIndex = id.x * nNodsPerHair + id.y;
+	nodeIndex2 = nodeIndex + 1;
+	node = hairNodesBuffer[nodeIndex];
+	node2 = hairNodesBuffer[nodeIndex2];
+	v = float2(node2.x - node.x, node2.y - node.y);
+	currentDistance = distance(float2(0, 0), v);
+	fixImpulse = internodeDistance - currentDistance;		// < 0: too long, > 0 too short
+	fixImpulse = clamp(fixImpulse, -8, 8);
+	dv = normalize(v) * pow(fixImpulse, 2);
+	if (fixImpulse > 0)
+		dv *= -1;
+
+	// flexibility related source of movement
+	dvFlex = float2(0, 0);
+	if (id.y != 0){
+		node3 = hairNodesBuffer[nodeIndex - 1];
+		vUp = float2(node3.x - node.x, node3.y - node.y);
+		dvFlex = 0.05 * (v + vUp);
+		InterlockedAdd(hairNodesBuffer[nodeIndex - 1].dvx, -(int)(F_TO_I * dvFlex.x));
+		InterlockedAdd(hairNodesBuffer[nodeIndex - 1].dvy, -(int)(F_TO_I * dvFlex.y));
+	}
+
+	InterlockedAdd(hairNodesBuffer[nodeIndex].dvx, (int)(F_TO_I * (dv.x + 2 * dvFlex.x)));
+	InterlockedAdd(hairNodesBuffer[nodeIndex].dvy, (int)(F_TO_I * (dv.y + 2 * dvFlex.y)));
+	InterlockedAdd(hairNodesBuffer[nodeIndex2].dvx, (int)(F_TO_I * (-dv.x - dvFlex.x)));
+	InterlockedAdd(hairNodesBuffer[nodeIndex2].dvy, (int)(F_TO_I * (-dv.y - dvFlex.y)));
+}
+
+#pragma kernel velShare
+[numthreads(16,8,1)]
+void velShare (uint3 id : SV_DispatchThreadID){
+	if (id.x >= nHairs)
+		return;
+	if (id.y >= nNodsPerHair)
+		return;
+	if (id.y == nNodsPerHair - 1)
+		return;
+	int nodeIndex, nodeIndex2;
+	hairNode node, node2;
+	float dotResult;
+	float2 v, dv, dvt;
+	nodeIndex = id.x * nNodsPerHair + id.y;
+	nodeIndex2 = nodeIndex + 1;
+	node = hairNodesBuffer[nodeIndex];
+	node2 = hairNodesBuffer[nodeIndex2];
+	v = float2(node2.x - node.x, node2.y - node.y);			// 1 -> 2 vector
+	dv = float2(node.vx - node2.vx, node.vy - node2.vy);	// 1 -> 2 relative speed
+	dotResult = dot(dv, normalize(v));
+	dvt = dotResult * normalize(v);							// tangential component of relative velocity
+	dvt *= -0.004;
+	dv *= -0.0012;
+	dv += dvt;
+
+	InterlockedAdd(hairNodesBuffer[nodeIndex].dvx, (int)(F_TO_I * dv.x));
+	InterlockedAdd(hairNodesBuffer[nodeIndex].dvy, (int)(F_TO_I * dv.y));
+	InterlockedAdd(hairNodesBuffer[nodeIndex2].dvx, -(int)(F_TO_I * dv.x));
+	InterlockedAdd(hairNodesBuffer[nodeIndex2].dvy, -(int)(F_TO_I * dv.y));
+}
+
+#pragma kernel interactionWithColliders
+[numthreads(16,8,1)]
+void interactionWithColliders (uint3 id : SV_DispatchThreadID){
+	if (id.x >= nHairs)
+		return;
+	if (id.y >= nNodsPerHair)
+		return;
+	int i, nodeIndex;
+	float currentDistance, dotResult;
+	hairNode node;
+	float2 v, newPos, velToCenterComponent;
+	nodeIndex = id.x * nNodsPerHair + id.y;
+	node = hairNodesBuffer[nodeIndex];
+
+	// interaction with circle colliders
+	i = 0;
+	while (i < nCircleColliders){
+		v = float2(node.x - circleCollidersBuffer[i].x, node.y - circleCollidersBuffer[i].y);		// vector: circle collider center -> node
+		if (distance(float2(0, 0), v) < circleCollidersBuffer[i].r){
+			// move the node outside the circle
+			newPos = float2(circleCollidersBuffer[i].x, circleCollidersBuffer[i].y) + normalize(v) * circleCollidersBuffer[i].r;
+			hairNodesBuffer[nodeIndex].x = newPos.x;
+			hairNodesBuffer[nodeIndex].y = newPos.y;
+			// remove from the node's velocity a part: projection to the node-center line, facing center; add this vel part to collider's dv
+			dotResult = dot(float2(node.vx, node.vy), normalize(v));
+			if (dotResult < 0){
+				velToCenterComponent = normalize(v) * dotResult;
+				hairNodesBuffer[nodeIndex].vx -= velToCenterComponent.x;
+				hairNodesBuffer[nodeIndex].vy -= velToCenterComponent.y;
+				// add this to collider's vel
+				InterlockedAdd(circleCollidersBuffer[i].dvx, (int)(velToCenterComponent.x * 10000));
+				InterlockedAdd(circleCollidersBuffer[i].dvy, (int)(velToCenterComponent.y * 10000));
+			}
+		}
+		i++;
+	}
+}
+
+#pragma kernel calcApply
+[numthreads(16,8,1)]
+void calcApply (uint3 id : SV_DispatchThreadID){
+	if (id.x >= nHairs)
+		return;
+	if (id.y >= nNodsPerHair)
+		return;
+	int nodeIndex;
+	hairNode node;
+	nodeIndex = id.x * nNodsPerHair + id.y;
+	node = hairNodesBuffer[nodeIndex];
+
+	if (id.y == 0){
+		hairNodesBuffer[nodeIndex].x = ((int)id.x - nHairs / 2) + pivotActual[0].x;
+		hairNodesBuffer[nodeIndex].y = pivotActual[0].y;
+		hairNodesBuffer[nodeIndex].vx = 0;
+		hairNodesBuffer[nodeIndex].vy = 0;
+		return;
+	}
+
+	hairNodesBuffer[nodeIndex].vy -= gravityForce;
+	hairNodesBuffer[nodeIndex].vx += dVelRate * I_TO_F * node.dvx;
+	hairNodesBuffer[nodeIndex].vy += dVelRate * I_TO_F * node.dvy;
+	hairNodesBuffer[nodeIndex].x += dPosRate * node.vx;
+	hairNodesBuffer[nodeIndex].y += dPosRate * node.vy;
+
+	hairNodesBuffer[nodeIndex].dvx = 0;
+	hairNodesBuffer[nodeIndex].dvy = 0;
+
+	hairNodesBuffer[nodeIndex].vx *= 0.9999;
+	hairNodesBuffer[nodeIndex].vy *= 0.9999;
+}
+
+#pragma kernel visInternodeLines
+[numthreads(16,8,1)]
+void visInternodeLines (uint3 id : SV_DispatchThreadID){
+	int nodeIndex = id.x * nNodsPerHair + id.y;
+	int x, y, x2, y2;
+	int i, d, nSteps, pixelx, pixely;
+	int2 v;
+	x = hairNodesBuffer[nodeIndex].x;
+	y = hairNodesBuffer[nodeIndex].y;
+	if (id.x >= nHairs)
+		return;
+	if (id.y >= nNodsPerHair)
+		return;
+	pixelx = 512 + x;
+	pixely = 512 + y;
+	//InterlockedAdd(visBuffer[pixely * 1024 + pixelx], 255);
+	if (id.y == nNodsPerHair - 1)
+		return;
+	x2 = hairNodesBuffer[nodeIndex + 1].x;
+	y2 = hairNodesBuffer[nodeIndex + 1].y;
+	v = int2(x2, y2) - int2(x, y);
+	d = distance(int2(x2, y2), int2(x, y));
+	nSteps = 2 * d;
+	i = 0;
+	while (i < nSteps){
+		pixelx = 512 + x + i * v.x / nSteps;
+		pixely = 512 + y + i * v.y / nSteps;
+		if (pixelx >= 0 && pixelx < 1024 && pixely >= 0 && pixely < 1024){
+			InterlockedAdd(visBuffer[pixely * 1024 + pixelx], 15);
+		}
+		i++;
+	}
+}
+
+#pragma kernel pixelsToTexture
+[numthreads(32,32,1)]
+void pixelsToTexture (uint3 id : SV_DispatchThreadID){
+	int alphaInt;
+	float alphaFloat;
+	alphaInt = visBuffer[id.y * 1024 + id.x];
+	if (alphaInt > 0){
+		alphaInt += 80;
+		if (alphaInt >= 256)
+			alphaInt = 256;
+		alphaFloat = (float)alphaInt / 256.0;
+		renderTexture[id.xy] = float4(1, 1, 1, alphaFloat);
+	}
+	else{
+		renderTexture[id.xy] = float4(0, 0, 0, 0);
+	}
+}
+
+#pragma kernel clearPixels
+[numthreads(32,32,1)]
+void clearPixels (uint3 id : SV_DispatchThreadID){
+	visBuffer[id.y * 1024 + id.x] = 0;
+}
+
+#pragma kernel clearTexture
+[numthreads(32,32,1)]
+void clearTexture (uint3 id : SV_DispatchThreadID){
+	renderTexture[id.xy] = float4(0, 0, 0, 0);
+}
+
+#pragma kernel oneThreadAction
+[numthreads(1,1,1)]
+void oneThreadAction (uint3 id : SV_DispatchThreadID){
+	if (distance(pivotDestination, pivotActual[0]) > 0.2)
+		pivotActual[0] += 0.2 * normalize(pivotDestination - pivotActual[0]);
+}
