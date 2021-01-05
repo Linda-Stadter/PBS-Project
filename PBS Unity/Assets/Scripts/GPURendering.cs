@@ -18,6 +18,9 @@ public class GPURendering : MonoBehaviour
 	ComputeShader densityShader = default;
     [SerializeField]
 	ComputeShader forceShader = default;
+    [SerializeField]
+    ComputeShader integrationShader = default;
+
 
     private int particleNumber;
     private float particleRadius;
@@ -26,6 +29,7 @@ public class GPURendering : MonoBehaviour
     private int offsetKi;
     private int densityKi;
     private int forceKi;
+    private int integrationKi;
 
     private FluidParticle[] particlesArray;
     private int[] particlesIndexArray;
@@ -117,6 +121,10 @@ public class GPURendering : MonoBehaviour
         densityShader.SetBuffer(densityKi, "offsetBuffer", offsetBuffer);
         densityShader.SetBuffer(densityKi, "densityBuffer", densityBuffer);
 
+        integrationKi = integrationShader.FindKernel("calcIntegration");
+        integrationShader.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
+        integrationShader.SetBuffer(integrationKi, "cellIndexBuffer", cellIndexBuffer);
+
         material.SetBuffer("particlesBuffer", particlesBuffer);
         material.SetFloat("particleRadius", particleRadius);
         
@@ -145,7 +153,7 @@ public class GPURendering : MonoBehaviour
         offsetShader.Dispatch(offsetKi, 4, 1, 1);
         densityShader.Dispatch(densityKi, 4, 1, 1);
         // forceShader.Dispatch()
-        // integrationShader.Dispatch()
+        integrationShader.Dispatch(integrationKi, 4, 1, 1);
         
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);
     }
