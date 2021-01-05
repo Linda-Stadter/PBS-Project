@@ -239,12 +239,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 846742705}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: caea0dc2950c8d0499f835c93736f0f2, type: 3}
+  m_Script: {fileID: 11500000, guid: 3f6769f4e8333874aa1716cc87537562, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  material: {fileID: 2100000, guid: c87b64ff35379de4f95954145eb2da15, type: 2}
+  material: {fileID: 2100000, guid: abd088005b19ab4469e1893ed12105cb, type: 2}
   mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  computeShader: {fileID: 7200000, guid: 7320c353ae5b2b24abe28e7c2792ac9f, type: 3}
+  partitionShader: {fileID: 7200000, guid: 8f04e82826d7f2d48837dccac47d4978, type: 3}
+  sortShader: {fileID: 7200000, guid: 5571ac2ec9cc23e498e329945fdfa8e9, type: 3}
+  offsetShader: {fileID: 7200000, guid: c974258c094d3784c97f051f5bfe1eb9, type: 3}
+  integrationShader: {fileID: 7200000, guid: f84261e0a99e06b48b90328acce2910b, type: 3}
 --- !u!4 &846742707
 Transform:
   m_ObjectHideFlags: 0
