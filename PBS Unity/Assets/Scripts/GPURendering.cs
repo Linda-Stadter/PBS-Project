@@ -14,23 +14,31 @@ public class GPURendering : MonoBehaviour
     ComputeShader sortShader = default;
     [SerializeField]
 	ComputeShader offsetShader = default;
+    [SerializeField]
+	ComputeShader densityShader = default;
+    [SerializeField]
+	ComputeShader forceShader = default;
 
     private int particleNumber;
     private float particleRadius;
     private Vector3 spawnOffset;
     private int partitionKi;
     private int offsetKi;
+    private int densityKi;
+    private int forceKi;
 
     private FluidParticle[] particlesArray;
     private int[] particlesIndexArray;
     private float[] cellIndexArray;
     private int[] offsetArray;
+    private float[] densityArray;
 
     // GPU Buffer
     private ComputeBuffer particlesBuffer;
     private ComputeBuffer particlesIndexBuffer;
     private ComputeBuffer cellIndexBuffer;
     private ComputeBuffer offsetBuffer;
+    private ComputeBuffer densityBuffer;
 
     // Bounds for Unity's frustum culling
     private Bounds particleBound;
@@ -56,6 +64,7 @@ public class GPURendering : MonoBehaviour
         particlesIndexArray = new int[particleNumber];
         cellIndexArray = new float[particleNumber];
         offsetArray = new int[particleNumber];
+        densityArray = new float[particleNumber];
 
         int length = (int) Mathf.Pow(particleNumber, 1f / 3f);
     
@@ -88,6 +97,9 @@ public class GPURendering : MonoBehaviour
         offsetBuffer = new ComputeBuffer(particleNumber, 4);
         offsetBuffer.SetData(offsetArray);
 
+        densityBuffer = new ComputeBuffer(particleNumber, 4);
+        densityBuffer.SetData(densityArray);
+
         partitionKi = partitionShader.FindKernel("calcCellIndices");
         partitionShader.SetBuffer(partitionKi, "particlesBuffer", particlesBuffer);
         partitionShader.SetBuffer(partitionKi, "particlesIndexBuffer", particlesIndexBuffer);
@@ -97,6 +109,13 @@ public class GPURendering : MonoBehaviour
         offsetShader.SetBuffer(offsetKi, "particlesIndexBuffer", particlesIndexBuffer);
         offsetShader.SetBuffer(offsetKi, "cellIndexBuffer", cellIndexBuffer);
         offsetShader.SetBuffer(offsetKi, "offsetBuffer", offsetBuffer);
+
+        densityKi = densityShader.FindKernel("calcDensity");
+        densityShader.SetBuffer(densityKi, "particlesBuffer", particlesBuffer);
+        densityShader.SetBuffer(densityKi, "particlesIndexBuffer", particlesIndexBuffer);
+        densityShader.SetBuffer(densityKi, "cellIndexBuffer", cellIndexBuffer);
+        densityShader.SetBuffer(densityKi, "offsetBuffer", offsetBuffer);
+        densityShader.SetBuffer(densityKi, "densityBuffer", densityBuffer);
 
         material.SetBuffer("particlesBuffer", particlesBuffer);
         material.SetFloat("particleRadius", particleRadius);
@@ -124,7 +143,7 @@ public class GPURendering : MonoBehaviour
         partitionShader.Dispatch(partitionKi, 4, 1, 1);
         _sort.Sort(particlesIndexBuffer, cellIndexBuffer);
         offsetShader.Dispatch(offsetKi, 4, 1, 1);
-        // densityShader.Dispatch()
+        densityShader.Dispatch(densityKi, 4, 1, 1);
         // forceShader.Dispatch()
         // integrationShader.Dispatch()
         
