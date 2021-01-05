@@ -11,6 +11,7 @@ static const float xSPH_h 		= 1.0f;									// smoothing radius
 static const float xSPH_h_rcp 	= 1.0f / xSPH_h;						// 1.0f / smoothing radius
 static const float xSPH_h2 		= xSPH_h * xSPH_h;						// smoothing radius ^ 2
 static const float xSPH_h3 		= xSPH_h * xSPH_h * xSPH_h;				// smoothing radius ^ 3
+static const float xSPH_mass = 1.0f;
 
 float xSPH_poly6_constant 		= 315 / (64 * PI * pow(xSPH_h, 9));		// precomputed Poly6 kernel constant term
 float xSPH_spiky_constant		= -45 / (PI * pow(xSPH_h, 6));			// precomputed Spiky kernel function constant term

@@ -247,6 +247,8 @@ MonoBehaviour:
   partitionShader: {fileID: 7200000, guid: 8f04e82826d7f2d48837dccac47d4978, type: 3}
   sortShader: {fileID: 7200000, guid: 5571ac2ec9cc23e498e329945fdfa8e9, type: 3}
   offsetShader: {fileID: 7200000, guid: c974258c094d3784c97f051f5bfe1eb9, type: 3}
+  densityShader: {fileID: 7200000, guid: 44868c95f95597346b5bce5963698c82, type: 3}
+  forceShader: {fileID: 7200000, guid: c8e1a9c9afb148041a2158122db1edf6, type: 3}
   integrationShader: {fileID: 7200000, guid: f84261e0a99e06b48b90328acce2910b, type: 3}
 --- !u!4 &846742707
 Transform:

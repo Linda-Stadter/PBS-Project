@@ -1,0 +1,114 @@
+﻿#include "./SPHGlobals.cginc"
+#pragma kernel calcForce
+
+
+RWStructuredBuffer<FluidParticle> particlesBuffer;
+RWStructuredBuffer<uint> particlesIndexBuffer;
+RWStructuredBuffer<float> cellIndexBuffer;
+RWStructuredBuffer<uint> offsetBuffer;
+RWStructuredBuffer<float> densityBuffer;
+
+[numthreads(THREADS, 1, 1)]
+void calcForce(uint3 id : SV_DispatchThreadID)
+{
+	const float h = xSPH_h;			// smoothing radius
+	const float h2 = xSPH_h2;		// smoothing radius ^ 2
+	const float h3 = xSPH_h3;		// smoothing radius ^ 3
+	const float K = xSPH_K;			// pressure constant
+	const float p0 = xSPH_p0;		// reference density
+	const float e = xSPH_e;			// viscosity constant
+
+	uint particleIdxA;
+	float3 posA;
+
+	if (id.x < PARTICLE_COUNT)
+	{
+		particleIdxA = particlesIndexBuffer[id.x];
+		posA = particlesBuffer[particleIdxA].pos;
+	}
+	else
+	{
+		particleIdxA = 0xFFFFFFFF;
+		posA = 0;
+	}
+
+	FluidParticle particleA = particlesBuffer[particleIdxA];
+	particleA.pressForce = 0;
+	particleA.visForce = 0;
+
+	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
+	const float3 remappedPos = posA * xSPH_h_rcp;
+	const int3 cellIndex = floor(remappedPos);
+
+	// Compute density field:
+	float density = 0; // (p)
+
+	// iterate through all [27] neighbor cells:
+	[loop]
+	for (int i = -1; i <= 1; ++i)
+	{
+		[loop]
+		for (int j = -1; j <= 1; ++j)
+		{
+			[loop]
+			for (int k = -1; k <= 1; ++k)
+			{
+				// hashed cell index is retrieved:
+				const int3 neighborIndex = cellIndex + int3(i, j, k);
+				const uint flatNeighborIndex = SPH_GridHash(neighborIndex);
+
+				// look up the offset into particle list from neighbor cell:
+				uint neighborIterator = offsetBuffer[flatNeighborIndex];
+
+				// iterate through neighbor cell particles (if iterator offset is valid):
+				[loop]
+				while (neighborIterator != 0xFFFFFFFF && neighborIterator < PARTICLE_COUNT)
+				{
+					uint particleIdxB = particlesIndexBuffer[neighborIterator];
+					if ((uint)cellIndexBuffer[particleIdxB] != flatNeighborIndex)
+					{
+						// here means we stepped out of the neighbor cell list!
+						break;
+					}
+
+					// SPH Force evaluation:
+					FluidParticle particleB = particlesBuffer[particleIdxB];
+					const float3 diff = particleA.pos - particleB.pos;
+					const float r2 = dot(diff, diff);
+					const float r = sqrt(r2);
+
+					if (r > 0 && r < h) 
+					{
+						const float3 rNorm = diff / r; // normalize
+						const float Wpress = xSPH_spiky_constant * pow(h - r, 2); // spiky kernel smoothing
+
+						float3 pressureParticleA = xSPH_K * (densityBuffer[particleIdxA] - xSPH_p0);
+						float3 pressureParticleB = xSPH_K * (densityBuffer[particleIdxB] - xSPH_p0);
+
+						particleA.pressForce += (xSPH_mass / xSPH_mass) * ((pressureParticleA + pressureParticleB) / (2 * particleA.density * particleB.density)) * Wpress * rNorm;
+						
+						const float r3 = r2 * r;
+						const float Wvis = -(r3 / (2 * h3)) + (r2 / h2) + (h / (2 * r)) - 1; // Laplacian smoothing function
+						
+						particleA.visForce += (xSPH_mass / xSPH_mass) * (1.0f / particleB.density) * (particleB.v - particleA.v) * Wvis * rNorm;
+					}
+
+					neighborIterator++;
+					particleA.pressForce *= -1;
+					particleA.visForce *= xSPH_e;
+				}
+			}
+		}
+	}
+
+
+	if (id.x < PARTICLE_COUNT)
+	{
+		// Can't be lower than reference density to avoid negative pressure!
+		density = max(p0, density);
+
+		// Store the results:
+		densityBuffer[particleIdxA] = density;
+	}
+
+}

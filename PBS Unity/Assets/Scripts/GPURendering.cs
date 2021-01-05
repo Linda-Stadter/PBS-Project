@@ -121,6 +121,13 @@ public class GPURendering : MonoBehaviour
         densityShader.SetBuffer(densityKi, "offsetBuffer", offsetBuffer);
         densityShader.SetBuffer(densityKi, "densityBuffer", densityBuffer);
 
+        forceKi = forceShader.FindKernel("calcForce");
+        forceShader.SetBuffer(densityKi, "particlesBuffer", particlesBuffer);
+        forceShader.SetBuffer(densityKi, "particlesIndexBuffer", particlesIndexBuffer);
+        forceShader.SetBuffer(densityKi, "cellIndexBuffer", cellIndexBuffer);
+        forceShader.SetBuffer(densityKi, "offsetBuffer", offsetBuffer);
+        forceShader.SetBuffer(densityKi, "densityBuffer", densityBuffer);
+
         integrationKi = integrationShader.FindKernel("calcIntegration");
         integrationShader.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
         integrationShader.SetBuffer(integrationKi, "cellIndexBuffer", cellIndexBuffer);
@@ -152,7 +159,7 @@ public class GPURendering : MonoBehaviour
         _sort.Sort(particlesIndexBuffer, cellIndexBuffer);
         offsetShader.Dispatch(offsetKi, 4, 1, 1);
         densityShader.Dispatch(densityKi, 4, 1, 1);
-        // forceShader.Dispatch()
+        forceShader.Dispatch(forceKi, 4, 1, 1);
         integrationShader.Dispatch(integrationKi, 4, 1, 1);
         
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);
