@@ -33,15 +33,14 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 	}
 
 	FluidParticle particleA = particlesBuffer[particleIdxA];
-	particleA.pressForce = 0;
-	particleA.visForce = 0;
 
 	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
 	const float3 remappedPos = posA * xSPH_h_rcp;
 	const int3 cellIndex = floor(remappedPos);
 
-	// Compute density field:
-	float density = 0; // (p)
+	// Compute acceleration:
+	float3 f_a = 0;	// pressure force
+	float3 f_av = 0;  // viscosity force
 
 	// iterate through all [27] neighbor cells:
 	[loop]
@@ -85,30 +84,25 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 						float3 pressureParticleA = xSPH_K * (densityBuffer[particleIdxA] - xSPH_p0);
 						float3 pressureParticleB = xSPH_K * (densityBuffer[particleIdxB] - xSPH_p0);
 
-						particleA.pressForce += (xSPH_mass / xSPH_mass) * ((pressureParticleA + pressureParticleB) / (2 * particleA.density * particleB.density)) * Wpress * rNorm;
+						f_a += (xSPH_mass / xSPH_mass) * ((pressureParticleA + pressureParticleB) / (2 * particleA.density * particleB.density)) * Wpress * rNorm;
 						
 						const float r3 = r2 * r;
 						const float Wvis = -(r3 / (2 * h3)) + (r2 / h2) + (h / (2 * r)) - 1; // Laplacian smoothing function
 						
-						particleA.visForce += (xSPH_mass / xSPH_mass) * (1.0f / particleB.density) * (particleB.v - particleA.v) * Wvis * rNorm;
+						f_av += (xSPH_mass / xSPH_mass) * (1.0f / particleB.density) * (particleB.v - particleA.v) * Wvis * rNorm;
 					}
 
 					neighborIterator++;
-					particleA.pressForce *= -1;
-					particleA.visForce *= xSPH_e;
+					f_a *= -1;
+					f_av *= xSPH_e;
 				}
 			}
 		}
 	}
 
+	particleA.pressForce += f_a;
+	particleA.visForce += f_av;
 
-	if (id.x < PARTICLE_COUNT)
-	{
-		// Can't be lower than reference density to avoid negative pressure!
-		density = max(p0, density);
-
-		// Store the results:
-		densityBuffer[particleIdxA] = density;
-	}
-
+	particlesBuffer[particleIdxA].pressForce = particleA.pressForce;
+	particlesBuffer[particleIdxA].visForce = particleA.visForce;
 }
