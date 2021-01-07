@@ -22,6 +22,7 @@ public class GPURendering : MonoBehaviour
     ComputeShader integrationShader = default;
 
 
+
     private int particleNumber;
     private float particleRadius;
     private Vector3 spawnOffset;
@@ -36,6 +37,7 @@ public class GPURendering : MonoBehaviour
     private float[] cellIndexArray;
     private int[] offsetArray;
     private float[] densityArray;
+    private int[] sortedCellIndexArray;
 
     // GPU Buffer
     private ComputeBuffer particlesBuffer;
@@ -43,6 +45,9 @@ public class GPURendering : MonoBehaviour
     private ComputeBuffer cellIndexBuffer;
     private ComputeBuffer offsetBuffer;
     private ComputeBuffer densityBuffer;
+
+    private ComputeBuffer sortedCellIndexBuffer;
+    
 
     // Bounds for Unity's frustum culling
     private Bounds particleBound;
@@ -60,7 +65,7 @@ public class GPURendering : MonoBehaviour
 
     void Start()
     {
-        particleNumber = 1024;
+        particleNumber = 16;
         particleRadius = 0.5f;
         spawnOffset = new Vector3(-5, 5, -5);
 
@@ -69,6 +74,7 @@ public class GPURendering : MonoBehaviour
         cellIndexArray = new float[particleNumber];
         offsetArray = new int[particleNumber];
         densityArray = new float[particleNumber];
+        sortedCellIndexArray = new int[particleNumber];
 
         int length = (int) Mathf.Pow(particleNumber, 1f / 3f);
     
@@ -104,10 +110,14 @@ public class GPURendering : MonoBehaviour
         densityBuffer = new ComputeBuffer(particleNumber, 4);
         densityBuffer.SetData(densityArray);
 
+        sortedCellIndexBuffer = new ComputeBuffer(particleNumber, 4);
+        sortedCellIndexBuffer.SetData(sortedCellIndexArray);
+
         partitionKi = partitionShader.FindKernel("calcCellIndices");
         partitionShader.SetBuffer(partitionKi, "particlesBuffer", particlesBuffer);
         partitionShader.SetBuffer(partitionKi, "particlesIndexBuffer", particlesIndexBuffer);
         partitionShader.SetBuffer(partitionKi, "cellIndexBuffer", cellIndexBuffer);
+        partitionShader.SetBuffer(partitionKi, "sortedCellIndexBuffer", sortedCellIndexBuffer);
 
         offsetKi = offsetShader.FindKernel("calcOffset");
         offsetShader.SetBuffer(offsetKi, "particlesIndexBuffer", particlesIndexBuffer);
@@ -138,6 +148,8 @@ public class GPURendering : MonoBehaviour
         _sort = new MergeSort.BitonicMergeSort(sortShader);
         
         particleBound = new Bounds(Vector3.zero, Vector3.one);
+
+        
     }
 
     void OnEnable () {
@@ -149,9 +161,63 @@ public class GPURendering : MonoBehaviour
 		particlesBuffer = null;
 	}
 
+
+    void PrintArray<T>(string name, T[] array) {
+        string str = "";
+        for (int i = 0; i < array.Length; ++i) {
+            str += array[i].ToString() + "\t";
+        }
+        Debug.Log(name + ":\t\t" + str);
+    }
+    
+
     void Update()
     {
-        UpdateOnGPU();
+        if (Input.GetKeyDown("1")) {
+            Debug.Log("Executing Partition Shader ...");
+            partitionShader.Dispatch(partitionKi, 4, 1, 1);
+
+            particlesBuffer.GetData(particlesArray);
+            particlesIndexBuffer.GetData(particlesIndexArray);
+            cellIndexBuffer.GetData(cellIndexArray);
+
+            PrintArray("particlesArray\t", particlesIndexArray);
+            PrintArray("cellIndexArray\t", cellIndexArray);
+        }
+        else if (Input.GetKeyDown("2")) {
+            Debug.Log("Executing Sort Shader (1/2) ...");
+            _sort.Sort(particlesIndexBuffer, cellIndexBuffer);
+            particlesIndexBuffer.GetData(particlesIndexArray);
+            cellIndexBuffer.GetData(cellIndexArray);
+            sortedCellIndexBuffer.GetData(sortedCellIndexArray);
+
+            PrintArray("particlesArray\t", particlesIndexArray);
+            PrintArray("cellIndexArray\t", cellIndexArray);
+            PrintArray("sortedCellIndexArray", sortedCellIndexArray);
+        } else if (Input.GetKeyDown("3")) {
+            Debug.Log("Executing Sort Shader (2/2) ...");
+            
+            _sort.Sort(sortedCellIndexBuffer, cellIndexBuffer);
+            sortedCellIndexBuffer.GetData(sortedCellIndexArray);
+            cellIndexBuffer.GetData(cellIndexArray);
+            
+            PrintArray("sortedCellIndexArray", sortedCellIndexArray);
+            PrintArray("cellIndexArray\t", cellIndexArray);
+        }
+        else if (Input.GetKeyDown("4")) {
+            offsetShader.Dispatch(offsetKi, 4, 1, 1);
+        }
+        else if (Input.GetKeyDown("5")) {
+            densityShader.Dispatch(densityKi, 4, 1, 1);    
+        }
+        else if (Input.GetKeyDown("6")) {
+            forceShader.Dispatch(forceKi, 4, 1, 1);    
+        }
+        else if (Input.GetKeyDown("7")) {
+            integrationShader.Dispatch(integrationKi, 4, 1, 1);    
+        }
+
+        Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);
     }
 
     void UpdateOnGPU() {
