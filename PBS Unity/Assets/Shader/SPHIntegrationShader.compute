@@ -19,5 +19,6 @@ void calcIntegration(uint3 id : SV_DispatchThreadID)
     particleA.pressForce = 0;
     particleA.visForce = 0;
 
+    particlesBuffer[id.x] = particleA;
     // todo: collision (box and floor collision)
 }

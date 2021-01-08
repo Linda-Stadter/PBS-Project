@@ -144,8 +144,8 @@ public class GPURendering : MonoBehaviour
         forceShader.SetBuffer(densityKi, "densityBuffer", densityBuffer);
 
         integrationKi = integrationShader.FindKernel("calcIntegration");
-        integrationShader.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
         integrationShader.SetBuffer(integrationKi, "cellIndexBuffer", cellIndexBuffer);
+        integrationShader.SetBuffer(integrationKi, "particlesBuffer", particlesBuffer);
 
         material.SetBuffer("particlesBuffer", particlesBuffer);
         material.SetFloat("particleRadius", particleRadius);
