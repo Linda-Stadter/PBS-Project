@@ -13,6 +13,8 @@ public class GPURendering : MonoBehaviour
     [SerializeField]
     ComputeShader sortShader = default;
     [SerializeField]
+    ComputeShader sortShaderNew = default;
+    [SerializeField]
 	ComputeShader offsetShader = default;
     [SerializeField]
 	ComputeShader densityShader = default;
@@ -20,6 +22,8 @@ public class GPURendering : MonoBehaviour
 	ComputeShader forceShader = default;
     [SerializeField]
     ComputeShader integrationShader = default;
+
+    ComputeShader sortShader2;
 
 
 
@@ -53,6 +57,7 @@ public class GPURendering : MonoBehaviour
     private Bounds particleBound;
 
     private MergeSort.BitonicMergeSort _sort;
+    private MergeSort.BitonicMergeSort _sort2;
 
     struct FluidParticle{
         public Vector3 pos;
@@ -65,7 +70,7 @@ public class GPURendering : MonoBehaviour
 
     void Start()
     {
-        particleNumber = 16;
+        particleNumber = 512 * 4;
         particleRadius = 0.5f;
         spawnOffset = new Vector3(-5, 5, -5);
 
@@ -149,7 +154,8 @@ public class GPURendering : MonoBehaviour
         
         particleBound = new Bounds(Vector3.zero, Vector3.one);
 
-        
+        sortShader2 = Instantiate(sortShader);
+        _sort2 = new MergeSort.BitonicMergeSort(sortShader2);
     }
 
     void OnEnable () {
@@ -180,13 +186,16 @@ public class GPURendering : MonoBehaviour
             particlesBuffer.GetData(particlesArray);
             particlesIndexBuffer.GetData(particlesIndexArray);
             cellIndexBuffer.GetData(cellIndexArray);
+            sortedCellIndexBuffer.GetData(sortedCellIndexArray);
 
             PrintArray("particlesArray\t", particlesIndexArray);
             PrintArray("cellIndexArray\t", cellIndexArray);
+            PrintArray("sortedCellIndexArray", sortedCellIndexArray);
         }
         else if (Input.GetKeyDown("2")) {
             Debug.Log("Executing Sort Shader (1/2) ...");
-            _sort.Sort(particlesIndexBuffer, cellIndexBuffer);
+            // _sort.Sort(particlesIndexBuffer, cellIndexBuffer, true);
+            GpuSort.BitonicSort64(particlesIndexBuffer, cellIndexBuffer, sortShaderNew);
             particlesIndexBuffer.GetData(particlesIndexArray);
             cellIndexBuffer.GetData(cellIndexArray);
             sortedCellIndexBuffer.GetData(sortedCellIndexArray);
@@ -197,7 +206,7 @@ public class GPURendering : MonoBehaviour
         } else if (Input.GetKeyDown("3")) {
             Debug.Log("Executing Sort Shader (2/2) ...");
             
-            _sort.Sort(sortedCellIndexBuffer, cellIndexBuffer);
+            _sort2.Sort(sortedCellIndexBuffer, cellIndexBuffer, true);
             sortedCellIndexBuffer.GetData(sortedCellIndexArray);
             cellIndexBuffer.GetData(cellIndexArray);
             
@@ -206,6 +215,10 @@ public class GPURendering : MonoBehaviour
         }
         else if (Input.GetKeyDown("4")) {
             offsetShader.Dispatch(offsetKi, 4, 1, 1);
+            sortedCellIndexBuffer.GetData(sortedCellIndexArray);
+            cellIndexBuffer.GetData(cellIndexArray);
+            PrintArray("sortedCellIndexArray", sortedCellIndexArray);
+            PrintArray("cellIndexArray\t", cellIndexArray);
         }
         else if (Input.GetKeyDown("5")) {
             densityShader.Dispatch(densityKi, 4, 1, 1);    
@@ -214,7 +227,8 @@ public class GPURendering : MonoBehaviour
             forceShader.Dispatch(forceKi, 4, 1, 1);    
         }
         else if (Input.GetKeyDown("7")) {
-            integrationShader.Dispatch(integrationKi, 4, 1, 1);    
+            // integrationShader.Dispatch(integrationKi, 4, 1, 1);    
+            SortTest.Test(sortShaderNew);
         }
 
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);
@@ -222,7 +236,7 @@ public class GPURendering : MonoBehaviour
 
     void UpdateOnGPU() {
         partitionShader.Dispatch(partitionKi, 4, 1, 1);
-        _sort.Sort(particlesIndexBuffer, cellIndexBuffer);
+        _sort.Sort(particlesIndexBuffer, cellIndexBuffer, true);
         offsetShader.Dispatch(offsetKi, 4, 1, 1);
         densityShader.Dispatch(densityKi, 4, 1, 1);
         forceShader.Dispatch(forceKi, 4, 1, 1);

@@ -4,8 +4,8 @@
 #define PI 3.14159265358979323846
 #define SQRT2 1.41421356237309504880
 
-static const uint THREADS = 256;
-static const uint PARTICLE_COUNT = 16;
+static const uint THREADS = 512;
+static const uint PARTICLE_COUNT = 512 * 4;
 
 static const float xSPH_h 		= 2.0f;									// smoothing radius
 static const float xSPH_h_rcp 	= 1.0f / xSPH_h;						// 1.0f / smoothing radius
@@ -35,7 +35,7 @@ inline uint SPH_GridHash(int3 cellIndex)
 	const uint p1 = 73856093;
 	const uint p2 = 19349663;
 	const uint p3 = 83492791;
-	int n = p1 * cellIndex.x ^ p2*cellIndex.y ^ p3*cellIndex.z;
+	uint n = p1 * cellIndex.x ^ p2*cellIndex.y ^ p3*cellIndex.z;
 	n %= PARTICLE_COUNT;
 	return n;
 }

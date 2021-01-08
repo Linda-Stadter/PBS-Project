@@ -10,6 +10,7 @@ namespace MergeSort {
 		public const string PROP_BLOCK = "block";
 		public const string PROP_DIM = "dim";
 		public const string PROP_COUNT = "count";
+		public const string PROP_DIR = "dir";
 
 		public const string BUF_KEYS = "Keys";
 		public const string BUF_VALUES = "Values";
@@ -32,12 +33,13 @@ namespace MergeSort {
 			_compute.SetBuffer(_kernelInit, BUF_KEYS, keys);
 			_compute.Dispatch(_kernelInit, x, y, z);
 		}
-		public void Sort(ComputeBuffer keys, ComputeBuffer values) {
+		public void Sort(ComputeBuffer keys, ComputeBuffer values, bool dir) {
 			var count = keys.count;
 			int x, y, z;
 			ShaderUtil.CalcWorkSize(count, out x, out y, out z);
 
 			_compute.SetInt(PROP_COUNT, count);
+			_compute.SetBool(PROP_DIR, dir);
 			for (var dim = 2; dim <= count; dim <<= 1) {
 				_compute.SetInt(PROP_DIM, dim);
 				for (var block = dim >> 1; block > 0; block >>= 1) {
@@ -47,6 +49,8 @@ namespace MergeSort {
 					_compute.Dispatch(_kernelSort, x, y, z);
 				}
 			}
+
+
 		}
 		public void SortInt(ComputeBuffer keys, ComputeBuffer values) {
 			var count = keys.count;
