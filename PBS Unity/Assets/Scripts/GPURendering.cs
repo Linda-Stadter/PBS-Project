@@ -70,7 +70,7 @@ public class GPURendering : MonoBehaviour
 
     void Start()
     {
-        particleNumber = 512 * 4;
+        particleNumber = 16;
         particleRadius = 0.5f;
         spawnOffset = new Vector3(-5, 5, -5);
 
@@ -194,8 +194,8 @@ public class GPURendering : MonoBehaviour
         }
         else if (Input.GetKeyDown("2")) {
             Debug.Log("Executing Sort Shader (1/2) ...");
-            // _sort.Sort(particlesIndexBuffer, cellIndexBuffer, true);
-            GpuSort.BitonicSort64(particlesIndexBuffer, cellIndexBuffer, sortShaderNew);
+            _sort.Sort(particlesIndexBuffer, cellIndexBuffer, true);
+            // GpuSort.BitonicSort64(particlesIndexBuffer, cellIndexBuffer, sortShaderNew);
             particlesIndexBuffer.GetData(particlesIndexArray);
             cellIndexBuffer.GetData(cellIndexArray);
             sortedCellIndexBuffer.GetData(sortedCellIndexArray);
@@ -206,7 +206,7 @@ public class GPURendering : MonoBehaviour
         } else if (Input.GetKeyDown("3")) {
             Debug.Log("Executing Sort Shader (2/2) ...");
             
-            _sort2.Sort(sortedCellIndexBuffer, cellIndexBuffer, true);
+            _sort.Sort(sortedCellIndexBuffer, cellIndexBuffer, true);
             sortedCellIndexBuffer.GetData(sortedCellIndexArray);
             cellIndexBuffer.GetData(cellIndexArray);
             
@@ -227,8 +227,7 @@ public class GPURendering : MonoBehaviour
             forceShader.Dispatch(forceKi, 4, 1, 1);    
         }
         else if (Input.GetKeyDown("7")) {
-            // integrationShader.Dispatch(integrationKi, 4, 1, 1);    
-            SortTest.Test(sortShaderNew);
+            integrationShader.Dispatch(integrationKi, 4, 1, 1);    
         }
 
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);
