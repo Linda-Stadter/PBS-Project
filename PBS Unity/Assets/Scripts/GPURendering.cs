@@ -123,6 +123,7 @@ public class GPURendering : MonoBehaviour
         partitionShader.SetBuffer(partitionKi, "particlesIndexBuffer", particlesIndexBuffer);
         partitionShader.SetBuffer(partitionKi, "cellIndexBuffer", cellIndexBuffer);
         partitionShader.SetBuffer(partitionKi, "sortedCellIndexBuffer", sortedCellIndexBuffer);
+        partitionShader.SetBuffer(partitionKi, "offsetBuffer", offsetBuffer);
 
         offsetKi = offsetShader.FindKernel("calcOffset");
         offsetShader.SetBuffer(offsetKi, "particlesIndexBuffer", particlesIndexBuffer);
@@ -187,10 +188,12 @@ public class GPURendering : MonoBehaviour
             particlesIndexBuffer.GetData(particlesIndexArray);
             cellIndexBuffer.GetData(cellIndexArray);
             sortedCellIndexBuffer.GetData(sortedCellIndexArray);
+            offsetBuffer.GetData(offsetArray);
 
             PrintArray("particlesArray\t", particlesIndexArray);
             PrintArray("cellIndexArray\t", cellIndexArray);
             PrintArray("sortedCellIndexArray", sortedCellIndexArray);
+            PrintArray("offsetArray\t", offsetArray);
         }
         else if (Input.GetKeyDown("2")) {
             Debug.Log("Executing Sort Shader ...");
