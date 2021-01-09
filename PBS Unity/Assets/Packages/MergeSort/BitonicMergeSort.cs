@@ -15,6 +15,7 @@ namespace MergeSort {
 		public const string BUF_KEYS = "Keys";
 		public const string BUF_VALUES = "Values";
 		public const string BUF_INT_VALUES = "IntValues";
+		public const string BUF_SORTED_VALUES= "SortedValues";
 
 		readonly ComputeShader _compute;
 		readonly int _kernelSort, _kernelSortInt, _kernelInit;
@@ -33,19 +34,20 @@ namespace MergeSort {
 			_compute.SetBuffer(_kernelInit, BUF_KEYS, keys);
 			_compute.Dispatch(_kernelInit, x, y, z);
 		}
-		public void Sort(ComputeBuffer keys, ComputeBuffer values, bool dir) {
+		public void Sort(ComputeBuffer keys, ComputeBuffer values, ComputeBuffer sortedValues) {
 			var count = keys.count;
 			int x, y, z;
 			ShaderUtil.CalcWorkSize(count, out x, out y, out z);
 
 			_compute.SetInt(PROP_COUNT, count);
-			_compute.SetBool(PROP_DIR, dir);
+			// _compute.SetBool(PROP_DIR, dir);
 			for (var dim = 2; dim <= count; dim <<= 1) {
 				_compute.SetInt(PROP_DIM, dim);
 				for (var block = dim >> 1; block > 0; block >>= 1) {
 					_compute.SetInt(PROP_BLOCK, block);
 					_compute.SetBuffer(_kernelSort, BUF_KEYS, keys);
 					_compute.SetBuffer(_kernelSort, BUF_VALUES, values);
+					_compute.SetBuffer(_kernelSort, BUF_SORTED_VALUES, sortedValues);
 					_compute.Dispatch(_kernelSort, x, y, z);
 				}
 			}

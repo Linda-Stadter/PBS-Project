@@ -5,7 +5,7 @@
 RWStructuredBuffer<FluidParticle> particlesBuffer;
 RWStructuredBuffer<uint> particlesIndexBuffer;
 RWStructuredBuffer<float> cellIndexBuffer;
-RWStructuredBuffer<uint> sortedCellIndexBuffer;;
+RWStructuredBuffer<float> sortedCellIndexBuffer;;
 
 [numthreads(THREADS,1,1)]
 void calcCellIndices(uint3 id : SV_DispatchThreadID)
@@ -22,6 +22,6 @@ void calcCellIndices(uint3 id : SV_DispatchThreadID)
 		uint flatCellIndex = SPH_GridHash(cellIndex);
 
 		cellIndexBuffer[particleIdx] = (float)flatCellIndex;
-		sortedCellIndexBuffer[particleIdx] = flatCellIndex;
+		sortedCellIndexBuffer[particleIdx] = (float)flatCellIndex;
 	}
 }

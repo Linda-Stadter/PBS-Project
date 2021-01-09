@@ -41,7 +41,7 @@ public class GPURendering : MonoBehaviour
     private float[] cellIndexArray;
     private int[] offsetArray;
     private float[] densityArray;
-    private int[] sortedCellIndexArray;
+    private float[] sortedCellIndexArray;
 
     // GPU Buffer
     private ComputeBuffer particlesBuffer;
@@ -79,7 +79,7 @@ public class GPURendering : MonoBehaviour
         cellIndexArray = new float[particleNumber];
         offsetArray = new int[particleNumber];
         densityArray = new float[particleNumber];
-        sortedCellIndexArray = new int[particleNumber];
+        sortedCellIndexArray = new float[particleNumber];
 
         int length = (int) Mathf.Pow(particleNumber, 1f / 3f);
     
@@ -194,7 +194,7 @@ public class GPURendering : MonoBehaviour
         }
         else if (Input.GetKeyDown("2")) {
             Debug.Log("Executing Sort Shader (1/2) ...");
-            _sort.Sort(particlesIndexBuffer, cellIndexBuffer, true);
+            _sort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
             // GpuSort.BitonicSort64(particlesIndexBuffer, cellIndexBuffer, sortShaderNew);
             particlesIndexBuffer.GetData(particlesIndexArray);
             cellIndexBuffer.GetData(cellIndexArray);
@@ -206,7 +206,7 @@ public class GPURendering : MonoBehaviour
         } else if (Input.GetKeyDown("3")) {
             Debug.Log("Executing Sort Shader (2/2) ...");
             
-            _sort.Sort(sortedCellIndexBuffer, cellIndexBuffer, true);
+            // _sort.Sort(sortedCellIndexBuffer, cellIndexBuffer, true);
             sortedCellIndexBuffer.GetData(sortedCellIndexArray);
             cellIndexBuffer.GetData(cellIndexArray);
             
@@ -221,6 +221,11 @@ public class GPURendering : MonoBehaviour
             PrintArray("cellIndexArray\t", cellIndexArray);
         }
         else if (Input.GetKeyDown("5")) {
+            // int[] srt
+            ComputeBuffer keys = new ComputeBuffer(particleNumber, 4);
+            ComputeBuffer values = new ComputeBuffer(particleNumber, 4);
+            // _sort
+
             densityShader.Dispatch(densityKi, 4, 1, 1);    
         }
         else if (Input.GetKeyDown("6")) {
@@ -235,7 +240,7 @@ public class GPURendering : MonoBehaviour
 
     void UpdateOnGPU() {
         partitionShader.Dispatch(partitionKi, 4, 1, 1);
-        _sort.Sort(particlesIndexBuffer, cellIndexBuffer, true);
+        // _sort.Sort(particlesIndexBuffer, cellIndexBuffer, true);
         offsetShader.Dispatch(offsetKi, 4, 1, 1);
         densityShader.Dispatch(densityKi, 4, 1, 1);
         forceShader.Dispatch(forceKi, 4, 1, 1);

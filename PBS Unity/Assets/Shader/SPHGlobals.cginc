@@ -4,10 +4,10 @@
 #define PI 3.14159265358979323846
 #define SQRT2 1.41421356237309504880
 
-static const uint THREADS = 4;
+static const uint THREADS = 256;
 static const uint PARTICLE_COUNT = 16;
 
-static const float xSPH_h 		= 2.0f;									// smoothing radius
+static const float xSPH_h 		= 1.0f;									// smoothing radius
 static const float xSPH_h_rcp 	= 1.0f / xSPH_h;						// 1.0f / smoothing radius
 static const float xSPH_h2 		= xSPH_h * xSPH_h;						// smoothing radius ^ 2
 static const float xSPH_h3 		= xSPH_h * xSPH_h * xSPH_h;				// smoothing radius ^ 3
