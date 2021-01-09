@@ -23,8 +23,6 @@ public class GPURendering : MonoBehaviour
     [SerializeField]
     ComputeShader integrationShader = default;
 
-    ComputeShader sortShader2;
-
 
 
     private int particleNumber;
@@ -103,19 +101,19 @@ public class GPURendering : MonoBehaviour
         particlesBuffer = new ComputeBuffer(particlesArray.Length, 9 * 4);
         particlesBuffer.SetData(particlesArray);
 
-        particlesIndexBuffer = new ComputeBuffer(particlesIndexArray.Length, 4);
+        particlesIndexBuffer = new ComputeBuffer(particlesIndexArray.Length, sizeof(int));
         particlesIndexBuffer.SetData(particlesIndexArray);
 
-        cellIndexBuffer = new ComputeBuffer(particleNumber, 4);
+        cellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
         cellIndexBuffer.SetData(cellIndexArray);
 
-        offsetBuffer = new ComputeBuffer(particleNumber, 4);
+        offsetBuffer = new ComputeBuffer(particleNumber, sizeof(int));
         offsetBuffer.SetData(offsetArray);
 
-        densityBuffer = new ComputeBuffer(particleNumber, 4);
+        densityBuffer = new ComputeBuffer(particleNumber, sizeof(int));
         densityBuffer.SetData(densityArray);
 
-        sortedCellIndexBuffer = new ComputeBuffer(particleNumber, 4);
+        sortedCellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
         sortedCellIndexBuffer.SetData(sortedCellIndexArray);
 
         partitionKi = partitionShader.FindKernel("calcCellIndices");
@@ -145,7 +143,7 @@ public class GPURendering : MonoBehaviour
         forceShader.SetBuffer(densityKi, "densityBuffer", densityBuffer);
 
         integrationKi = integrationShader.FindKernel("calcIntegration");
-        integrationShader.SetBuffer(integrationKi, "cellIndexBuffer", sortedCellIndexBuffer);
+        integrationShader.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
         integrationShader.SetBuffer(integrationKi, "particlesBuffer", particlesBuffer);
 
         material.SetBuffer("particlesBuffer", particlesBuffer);
@@ -155,8 +153,6 @@ public class GPURendering : MonoBehaviour
         
         particleBound = new Bounds(Vector3.zero, Vector3.one);
 
-        sortShader2 = Instantiate(sortShader);
-        _sort2 = new MergeSort.BitonicMergeSort(sortShader2);
     }
 
     void OnEnable () {
