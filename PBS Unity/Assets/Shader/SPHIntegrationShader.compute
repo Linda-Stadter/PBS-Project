@@ -6,22 +6,24 @@ RWStructuredBuffer<FluidParticle> particlesBuffer;
 RWStructuredBuffer<uint> particlesIndexBuffer;
 StructuredBuffer<float> densityBuffer;
 StructuredBuffer<float> forceBuffer;
+float deltaTime;
+
 
 [numthreads(THREADS, 1, 1)]
 void calcIntegration(uint3 id : SV_DispatchThreadID)
 {
-    // force integration
-    const float deltaTime = 0.016f;
-    const float3 g = float3(0, -9.8f, 0);
-    const float width = 2.0f;
-    const float damping = 0.01f;
+    const float3 g = xSPH_g;
+    const float width = xSPH_width;
+    const float damping = xSPH_damping;
 
+    // force integration
     uint particleIdx = particlesIndexBuffer[id.x];
 
     FluidParticle particleA = particlesBuffer[particleIdx];
     particleA.v += deltaTime * (forceBuffer[particleIdx] / densityBuffer[particleIdx] + g);
     particleA.pos += deltaTime * particleA.v;
-  
+
+
     // box collision
     if (particleA.pos.x < -width) {
         particleA.pos.x = -width;

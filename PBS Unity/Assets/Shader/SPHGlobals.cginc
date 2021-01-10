@@ -19,6 +19,10 @@ static const float xSPH_K					= 250.0f;								// pressure constant
 static const float xSPH_p0					= 1.0f;									// reference density
 static const float xSPH_e					= 0.018f;								// viscosity constant
 
+static const float3 xSPH_g					= float3(0, -9.8f, 0);
+static const float xSPH_width				= 2.0f;
+static const float xSPH_damping				= 0.01f;
+
 
 struct FluidParticle{
     float3 pos;

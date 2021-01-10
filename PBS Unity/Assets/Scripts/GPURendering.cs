@@ -63,7 +63,7 @@ public class GPURendering : MonoBehaviour
     void Start()
     {
         particleNumber = 1024;
-        particleRadius = 0.5f;
+        particleRadius = 0.1f;
         spawnOffset = new Vector3(-5, 5, -5);
 
         particlesArray = new FluidParticle[particleNumber];
@@ -171,6 +171,7 @@ public class GPURendering : MonoBehaviour
     void Update()
     {
         /* Executing one Timestep per frame */
+        integrationShader.SetFloat("deltaTime", Time.deltaTime);
         ExecuteTimeStep();
 
         /* The following is for debugging */
