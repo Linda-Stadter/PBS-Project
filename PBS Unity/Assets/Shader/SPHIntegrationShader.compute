@@ -4,6 +4,8 @@
 
 RWStructuredBuffer<FluidParticle> particlesBuffer;
 RWStructuredBuffer<uint> particlesIndexBuffer;
+StructuredBuffer<float> densityBuffer;
+//StructuredBuffer<float> forceBuffer;
 
 [numthreads(THREADS, 1, 1)]
 void calcIntegration(uint3 id : SV_DispatchThreadID)
@@ -14,7 +16,7 @@ void calcIntegration(uint3 id : SV_DispatchThreadID)
     uint particleIdx = particlesIndexBuffer[id.x];
 
     FluidParticle particleA = particlesBuffer[particleIdx];
-    particleA.v += deltaTime * ((particleA.pressForce + particleA.visForce) / particleA.density + g);
+    particleA.v += deltaTime * ((particleA.pressForce + particleA.visForce) / densityBuffer[particleIdx] + g);
     particleA.pos += deltaTime * particleA.v;
     particleA.pressForce = 0;
     particleA.visForce = 0;
