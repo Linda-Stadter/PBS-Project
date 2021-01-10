@@ -13,13 +13,45 @@ void calcIntegration(uint3 id : SV_DispatchThreadID)
     // force integration
     const float deltaTime = 0.016f;
     const float3 g = float3(0, -9.8f, 0);
+    const float width = 2.0f;
+    const float damping = 0.01f;
+
     uint particleIdx = particlesIndexBuffer[id.x];
 
     FluidParticle particleA = particlesBuffer[particleIdx];
     particleA.v += deltaTime * (forceBuffer[particleIdx] / densityBuffer[particleIdx] + g);
     particleA.pos += deltaTime * particleA.v;
+  
+    // box collision
+    if (particleA.pos.x < -width) {
+        particleA.pos.x = -width;
+        particleA.v.x = -particleA.v.x * damping;
+    } 
+    else if (particleA.pos.x > width) {
+        particleA.pos.x = width;
+        particleA.v.x = -particleA.v.x * damping;
+    }
 
-    particlesBuffer[particleIdx] = particleA;
+    if (particleA.pos.y < -width) {
+        particleA.pos.y = -width;
+        particleA.v.y = -particleA.v.y * damping;
+    } /*
+    else if (particleA.pos.y > width) {
+        particleA.pos.y = width;
+        particleA.v.y = -particleA.v.y * damping;
+    } */
+
+    if (particleA.pos.z < -width) {
+        particleA.pos.z = -width;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+    else if (particleA.pos.z > width) {
+        particleA.pos.z = width;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+
+
     
-    //TODO: collision (box and floor collision)
+    
+    particlesBuffer[particleIdx] = particleA;
 }

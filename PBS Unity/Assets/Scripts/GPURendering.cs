@@ -13,8 +13,6 @@ public class GPURendering : MonoBehaviour
     [SerializeField]
     ComputeShader sortShader = default;
     [SerializeField]
-    ComputeShader sortShaderNew = default;
-    [SerializeField]
 	ComputeShader offsetShader = default;
     [SerializeField]
 	ComputeShader densityShader = default;
@@ -56,7 +54,6 @@ public class GPURendering : MonoBehaviour
     private Bounds particleBound;
 
     private MergeSort.BitonicMergeSort _sort;
-    private MergeSort.BitonicMergeSort _sort2;
 
     struct FluidParticle{
         public Vector3 pos;
