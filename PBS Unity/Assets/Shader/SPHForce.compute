@@ -7,6 +7,7 @@ RWStructuredBuffer<uint> particlesIndexBuffer;
 RWStructuredBuffer<float> cellIndexBuffer;
 RWStructuredBuffer<uint> offsetBuffer;
 RWStructuredBuffer<float> densityBuffer;
+RWStructuredBuffer<float> forceBuffer;
 
 [numthreads(THREADS, 1, 1)]
 void calcForce(uint3 id : SV_DispatchThreadID)
@@ -21,16 +22,8 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 	uint particleIdxA;
 	float3 posA;
 
-	if (id.x < PARTICLE_COUNT)
-	{
-		particleIdxA = particlesIndexBuffer[id.x];
-		posA = particlesBuffer[particleIdxA].pos;
-	}
-	else
-	{
-		particleIdxA = 0xFFFFFFFF;
-		posA = 0;
-	}
+	particleIdxA = particlesIndexBuffer[id.x];
+	posA = particlesBuffer[particleIdxA].pos;
 
 	FluidParticle particleA = particlesBuffer[particleIdxA];
 
@@ -93,16 +86,13 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 					}
 
 					neighborIterator++;
-					f_a *= -1;
-					f_av *= xSPH_e;
 				}
 			}
 		}
 	}
 
-	particleA.pressForce += f_a;
-	particleA.visForce += f_av;
+	f_a *= -1;
+	f_av *= xSPH_e;
 
-	particlesBuffer[particleIdxA].pressForce = particleA.pressForce;
-	particlesBuffer[particleIdxA].visForce = particleA.visForce;
+	forceBuffer[particleIdxA] = f_a + f_av;
 }

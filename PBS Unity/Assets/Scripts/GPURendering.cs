@@ -39,16 +39,17 @@ public class GPURendering : MonoBehaviour
     private float[] cellIndexArray;
     private int[] offsetArray;
     private float[] densityArray;
+    private float[] forceArray;
     private float[] sortedCellIndexArray;
 
     // GPU Buffer
     private ComputeBuffer particlesBuffer;
     private ComputeBuffer particlesIndexBuffer;
     private ComputeBuffer cellIndexBuffer;
+    private ComputeBuffer sortedCellIndexBuffer;
     private ComputeBuffer offsetBuffer;
     private ComputeBuffer densityBuffer;
-
-    private ComputeBuffer sortedCellIndexBuffer;
+    private ComputeBuffer forceBuffer;
     
 
     // Bounds for Unity's frustum culling
@@ -125,7 +126,7 @@ public class GPURendering : MonoBehaviour
 
         offsetKi = offsetShader.FindKernel("calcOffset");
         offsetShader.SetBuffer(offsetKi, "particlesIndexBuffer", particlesIndexBuffer);
-        offsetShader.SetBuffer(offsetKi, "cellIndexBuffer", sortedCellIndexBuffer);
+        offsetShader.SetBuffer(offsetKi, "cellIndexBuffer", cellIndexBuffer);
         offsetShader.SetBuffer(offsetKi, "offsetBuffer", offsetBuffer);
 
         densityKi = densityShader.FindKernel("calcDensity");
@@ -136,11 +137,12 @@ public class GPURendering : MonoBehaviour
         densityShader.SetBuffer(densityKi, "densityBuffer", densityBuffer);
 
         forceKi = forceShader.FindKernel("calcForce");
-        forceShader.SetBuffer(densityKi, "particlesBuffer", particlesBuffer);
-        forceShader.SetBuffer(densityKi, "particlesIndexBuffer", particlesIndexBuffer);
-        forceShader.SetBuffer(densityKi, "cellIndexBuffer", sortedCellIndexBuffer);
-        forceShader.SetBuffer(densityKi, "offsetBuffer", offsetBuffer);
-        forceShader.SetBuffer(densityKi, "densityBuffer", densityBuffer);
+        forceShader.SetBuffer(forceKi, "particlesBuffer", particlesBuffer);
+        forceShader.SetBuffer(forceKi, "particlesIndexBuffer", particlesIndexBuffer);
+        forceShader.SetBuffer(forceKi, "cellIndexBuffer", sortedCellIndexBuffer);
+        forceShader.SetBuffer(forceKi, "offsetBuffer", offsetBuffer);
+        forceShader.SetBuffer(forceKi, "densityBuffer", densityBuffer);
+        forceShader.SetBuffer(forceKi, "forceBuffer", forceBuffer);
 
         integrationKi = integrationShader.FindKernel("calcIntegration");
         integrationShader.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
@@ -214,10 +216,18 @@ public class GPURendering : MonoBehaviour
             PrintArray("offsetArray\t", offsetArray);
         }
         else if (Input.GetKeyDown("4")) {
-            densityShader.Dispatch(densityKi, 4, 1, 1);    
+            Debug.Log("Executing Density Shader ...");
+            densityShader.Dispatch(densityKi, 4, 1, 1);
+            densityBuffer.GetData(densityArray);
+
+            PrintArray("densityArray\t", densityArray);
         }
         else if (Input.GetKeyDown("5")) {
-            forceShader.Dispatch(forceKi, 4, 1, 1);    
+            Debug.Log("Executing Force Shader ...");
+            forceShader.Dispatch(forceKi, 4, 1, 1);
+            forceBuffer.GetData(forceArray);
+
+            PrintArray("forceArray\t", forceArray);
         }
         else if (Input.GetKeyDown("6")) {
             integrationShader.Dispatch(integrationKi, 4, 1, 1);    

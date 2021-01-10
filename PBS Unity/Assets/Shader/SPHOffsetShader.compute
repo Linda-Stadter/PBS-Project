@@ -9,11 +9,8 @@ RWStructuredBuffer<uint> offsetBuffer;
 [numthreads(THREADS,1,1)]
 void calcOffset(uint3 id : SV_DispatchThreadID)
 {
-   if (id.x < PARTICLE_COUNT)
-	{
-		uint particleIdx = particlesIndexBuffer[id.x];
-		uint cellIndex = (uint)cellIndexBuffer[particleIdx];
+	uint particleIdx = particlesIndexBuffer[id.x];
+	uint cellIndex = (uint)cellIndexBuffer[particleIdx];
 
-		InterlockedMin(offsetBuffer[cellIndex], id.x);
-	}
+	InterlockedMin(offsetBuffer[cellIndex], id.x);
 }

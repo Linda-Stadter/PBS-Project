@@ -18,20 +18,9 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 	const float p0 = xSPH_p0;		// reference density
 	const float e = xSPH_e;			// viscosity constant
 
-	uint particleIdxA;
-	float3 posA;
-
-	if (id.x < PARTICLE_COUNT)
-	{
-		particleIdxA = particlesIndexBuffer[id.x];
-		posA = particlesBuffer[particleIdxA].pos;
-	}
-	else
-	{
-		particleIdxA = 0xFFFFFFFF;
-		posA = 0;
-	}
-
+	uint particleIdxA = particlesIndexBuffer[id.x];
+	float3 posA = particlesBuffer[particleIdxA].pos;
+	
     // Grid cell is of size [SPH smoothing radius], so position is refitted into that
 	const float3 remappedPos = posA * xSPH_h_rcp;
 	const int3 cellIndex = floor(remappedPos);
@@ -60,6 +49,7 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 				[loop]
 				while (neighborIterator != 0xFFFFFFFF && neighborIterator < PARTICLE_COUNT)
 				{
+
 					uint particleIdxB = particlesIndexBuffer[neighborIterator];
 					if ((uint)cellIndexBuffer[particleIdxB] != flatNeighborIndex)
 					{
@@ -89,13 +79,12 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 	}
 
 
-    if (id.x < PARTICLE_COUNT)
-	{
-		// Can't be lower than reference density to avoid negative pressure!
-		density = max(p0, density);
+    
+	// Can't be lower than reference density to avoid negative pressure!
+	density = max(p0, density);
 
-		// Store the results:
-		densityBuffer[particleIdxA] = density;
-	}
+	// Store the results:
+	densityBuffer[particleIdxA] = density;
+	
 
 }
