@@ -11,20 +11,17 @@ RWStructuredBuffer<float> offsetBuffer;
 [numthreads(THREADS,1,1)]
 void calcCellIndices(uint3 id : SV_DispatchThreadID)
 {
-	if (id.x < PARTICLE_COUNT)
-	{
-		uint particleIdx = particlesIndexBuffer[id.x];
-		FluidParticle particle = particlesBuffer[particleIdx];
+	uint particleIdx = id.x;
+	particlesIndexBuffer[particleIdx] = particleIdx;
+	FluidParticle particle = particlesBuffer[particleIdx];
 
-		// Grid cell is of size [SPH smoothing radius], so position is refitted into that
-		float3 remappedPos = particle.pos * xSPH_h_rcp;
+	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
+	float3 remappedPos = particle.pos * xSPH_h_rcp;
 
-		int3 cellIndex = floor(remappedPos);
-		uint flatCellIndex = SPH_GridHash(cellIndex);
+	int3 cellIndex = floor(remappedPos);
+	uint flatCellIndex = SPH_GridHash(cellIndex);
 
-		cellIndexBuffer[particleIdx] = (float)flatCellIndex;
-		sortedCellIndexBuffer[particleIdx] = (float)flatCellIndex;
-
-		offsetBuffer[particleIdx] = 0xFFFFFFFF;
-	}
+	cellIndexBuffer[particleIdx] = (float)flatCellIndex;
+	sortedCellIndexBuffer[particleIdx] = (float)flatCellIndex;
+	offsetBuffer[particleIdx] = 0xFFFFFFFF;
 }

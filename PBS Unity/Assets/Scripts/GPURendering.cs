@@ -61,15 +61,11 @@ public class GPURendering : MonoBehaviour
     struct FluidParticle{
         public Vector3 pos;
         public Vector3 v;
-
-        public float density;
-        public float pressForce;
-        public float visForce;
     }
 
     void Start()
     {
-        particleNumber = 16;
+        particleNumber = 1024;
         particleRadius = 0.5f;
         spawnOffset = new Vector3(-5, 5, -5);
 
@@ -78,6 +74,7 @@ public class GPURendering : MonoBehaviour
         cellIndexArray = new float[particleNumber];
         offsetArray = new int[particleNumber];
         densityArray = new float[particleNumber];
+        forceArray = new float[particleNumber];
         sortedCellIndexArray = new float[particleNumber];
 
         int length = (int) Mathf.Pow(particleNumber, 1f / 3f);
@@ -90,16 +87,12 @@ public class GPURendering : MonoBehaviour
 
             particlesArray[i].v = new Vector3(0f, 0f, 0f);
 
-            particlesArray[i].density = 0f;
-            particlesArray[i].pressForce = 0f;
-            particlesArray[i].visForce = 0f;
-
             particlesIndexArray[i] = i;
 
             // Debug.Log(particlesArray[i].x + "\t" + particlesArray[i].y + "\t" + particlesArray[i].z);
         }
 
-        particlesBuffer = new ComputeBuffer(particlesArray.Length, 9 * 4);
+        particlesBuffer = new ComputeBuffer(particlesArray.Length, 6 * 4);
         particlesBuffer.SetData(particlesArray);
 
         particlesIndexBuffer = new ComputeBuffer(particlesIndexArray.Length, sizeof(int));
@@ -113,6 +106,9 @@ public class GPURendering : MonoBehaviour
 
         densityBuffer = new ComputeBuffer(particleNumber, sizeof(int));
         densityBuffer.SetData(densityArray);
+
+        forceBuffer = new ComputeBuffer(particleNumber, sizeof(int));
+        forceBuffer.SetData(forceArray);
 
         sortedCellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
         sortedCellIndexBuffer.SetData(sortedCellIndexArray);
@@ -145,8 +141,10 @@ public class GPURendering : MonoBehaviour
         forceShader.SetBuffer(forceKi, "forceBuffer", forceBuffer);
 
         integrationKi = integrationShader.FindKernel("calcIntegration");
-        integrationShader.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
         integrationShader.SetBuffer(integrationKi, "particlesBuffer", particlesBuffer);
+        integrationShader.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
+        integrationShader.SetBuffer(integrationKi, "densityBuffer", densityBuffer);
+        integrationShader.SetBuffer(integrationKi, "forceBuffer", forceBuffer);
 
         material.SetBuffer("particlesBuffer", particlesBuffer);
         material.SetFloat("particleRadius", particleRadius);
@@ -157,16 +155,13 @@ public class GPURendering : MonoBehaviour
 
     }
 
-    void OnEnable () {
-        
-	}
-
     void OnDisable () {
 		particlesBuffer.Release();
 		particlesBuffer = null;
 	}
 
 
+    /* Function to display arrays in a convenient format */
     void PrintArray<T>(string name, T[] array) {
         string str = "";
         for (int i = 0; i < array.Length; ++i) {
@@ -178,7 +173,15 @@ public class GPURendering : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown("1")) {
+        /* Executing one Timestep per frame */
+        ExecuteTimeStep();
+
+        /* The following is for debugging */
+        if (Input.GetKeyDown("0")) {
+            Debug.Log("Executing one time step ...");
+            ExecuteTimeStep();
+        }
+        else if (Input.GetKeyDown("1")) {
             Debug.Log("Executing Partition Shader ...");
             partitionShader.Dispatch(partitionKi, 4, 1, 1);
 
@@ -230,13 +233,15 @@ public class GPURendering : MonoBehaviour
             PrintArray("forceArray\t", forceArray);
         }
         else if (Input.GetKeyDown("6")) {
+            Debug.Log("Executing Integration Shader ...");
             integrationShader.Dispatch(integrationKi, 4, 1, 1);    
         }
 
+        /* Draw Meshes on GPU */
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);
     }
 
-    void UpdateOnGPU() {
+    void ExecuteTimeStep() {
         partitionShader.Dispatch(partitionKi, 4, 1, 1);
         _sort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
         offsetShader.Dispatch(offsetKi, 4, 1, 1);

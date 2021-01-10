@@ -77,12 +77,12 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 						float3 pressureParticleA = xSPH_K * (densityBuffer[particleIdxA] - xSPH_p0);
 						float3 pressureParticleB = xSPH_K * (densityBuffer[particleIdxB] - xSPH_p0);
 
-						f_a += (xSPH_mass / xSPH_mass) * ((pressureParticleA + pressureParticleB) / (2 * particleA.density * particleB.density)) * Wpress * rNorm;
+						f_a += (xSPH_mass / xSPH_mass) * ((pressureParticleA + pressureParticleB) / (2 * densityBuffer[particleIdxA] * densityBuffer[particleIdxB])) * Wpress * rNorm;
 						
 						const float r3 = r2 * r;
 						const float Wvis = -(r3 / (2 * h3)) + (r2 / h2) + (h / (2 * r)) - 1; // Laplacian smoothing function
 						
-						f_av += (xSPH_mass / xSPH_mass) * (1.0f / particleB.density) * (particleB.v - particleA.v) * Wvis * rNorm;
+						f_av += (xSPH_mass / xSPH_mass) * (1.0f / densityBuffer[particleIdxB]) * (particleB.v - particleA.v) * Wvis * rNorm;
 					}
 
 					neighborIterator++;
