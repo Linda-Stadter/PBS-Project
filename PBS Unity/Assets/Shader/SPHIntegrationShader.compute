@@ -9,15 +9,17 @@ StructuredBuffer<float> forceBuffer;
 bool Leapfrog;
 bool IsLFtime;
 
+
 [numthreads(THREADS, 1, 1)]
 void calcIntegration(uint3 id : SV_DispatchThreadID)
-{
+{ 
     // force integration
     const float deltaTime = 0.016f;
-    const float3 g = float3(0, -9.8f, 0);
-    const float width = 2.0f;
-    const float damping = 0.01f;
+    const float3 g = xSPH_g;
+    const float width = xSPH_width;
+    const float damping = xSPH_damping;
 
+    // force integration
     uint particleIdx = particlesIndexBuffer[id.x];
     FluidParticle particleA = particlesBuffer[particleIdx];
 
