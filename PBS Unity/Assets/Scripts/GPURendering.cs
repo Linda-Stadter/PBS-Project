@@ -32,12 +32,14 @@ public class GPURendering : MonoBehaviour
     private int forceKi;
     private int integrationKi;
 
+    private bool Leapfrog = false;
+
     private FluidParticle[] particlesArray;
     private int[] particlesIndexArray;
     private float[] cellIndexArray;
     private int[] offsetArray;
     private float[] densityArray;
-    private float[] forceArray;
+    private Vector3[] forceArray;
     private float[] sortedCellIndexArray;
 
     // GPU Buffer
@@ -58,6 +60,8 @@ public class GPURendering : MonoBehaviour
     struct FluidParticle{
         public Vector3 pos;
         public Vector3 v;
+        public Vector3 posLF;
+        public Vector3 vLF;
     }
 
     void Start()
@@ -71,7 +75,7 @@ public class GPURendering : MonoBehaviour
         cellIndexArray = new float[particleNumber];
         offsetArray = new int[particleNumber];
         densityArray = new float[particleNumber];
-        forceArray = new float[particleNumber];
+        forceArray = new Vector3[particleNumber];
         sortedCellIndexArray = new float[particleNumber];
 
         int length = (int) Mathf.Pow(particleNumber, 1f / 3f);
@@ -84,12 +88,15 @@ public class GPURendering : MonoBehaviour
 
             particlesArray[i].v = new Vector3(0f, 0f, 0f);
 
+            particlesArray[i].posLF = new Vector3(x_pos, y_pos, z_pos);
+            particlesArray[i].vLF = new Vector3(0f, 0f, 0f);
+
             particlesIndexArray[i] = i;
 
             // Debug.Log(particlesArray[i].x + "\t" + particlesArray[i].y + "\t" + particlesArray[i].z);
         }
 
-        particlesBuffer = new ComputeBuffer(particlesArray.Length, 6 * 4);
+        particlesBuffer = new ComputeBuffer(particlesArray.Length, 12 * 4);
         particlesBuffer.SetData(particlesArray);
 
         particlesIndexBuffer = new ComputeBuffer(particlesIndexArray.Length, sizeof(int));
@@ -101,10 +108,10 @@ public class GPURendering : MonoBehaviour
         offsetBuffer = new ComputeBuffer(particleNumber, sizeof(int));
         offsetBuffer.SetData(offsetArray);
 
-        densityBuffer = new ComputeBuffer(particleNumber, sizeof(int));
+        densityBuffer = new ComputeBuffer(particleNumber, sizeof(float));
         densityBuffer.SetData(densityArray);
 
-        forceBuffer = new ComputeBuffer(particleNumber, sizeof(int));
+        forceBuffer = new ComputeBuffer(particleNumber, sizeof(float)*3);
         forceBuffer.SetData(forceArray);
 
         sortedCellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
@@ -142,6 +149,10 @@ public class GPURendering : MonoBehaviour
         integrationShader.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
         integrationShader.SetBuffer(integrationKi, "densityBuffer", densityBuffer);
         integrationShader.SetBuffer(integrationKi, "forceBuffer", forceBuffer);
+        integrationShader.SetBool("Leapfrog",Leapfrog);
+
+
+
 
         material.SetBuffer("particlesBuffer", particlesBuffer);
         material.SetFloat("particleRadius", particleRadius);
@@ -154,7 +165,16 @@ public class GPURendering : MonoBehaviour
 
     void OnDisable () {
 		particlesBuffer.Release();
-		particlesBuffer = null;
+        particlesIndexBuffer.Release();
+        cellIndexBuffer.Release();
+        sortedCellIndexBuffer.Release();
+        offsetBuffer.Release();
+        densityBuffer.Release();
+        forceBuffer.Release();
+
+
+
+    particlesBuffer = null;
 	}
 
 
@@ -174,9 +194,10 @@ public class GPURendering : MonoBehaviour
         ExecuteTimeStep();
 
         /* The following is for debugging */
+        //The following is also not working for Leapfrog yet
         if (Input.GetKeyDown("0")) {
             Debug.Log("Executing one time step ...");
-            ExecuteTimeStep();
+            //ExecuteTimeStep();
         }
         else if (Input.GetKeyDown("1")) {
             Debug.Log("Executing Partition Shader ...");
@@ -242,8 +263,50 @@ public class GPURendering : MonoBehaviour
         partitionShader.Dispatch(partitionKi, 4, 1, 1);
         _sort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
         offsetShader.Dispatch(offsetKi, 4, 1, 1);
+
+        if(Leapfrog)
+        {   //compute dens_i and f_i for a_i
+            //TODO mark density&force Shader for time slot
+            densityShader.SetBool("IsLFtime", true);
+            forceShader.SetBool("IsLFtime", true);
+
+            //PrintArray("forceArray\t", forceArray);
+            print("Leapfrog");
+            densityShader.Dispatch(densityKi, 4, 1, 1);
+            forceShader.Dispatch(forceKi, 4, 1, 1);
+            //compute v_i+0.5 and pos_i+0.5
+            integrationShader.SetBool("IsLFtime",true);
+            integrationShader.Dispatch(integrationKi, 4, 1, 1);
+
+            //compute dens_i+0.5 and f_i0.5 for a_i+0.5
+            //TODO mark density&force Shader for time slot
+            densityShader.SetBool("IsLFtime", false);
+            forceShader.SetBool("IsLFtime", false);
+
+            densityShader.Dispatch(densityKi, 4, 1, 1);
+            forceShader.Dispatch(forceKi, 4, 1, 1);
+            //compute v_i+1 and pos_i+1 and clamp to box
+            integrationShader.SetBool("IsLFtime", false);
+            integrationShader.Dispatch(integrationKi, 4, 1, 1);
+        }
+        else //basic integration
+        {
+            print("no Leapfrog");
+
+            densityShader.SetBool("IsLFtime", false);
+            forceShader.SetBool("IsLFtime", false);
+            integrationShader.SetBool("IsLFtime", false);
+
+
+            densityShader.Dispatch(densityKi, 4, 1, 1);
+            forceShader.Dispatch(forceKi, 4, 1, 1);
+
+            integrationShader.Dispatch(integrationKi, 4, 1, 1);
+        }
         densityShader.Dispatch(densityKi, 4, 1, 1);
         forceShader.Dispatch(forceKi, 4, 1, 1);
+
+
         integrationShader.Dispatch(integrationKi, 4, 1, 1);
         
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);

@@ -7,7 +7,8 @@ RWStructuredBuffer<uint> particlesIndexBuffer;
 RWStructuredBuffer<float> cellIndexBuffer;
 RWStructuredBuffer<uint> offsetBuffer;
 RWStructuredBuffer<float> densityBuffer;
-RWStructuredBuffer<float> forceBuffer;
+RWStructuredBuffer<float3> forceBuffer;
+bool IsLFtime;
 
 [numthreads(THREADS, 1, 1)]
 void calcForce(uint3 id : SV_DispatchThreadID)
@@ -23,7 +24,15 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 	float3 posA;
 
 	particleIdxA = particlesIndexBuffer[id.x];
-	posA = particlesBuffer[particleIdxA].pos;
+	if (IsLFtime)
+	{
+		posA = particlesBuffer[particleIdxA].posLF;
+	}
+	else
+	{
+		posA = particlesBuffer[particleIdxA].pos;
+	}
+
 
 	FluidParticle particleA = particlesBuffer[particleIdxA];
 
@@ -65,7 +74,18 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 
 					// SPH Force evaluation:
 					FluidParticle particleB = particlesBuffer[particleIdxB];
-					const float3 diff = particleA.pos - particleB.pos;
+					float3 posB;
+
+					if (IsLFtime)
+					{
+						posB = particlesBuffer[particleIdxB].posLF;
+					}
+					else
+					{
+						posB = particlesBuffer[particleIdxB].pos;
+					}
+
+					const float3 diff = posA - posB;
 					const float r2 = dot(diff, diff);
 					const float r = sqrt(r2);
 
@@ -81,8 +101,19 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 						
 						const float r3 = r2 * r;
 						const float Wvis = -(r3 / (2 * h3)) + (r2 / h2) + (h / (2 * r)) - 1; // Laplacian smoothing function
+
+
+						float3 v_diff;
+						if (IsLFtime)
+						{
+							v_diff = (particleB.vLF - particleA.vLF);
+						}
+						else
+						{
+							v_diff = (particleB.v - particleA.v);
+						}
 						
-						f_av += (xSPH_mass / xSPH_mass) * (1.0f / densityBuffer[particleIdxB]) * (particleB.v - particleA.v) * Wvis * rNorm;
+						f_av += (xSPH_mass / xSPH_mass) * (1.0f / densityBuffer[particleIdxB]) * v_diff * Wvis * rNorm;
 					}
 
 					neighborIterator++;

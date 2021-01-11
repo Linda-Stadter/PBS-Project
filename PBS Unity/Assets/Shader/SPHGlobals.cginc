@@ -23,6 +23,8 @@ static const float xSPH_e					= 0.018f;								// viscosity constant
 struct FluidParticle{
     float3 pos;
     float3 v;
+	float3 posLF;
+	float3 vLF;
 };
 
 

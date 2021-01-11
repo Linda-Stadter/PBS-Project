@@ -6,6 +6,8 @@ RWStructuredBuffer<FluidParticle> particlesBuffer;
 RWStructuredBuffer<uint> particlesIndexBuffer;
 StructuredBuffer<float> densityBuffer;
 StructuredBuffer<float> forceBuffer;
+bool Leapfrog;
+bool IsLFtime;
 
 [numthreads(THREADS, 1, 1)]
 void calcIntegration(uint3 id : SV_DispatchThreadID)
@@ -17,41 +19,63 @@ void calcIntegration(uint3 id : SV_DispatchThreadID)
     const float damping = 0.01f;
 
     uint particleIdx = particlesIndexBuffer[id.x];
-
     FluidParticle particleA = particlesBuffer[particleIdx];
-    particleA.v += deltaTime * (forceBuffer[particleIdx] / densityBuffer[particleIdx] + g);
-    particleA.pos += deltaTime * particleA.v;
-  
+
+
+    if (IsLFtime&&Leapfrog)
+    {
+        particleA.vLF = particleA.v + deltaTime * 0.5 *(forceBuffer[particleIdx] / densityBuffer[particleIdx] + g);
+        particleA.posLF = particleA.pos + deltaTime * 0.5 * particleA.v;
+    }
+    if ((!IsLFtime) && Leapfrog)
+    {
+        particleA.v = particleA.v + deltaTime * (forceBuffer[particleIdx] / densityBuffer[particleIdx] + g);
+        particleA.pos = particleA.pos + deltaTime * 0.5 * (particleA.v + particleA.vLF);
+    }
+
+    if (!Leapfrog)
+    {
+        particleA.v += deltaTime * (forceBuffer[particleIdx] / densityBuffer[particleIdx] + g);
+        particleA.pos += deltaTime * particleA.v;
+    }
+    
+    
+
+
+
     // box collision
-    if (particleA.pos.x < -width) {
-        particleA.pos.x = -width;
-        particleA.v.x = -particleA.v.x * damping;
-    } 
-    else if (particleA.pos.x > width) {
-        particleA.pos.x = width;
-        particleA.v.x = -particleA.v.x * damping;
+    if(!IsLFtime)
+    {
+        if (particleA.pos.x < -width) {
+            particleA.pos.x = -width;
+            particleA.v.x = -particleA.v.x * damping;
+        }
+        else if (particleA.pos.x > width) {
+            particleA.pos.x = width;
+            particleA.v.x = -particleA.v.x * damping;
+        }
+
+        if (particleA.pos.y < -width) {
+            particleA.pos.y = -width;
+            particleA.v.y = -particleA.v.y * damping;
+        } /*
+        else if (particleA.pos.y > width) {
+            particleA.pos.y = width;
+            particleA.v.y = -particleA.v.y * damping;
+        } */
+
+        if (particleA.pos.z < -width) {
+            particleA.pos.z = -width;
+            particleA.v.z = -particleA.v.z * damping;
+        }
+        else if (particleA.pos.z > width) {
+            particleA.pos.z = width;
+            particleA.v.z = -particleA.v.z * damping;
+        }
     }
 
-    if (particleA.pos.y < -width) {
-        particleA.pos.y = -width;
-        particleA.v.y = -particleA.v.y * damping;
-    } /*
-    else if (particleA.pos.y > width) {
-        particleA.pos.y = width;
-        particleA.v.y = -particleA.v.y * damping;
-    } */
-
-    if (particleA.pos.z < -width) {
-        particleA.pos.z = -width;
-        particleA.v.z = -particleA.v.z * damping;
-    }
-    else if (particleA.pos.z > width) {
-        particleA.pos.z = width;
-        particleA.v.z = -particleA.v.z * damping;
-    }
 
 
-    
-    
     particlesBuffer[particleIdx] = particleA;
 }
+

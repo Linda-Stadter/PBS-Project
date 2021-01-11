@@ -7,6 +7,7 @@ RWStructuredBuffer<uint> particlesIndexBuffer;
 RWStructuredBuffer<float> cellIndexBuffer;
 RWStructuredBuffer<uint> offsetBuffer;
 RWStructuredBuffer<float> densityBuffer;
+bool IsLFtime;
 
 [numthreads(THREADS,1,1)]
 void calcDensity(uint3 id : SV_DispatchThreadID)
@@ -19,9 +20,25 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 	const float e = xSPH_e;			// viscosity constant
 
 	uint particleIdxA = particlesIndexBuffer[id.x];
-	float3 posA = particlesBuffer[particleIdxA].pos;
+
+
+
+	float3 posA;
+
+	particleIdxA = particlesIndexBuffer[id.x];
+	if (IsLFtime)
+	{
+		posA = particlesBuffer[particleIdxA].posLF;
+	}
+	else
+	{
+		posA = particlesBuffer[particleIdxA].pos;
+	}
 	
     // Grid cell is of size [SPH smoothing radius], so position is refitted into that
+
+
+
 	const float3 remappedPos = posA * xSPH_h_rcp;
 	const int3 cellIndex = floor(remappedPos);
 
@@ -61,7 +78,18 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 					{
 						FluidParticle particleB = particlesBuffer[particleIdxB];
 
-						float3 diff = posA - particleB.pos;
+						float3 posB;
+
+						if (IsLFtime)
+						{
+							posB = particlesBuffer[particleIdxB].posLF;
+						}
+						else
+						{
+							posB = particlesBuffer[particleIdxB].pos;
+						}
+
+						const float3 diff = posA - posB;
 						float r2 = dot(diff, diff); // distance squared
 
 						if (r2 < h2)
