@@ -113,6 +113,14 @@ public class GPURendering : MonoBehaviour
         Debug.Log(name + ":\t\t" + str);
     }
 
+    void PrintDebug(string name, Vector3[] array) {
+        string str = "";
+        for (int i = 0; i < array.Length; ++i) {
+            str += array[i] + "\t";
+        }
+        Debug.Log(name + ":\t\t" + str);
+    }
+
 
     void InitializeParticles() {
         int length = (int) Mathf.Pow(PARTICLE_NUMBER, 1f / 3f);
@@ -263,10 +271,17 @@ public class GPURendering : MonoBehaviour
         }
         else if (Input.GetKeyDown("5")) {
             Debug.Log("Executing Density Shader ...");
+            ComputeBuffer debugBuffer = new ComputeBuffer(PARTICLE_NUMBER * 27 * 3 * 3, sizeof(float));
+            Vector3[] debugArray = new Vector3[PARTICLE_NUMBER * 27 * 3];
+            debugBuffer.SetData(debugArray);
+            SPHDensity.SetBuffer(densityKi, "debugBuffer", debugBuffer);
+
             SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
             densityBuffer.GetData(densityArray);
             particlesBuffer.GetData(particlesArray);
+            debugBuffer.GetData(debugArray);
 
+            PrintDebug("DebugArray\t", debugArray);
             PrintParticlePos("Positions\t", particlesArray);
             PrintArray("densityArray\t", densityArray);
         }

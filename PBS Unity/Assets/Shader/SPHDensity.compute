@@ -3,6 +3,7 @@
 
 
 RWStructuredBuffer<float> densityBuffer;
+RWStructuredBuffer<float3> debugBuffer;
 
 StructuredBuffer<FluidParticle> particlesBuffer;
 StructuredBuffer<uint> particlesIndexBuffer;
@@ -30,6 +31,8 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 	float density = 0;
 
 	// iterate through all [27] neighbor cells:
+	// -1 to +1 only applies for a grid cell size of 1 (grid cell size = h)
+	uint c = 0;
 	[loop]
 	for (int i = -1; i <= 1; ++i)
 	{
@@ -39,6 +42,7 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 			[loop]
 			for (int k = -1; k <= 1; ++k)
 			{
+				c = c + 1;
 				// hashed cell index is retrieved:
 				const int3 neighborIndex = cellIndex + int3(i, j, k);
 				const uint flatNeighborIndex = SPH_GridHash(neighborIndex);
@@ -65,10 +69,13 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 					float3 diff = posA - particleB.pos;
 					float r2 = dot(diff, diff); // distance squared
 
-					if (r2 < h2)
+					if (r2 < 1.0) // h2
 					{
 						float W = xSPH_poly6_constant * pow(h2 - r2, 3);
 						density += xSPH_mass * W;
+
+						debugBuffer[c + (id.x * 27 * 2)] = posA;
+						debugBuffer[c + 1 + (id.x * 27 * 2)] = particleB.pos;
 					}
 					
 
@@ -81,7 +88,7 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 
     
 	// Can't be lower than reference density to avoid negative pressure!
-	density = max(xSPH_h, density);
+	// density = max(1.0, density); // xSPH_h
 
 	// Store the result
 	densityBuffer[particleIdxA] = density;
