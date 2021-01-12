@@ -5,9 +5,13 @@ using UnityEngine;
 public class GPURendering : MonoBehaviour
 {
     [SerializeField]
+    GameObject ground;
+    [SerializeField]
     Material material = default;
 	[SerializeField]
 	Mesh mesh = default;
+    [SerializeField]
+	ComputeShader initShader = default;
     [SerializeField]
 	ComputeShader partitionShader = default;
     [SerializeField]
@@ -15,30 +19,33 @@ public class GPURendering : MonoBehaviour
     [SerializeField]
 	ComputeShader offsetShader = default;
     [SerializeField]
-	ComputeShader densityShader = default;
+	ComputeShader SPHDensity = default;
     [SerializeField]
-	ComputeShader forceShader = default;
+	ComputeShader SPHForce = default;
     [SerializeField]
-    ComputeShader integrationShader = default;
+    ComputeShader SPHIntegration = default;
 
+    private const int THREAD_GROUPS = 4;
+    private const int PARTICLE_NUMBER = 1024;
+    private const float PARTICLE_RADIUS = 0.25f;
+    private Vector3 SPAWN_OFFSET = new Vector3(-5, 2, -5);
 
-
-    private int particleNumber;
-    private float particleRadius;
-    private Vector3 spawnOffset;
+    // Kernel
+    private int initializeKi;
     private int partitionKi;
     private int offsetKi;
     private int densityKi;
     private int forceKi;
     private int integrationKi;
 
+    // Arrays for Debugging
     private FluidParticle[] particlesArray;
     private int[] particlesIndexArray;
     private float[] cellIndexArray;
+    private float[] sortedCellIndexArray;
     private int[] offsetArray;
     private float[] densityArray;
     private Vector3[] forceArray;
-    private float[] sortedCellIndexArray;
 
     // GPU Buffer
     private ComputeBuffer particlesBuffer;
@@ -49,67 +56,118 @@ public class GPURendering : MonoBehaviour
     private ComputeBuffer densityBuffer;
     private ComputeBuffer forceBuffer;
     
-
-    // Bounds for Unity's frustum culling
+    // Particle bounds for Unity's frustum culling
     private Bounds particleBound;
-
-    private MergeSort.BitonicMergeSort _sort;
-    public  GameObject ground;
+    private MergeSort.BitonicMergeSort bitonicSort;
 
     struct FluidParticle{
         public Vector3 pos;
         public Vector3 v;
     }
 
-    void Start()
+
+    void OnEnable()
     {
-        particleNumber = 2048;
-        particleRadius = 0.1f;
-        spawnOffset = new Vector3(-5, 19, -5);
+        InitializeArrays();
+        InitializeParticles();
+        InitializeBuffers();
+        InitializeShader();
 
-        particlesArray = new FluidParticle[particleNumber];
-        particlesIndexArray = new int[particleNumber];
-        cellIndexArray = new float[particleNumber];
-        offsetArray = new int[particleNumber];
-        densityArray = new float[particleNumber];
-        forceArray = new Vector3[particleNumber];
-        sortedCellIndexArray = new float[particleNumber];
+        material.SetBuffer("particlesBuffer", particlesBuffer);
+        material.SetFloat("particleRadius", PARTICLE_RADIUS);
+        
+        bitonicSort = new MergeSort.BitonicMergeSort(sortShader);
+        particleBound = new Bounds(Vector3.zero, Vector3.one);
+    }
 
-        int length = (int) Mathf.Pow(particleNumber, 1f / 3f);
+
+    /* Release Memory after terminating simulation */
+    void OnDisable () {
+		particlesBuffer.Release();
+        particlesBuffer.Release();
+        particlesIndexBuffer.Release();
+        cellIndexBuffer.Release();
+        sortedCellIndexBuffer.Release();
+        offsetBuffer.Release();
+        densityBuffer.Release();
+        forceBuffer.Release();
+	}
+
+
+    /* Function to display arrays in a convenient format */
+    void PrintArray<T>(string name, T[] array) {
+        string str = "";
+        for (int i = 0; i < array.Length; ++i) {
+            str += array[i].ToString() + "\t";
+        }
+        Debug.Log(name + ":\t\t" + str);
+    }
+
+
+    void PrintParticlePos(string name, FluidParticle[] array) {
+        string str = "";
+        for (int i = 0; i < array.Length; ++i) {
+            str += array[i].pos + "\t";
+        }
+        Debug.Log(name + ":\t\t" + str);
+    }
+
+
+    void InitializeParticles() {
+        int length = (int) Mathf.Pow(PARTICLE_NUMBER, 1f / 3f);
     
-        for(int i = 0; i < particleNumber; ++i) {
-            float x_pos = ((i % length) + spawnOffset.x) * particleRadius;
-            float y_pos = (((i / length) % length) + spawnOffset.y) * particleRadius;
-            float z_pos = (((i / (length * length))) + spawnOffset.z) * particleRadius;
+        for(int i = 0; i < PARTICLE_NUMBER; ++i) {
+            float x_pos = ((i % length) + SPAWN_OFFSET.x) * PARTICLE_RADIUS;
+            float y_pos = (((i / length) % length) + SPAWN_OFFSET.y) * PARTICLE_RADIUS;
+            float z_pos = (((i / (length * length))) + SPAWN_OFFSET.z) * PARTICLE_RADIUS;
+
             particlesArray[i].pos = new Vector3(x_pos, y_pos, z_pos);
-
             particlesArray[i].v = new Vector3(0f, 0f, 0f);
-
             particlesIndexArray[i] = i;
 
-            // Debug.Log(particlesArray[i].x + "\t" + particlesArray[i].y + "\t" + particlesArray[i].z);
+            // Debug.Log(particlesArray[i].pos);
         }
+    }
 
-        particlesBuffer = new ComputeBuffer(particlesArray.Length, 6 * 4);
+
+    void InitializeArrays() {
+        particlesArray = new FluidParticle[PARTICLE_NUMBER];
+        particlesIndexArray = new int[PARTICLE_NUMBER];
+        cellIndexArray = new float[PARTICLE_NUMBER];
+        offsetArray = new int[PARTICLE_NUMBER];
+        densityArray = new float[PARTICLE_NUMBER];
+        forceArray = new Vector3[PARTICLE_NUMBER];
+        sortedCellIndexArray = new float[PARTICLE_NUMBER];
+    }
+
+
+    void InitializeBuffers() {
+        particlesBuffer = new ComputeBuffer(particlesArray.Length, 6 * sizeof(float));
         particlesBuffer.SetData(particlesArray);
 
         particlesIndexBuffer = new ComputeBuffer(particlesIndexArray.Length, sizeof(int));
         particlesIndexBuffer.SetData(particlesIndexArray);
 
-        cellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
+        cellIndexBuffer = new ComputeBuffer(PARTICLE_NUMBER, sizeof(float));
         cellIndexBuffer.SetData(cellIndexArray);
 
-        offsetBuffer = new ComputeBuffer(particleNumber, sizeof(int));
+        offsetBuffer = new ComputeBuffer(PARTICLE_NUMBER, sizeof(int));
         offsetBuffer.SetData(offsetArray);
 
-        densityBuffer = new ComputeBuffer(particleNumber, sizeof(int));
+        densityBuffer = new ComputeBuffer(PARTICLE_NUMBER, sizeof(float));
         densityBuffer.SetData(densityArray);
 
-        forceBuffer = new ComputeBuffer(particleNumber, sizeof(float) * 3);
+        forceBuffer = new ComputeBuffer(PARTICLE_NUMBER, 3 * sizeof(float));
         forceBuffer.SetData(forceArray);
 
-        sortedCellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
+        sortedCellIndexBuffer = new ComputeBuffer(PARTICLE_NUMBER, sizeof(float));
         sortedCellIndexBuffer.SetData(sortedCellIndexArray);
+    }
+
+    void InitializeShader() {
+        initializeKi = initShader.FindKernel("initialize");
+        initShader.SetBuffer(initializeKi, "particlesIndexBuffer", particlesIndexBuffer);
+        initShader.SetBuffer(initializeKi, "offsetBuffer", offsetBuffer);
 
         partitionKi = partitionShader.FindKernel("calcCellIndices");
         partitionShader.SetBuffer(partitionKi, "particlesBuffer", particlesBuffer);
@@ -123,54 +181,30 @@ public class GPURendering : MonoBehaviour
         offsetShader.SetBuffer(offsetKi, "cellIndexBuffer", cellIndexBuffer);
         offsetShader.SetBuffer(offsetKi, "offsetBuffer", offsetBuffer);
 
-        densityKi = densityShader.FindKernel("calcDensity");
-        densityShader.SetBuffer(densityKi, "particlesBuffer", particlesBuffer);
-        densityShader.SetBuffer(densityKi, "particlesIndexBuffer", particlesIndexBuffer);
-        densityShader.SetBuffer(densityKi, "cellIndexBuffer", sortedCellIndexBuffer);
-        densityShader.SetBuffer(densityKi, "offsetBuffer", offsetBuffer);
-        densityShader.SetBuffer(densityKi, "densityBuffer", densityBuffer);
+        densityKi = SPHDensity.FindKernel("calcDensity");
+        SPHDensity.SetBuffer(densityKi, "particlesBuffer", particlesBuffer);
+        SPHDensity.SetBuffer(densityKi, "particlesIndexBuffer", particlesIndexBuffer);
+        SPHDensity.SetBuffer(densityKi, "cellIndexBuffer", sortedCellIndexBuffer);
+        SPHDensity.SetBuffer(densityKi, "offsetBuffer", offsetBuffer);
+        SPHDensity.SetBuffer(densityKi, "densityBuffer", densityBuffer);
 
-        forceKi = forceShader.FindKernel("calcForce");
-        forceShader.SetBuffer(forceKi, "particlesBuffer", particlesBuffer);
-        forceShader.SetBuffer(forceKi, "particlesIndexBuffer", particlesIndexBuffer);
-        forceShader.SetBuffer(forceKi, "cellIndexBuffer", sortedCellIndexBuffer);
-        forceShader.SetBuffer(forceKi, "offsetBuffer", offsetBuffer);
-        forceShader.SetBuffer(forceKi, "densityBuffer", densityBuffer);
-        forceShader.SetBuffer(forceKi, "forceBuffer", forceBuffer);
+        forceKi = SPHForce.FindKernel("calcForce");
+        SPHForce.SetBuffer(forceKi, "particlesBuffer", particlesBuffer);
+        SPHForce.SetBuffer(forceKi, "particlesIndexBuffer", particlesIndexBuffer);
+        SPHForce.SetBuffer(forceKi, "cellIndexBuffer", sortedCellIndexBuffer);
+        SPHForce.SetBuffer(forceKi, "offsetBuffer", offsetBuffer);
+        SPHForce.SetBuffer(forceKi, "densityBuffer", densityBuffer);
+        SPHForce.SetBuffer(forceKi, "forceBuffer", forceBuffer);
 
-        integrationKi = integrationShader.FindKernel("calcIntegration");
-        integrationShader.SetBuffer(integrationKi, "particlesBuffer", particlesBuffer);
-        integrationShader.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
-        integrationShader.SetBuffer(integrationKi, "densityBuffer", densityBuffer);
-        integrationShader.SetBuffer(integrationKi, "forceBuffer", forceBuffer);
+        integrationKi = SPHIntegration.FindKernel("calcIntegration");
+        SPHIntegration.SetBuffer(integrationKi, "particlesBuffer", particlesBuffer);
+        SPHIntegration.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
+        SPHIntegration.SetBuffer(integrationKi, "densityBuffer", densityBuffer);
+        SPHIntegration.SetBuffer(integrationKi, "forceBuffer", forceBuffer);
 
-        material.SetBuffer("particlesBuffer", particlesBuffer);
-        material.SetFloat("particleRadius", particleRadius);
-        
-        _sort = new MergeSort.BitonicMergeSort(sortShader);
-        
-        particleBound = new Bounds(Vector3.zero, Vector3.one);
-
-        // set boundarys of box
         Renderer rend = ground.gameObject.GetComponent<Renderer>();
-        integrationShader.SetVector("maxBoxBoundarys", rend.bounds.max);
-        integrationShader.SetVector("minBoxBoundarys", rend.bounds.min);
-
-    }
-
-    void OnDisable () {
-		particlesBuffer.Release();
-		particlesBuffer = null;
-	}
-
-
-    /* Function to display arrays in a convenient format */
-    void PrintArray<T>(string name, T[] array) {
-        string str = "";
-        for (int i = 0; i < array.Length; ++i) {
-            str += array[i].ToString() + "\t";
-        }
-        Debug.Log(name + ":\t\t" + str);
+        SPHIntegration.SetVector("maxBoxBoundarys", rend.bounds.max);
+        SPHIntegration.SetVector("minBoxBoundarys", rend.bounds.min);
     }
     
 
@@ -181,13 +215,21 @@ public class GPURendering : MonoBehaviour
 
         /* The following is for debugging */
         if (Input.GetKeyDown("0")) {
-            
             Debug.Log("Executing one time step ...");
             ExecuteTimeStep();
         }
         else if (Input.GetKeyDown("1")) {
+            Debug.Log("Executing Initialization Shader ...");
+            initShader.Dispatch(initializeKi, THREAD_GROUPS, 1, 1);
+            particlesIndexBuffer.GetData(particlesIndexArray);
+            offsetBuffer.GetData(offsetArray);
+
+            PrintArray("particlesIndexBuffer\t", particlesIndexArray);
+            PrintArray("offsetArray\t", offsetArray);
+        }
+        else if (Input.GetKeyDown("2")) {
             Debug.Log("Executing Partition Shader ...");
-            partitionShader.Dispatch(partitionKi, 4, 1, 1);
+            partitionShader.Dispatch(partitionKi, THREAD_GROUPS, 1, 1);
 
             particlesBuffer.GetData(particlesArray);
             particlesIndexBuffer.GetData(particlesIndexArray);
@@ -200,9 +242,9 @@ public class GPURendering : MonoBehaviour
             PrintArray("sortedCellIndexArray", sortedCellIndexArray);
             PrintArray("offsetArray\t", offsetArray);
         }
-        else if (Input.GetKeyDown("2")) {
+        else if (Input.GetKeyDown("3")) {
             Debug.Log("Executing Sort Shader ...");
-            _sort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
+            bitonicSort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
             particlesIndexBuffer.GetData(particlesIndexArray);
             cellIndexBuffer.GetData(cellIndexArray);
             sortedCellIndexBuffer.GetData(sortedCellIndexArray);
@@ -211,9 +253,9 @@ public class GPURendering : MonoBehaviour
             PrintArray("cellIndexArray\t", cellIndexArray);
             PrintArray("sortedCellIndexArray", sortedCellIndexArray);
         }
-        else if (Input.GetKeyDown("3")) {
+        else if (Input.GetKeyDown("4")) {
             Debug.Log("Executing Offset Shader ...");
-            offsetShader.Dispatch(offsetKi, 4, 1, 1);
+            offsetShader.Dispatch(offsetKi, THREAD_GROUPS, 1, 1);
             particlesIndexBuffer.GetData(particlesIndexArray);
             sortedCellIndexBuffer.GetData(sortedCellIndexArray);
             offsetBuffer.GetData(offsetArray);
@@ -222,39 +264,40 @@ public class GPURendering : MonoBehaviour
             PrintArray("sortedCellIndexArray", sortedCellIndexArray);
             PrintArray("offsetArray\t", offsetArray);
         }
-        else if (Input.GetKeyDown("4")) {
+        else if (Input.GetKeyDown("5")) {
             Debug.Log("Executing Density Shader ...");
-            densityShader.Dispatch(densityKi, 4, 1, 1);
+            SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
             densityBuffer.GetData(densityArray);
+            particlesBuffer.GetData(particlesArray);
 
+            PrintParticlePos("Positions\t", particlesArray);
             PrintArray("densityArray\t", densityArray);
         }
-        else if (Input.GetKeyDown("5")) {
+        else if (Input.GetKeyDown("6")) {
             Debug.Log("Executing Force Shader ...");
-            forceShader.Dispatch(forceKi, 4, 1, 1);
+            SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
             forceBuffer.GetData(forceArray);
 
             PrintArray("forceArray\t", forceArray);
         }
-        else if (Input.GetKeyDown("6")) {
+        else if (Input.GetKeyDown("7")) {
             Debug.Log("Executing Integration Shader ...");
-            integrationShader.Dispatch(integrationKi, 4, 1, 1);    
+            SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);    
         }
 
         /* Draw Meshes on GPU */
-        Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);
+        Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, PARTICLE_NUMBER);
     }
 
     void ExecuteTimeStep() {
-        partitionShader.Dispatch(partitionKi, 4, 1, 1);
-        _sort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
-        offsetShader.Dispatch(offsetKi, 4, 1, 1);
-        densityShader.Dispatch(densityKi, 4, 1, 1);
-        forceShader.Dispatch(forceKi, 4, 1, 1);
-        //forceBuffer.GetData(forceArray);
-        //PrintArray("forceArray\t", forceArray);
-        integrationShader.Dispatch(integrationKi, 4, 1, 1);
+        initShader.Dispatch(initializeKi, THREAD_GROUPS, 1, 1);
+        partitionShader.Dispatch(partitionKi, THREAD_GROUPS, 1, 1);
+        bitonicSort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
+        offsetShader.Dispatch(offsetKi, THREAD_GROUPS, 1, 1);
+        SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
+        SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
+        SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);
         
-        Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);
+        Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, PARTICLE_NUMBER);
     }
 }

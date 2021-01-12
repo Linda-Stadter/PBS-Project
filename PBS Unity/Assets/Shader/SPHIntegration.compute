@@ -3,14 +3,10 @@
 #pragma kernel calcIntegration
 
 RWStructuredBuffer<FluidParticle> particlesBuffer;
-RWStructuredBuffer<uint> particlesIndexBuffer;
+
+StructuredBuffer<uint> particlesIndexBuffer;
 StructuredBuffer<float> densityBuffer;
 StructuredBuffer<float3> forceBuffer;
-//float deltaTime;
-float minX;
-float maxX;
-float minZ;
-float maxZ;
 float3 minBoxBoundarys;
 float3 maxBoxBoundarys;
 
@@ -20,18 +16,15 @@ void calcIntegration(uint3 id : SV_DispatchThreadID)
     const float3 g = xSPH_g;
     const float width = xSPH_width;
     const float damping = xSPH_damping;
-    const float deltaTime = 0.016f;
+    const float deltaTime = 0.005f;
 
     // force integration
     uint particleIdx = particlesIndexBuffer[id.x];
-
     FluidParticle particleA = particlesBuffer[particleIdx];
     particleA.v += deltaTime * (forceBuffer[particleIdx] / densityBuffer[particleIdx] + g);
     particleA.pos += deltaTime * particleA.v;
-   
 
-    // box collision 
-    
+    // box collision using edges of ground
     if (particleA.pos.x < minBoxBoundarys.x) {
         particleA.pos.x = minBoxBoundarys.x;
         particleA.v.x = -particleA.v.x * damping;
@@ -44,11 +37,7 @@ void calcIntegration(uint3 id : SV_DispatchThreadID)
     if (particleA.pos.y < minBoxBoundarys.y) {
         particleA.pos.y = minBoxBoundarys.y;
         particleA.v.y = -particleA.v.y * damping;
-    } /*
-    else if (particleA.pos.y > width) {
-        particleA.pos.y = width;
-        particleA.v.y = -particleA.v.y * damping;
-    } */
+    } 
     
     if (particleA.pos.z < minBoxBoundarys.z) {
         particleA.pos.z = minBoxBoundarys.z;
@@ -59,8 +48,11 @@ void calcIntegration(uint3 id : SV_DispatchThreadID)
         particleA.v.z = -particleA.v.z * damping;
     }
 
-    
-    
-    
+    // Ignore box ceiling for now
+    /* else if (particleA.pos.y > width) {
+        particleA.pos.y = width;
+        particleA.v.y = -particleA.v.y * damping;
+    } */
+
     particlesBuffer[particleIdx] = particleA;
 }

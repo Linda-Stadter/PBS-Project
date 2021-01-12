@@ -2,12 +2,13 @@
 #pragma kernel calcForce
 
 
-RWStructuredBuffer<FluidParticle> particlesBuffer;
-RWStructuredBuffer<uint> particlesIndexBuffer;
-RWStructuredBuffer<float> cellIndexBuffer;
-RWStructuredBuffer<uint> offsetBuffer;
-RWStructuredBuffer<float> densityBuffer;
 RWStructuredBuffer<float3> forceBuffer;
+
+StructuredBuffer<FluidParticle> particlesBuffer;
+StructuredBuffer<uint> particlesIndexBuffer;
+StructuredBuffer<float> cellIndexBuffer;
+StructuredBuffer<uint> offsetBuffer;
+StructuredBuffer<float> densityBuffer;
 
 [numthreads(THREADS, 1, 1)]
 void calcForce(uint3 id : SV_DispatchThreadID)
@@ -54,10 +55,10 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 
 				// iterate through neighbor cell particles (if iterator offset is valid):
 				[loop]
-				while (neighborIterator != 0xFFFFFFFF && neighborIterator < PARTICLE_COUNT)
+				while (neighborIterator != 0x0FFFFFFF && neighborIterator < PARTICLE_COUNT)
 				{
 					uint particleIdxB = particlesIndexBuffer[neighborIterator];
-					if ((uint)cellIndexBuffer[particleIdxB] != flatNeighborIndex)
+					if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)
 					{
 						// here means we stepped out of the neighbor cell list!
 						break;
@@ -69,7 +70,7 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 					const float r2 = dot(diff, diff);
 					const float r = sqrt(r2);
 
-					if (r > 0 && r < h) 
+					if (r > 0 && r < h)
 					{
 						const float3 rNorm = diff / r; // normalize
 						const float Wpress = xSPH_spiky_constant * pow(h - r, 2); // spiky kernel smoothing
