@@ -3,18 +3,19 @@
 #pragma kernel calcIntegration
 
 RWStructuredBuffer<FluidParticle> particlesBuffer;
-RWStructuredBuffer<uint> particlesIndexBuffer;
+
+StructuredBuffer<uint> particlesIndexBuffer;
 StructuredBuffer<float> densityBuffer;
-StructuredBuffer<float> forceBuffer;
+StructuredBuffer<float3> forceBuffer;
 
 [numthreads(THREADS, 1, 1)]
 void calcIntegration(uint3 id : SV_DispatchThreadID)
 {
     // force integration
-    const float deltaTime = 0.016f;
+    const float deltaTime = 0.005f;
     const float3 g = float3(0, -9.8f, 0);
-    const float width = 2.0f;
-    const float damping = 0.01f;
+    const float width = 3.0f;
+    const float damping = 0.3f;
 
     uint particleIdx = particlesIndexBuffer[id.x];
 
@@ -32,14 +33,15 @@ void calcIntegration(uint3 id : SV_DispatchThreadID)
         particleA.v.x = -particleA.v.x * damping;
     }
 
-    if (particleA.pos.y < -width) {
-        particleA.pos.y = -width;
+    if (particleA.pos.y < 0) {
+        particleA.pos.y = 0;
         particleA.v.y = -particleA.v.y * damping;
-    } /*
-    else if (particleA.pos.y > width) {
+    } 
+    // Ignore box ceiling
+    /* else if (particleA.pos.y > width) {
         particleA.pos.y = width;
         particleA.v.y = -particleA.v.y * damping;
-    } */
+    }*/
 
     if (particleA.pos.z < -width) {
         particleA.pos.z = -width;
@@ -51,7 +53,5 @@ void calcIntegration(uint3 id : SV_DispatchThreadID)
     }
 
 
-    
-    
     particlesBuffer[particleIdx] = particleA;
 }

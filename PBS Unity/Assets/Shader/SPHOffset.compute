@@ -2,9 +2,10 @@
 
 #pragma kernel calcOffset
 
-RWStructuredBuffer<uint> particlesIndexBuffer;
-RWStructuredBuffer<float> cellIndexBuffer;
 RWStructuredBuffer<uint> offsetBuffer;
+
+StructuredBuffer<uint> particlesIndexBuffer;
+StructuredBuffer<float> cellIndexBuffer;
 
 [numthreads(THREADS,1,1)]
 void calcOffset(uint3 id : SV_DispatchThreadID)

@@ -9,11 +9,11 @@
 int block;
 int dim;
 uint count;
-bool dir;
 
 
 RWStructuredBuffer<uint> Keys;
 RWStructuredBuffer<float> SortedValues;
+
 StructuredBuffer<float> Values;
 StructuredBuffer<int> IntValues;
 

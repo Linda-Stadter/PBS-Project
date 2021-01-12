@@ -1,0 +1,14 @@
+﻿#include "./SPHGlobals.cginc"
+
+#pragma kernel initialize
+
+RWStructuredBuffer<uint> particlesIndexBuffer;
+RWStructuredBuffer<uint> offsetBuffer;
+
+[numthreads(THREADS,1,1)]
+void initialize(uint3 id : SV_DispatchThreadID)
+{
+	uint particleIdx = id.x;
+	particlesIndexBuffer[particleIdx] = particleIdx;
+    offsetBuffer[particleIdx] = 0x0FFFFFFF;
+}

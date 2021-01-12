@@ -2,17 +2,17 @@
 
 #pragma kernel calcCellIndices
 
-RWStructuredBuffer<FluidParticle> particlesBuffer;
-RWStructuredBuffer<uint> particlesIndexBuffer;
 RWStructuredBuffer<float> cellIndexBuffer;
 RWStructuredBuffer<float> sortedCellIndexBuffer;;
-RWStructuredBuffer<float> offsetBuffer;
+
+StructuredBuffer<uint> particlesIndexBuffer;
+StructuredBuffer<uint> offsetBuffer;
+StructuredBuffer<FluidParticle> particlesBuffer;
 
 [numthreads(THREADS,1,1)]
 void calcCellIndices(uint3 id : SV_DispatchThreadID)
 {
 	uint particleIdx = id.x;
-	particlesIndexBuffer[particleIdx] = particleIdx;
 	FluidParticle particle = particlesBuffer[particleIdx];
 
 	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
@@ -23,5 +23,4 @@ void calcCellIndices(uint3 id : SV_DispatchThreadID)
 
 	cellIndexBuffer[particleIdx] = (float)flatCellIndex;
 	sortedCellIndexBuffer[particleIdx] = (float)flatCellIndex;
-	offsetBuffer[particleIdx] = 0xFFFFFFFF;
 }
