@@ -7,51 +7,52 @@ RWStructuredBuffer<FluidParticle> particlesBuffer;
 StructuredBuffer<uint> particlesIndexBuffer;
 StructuredBuffer<float> densityBuffer;
 StructuredBuffer<float3> forceBuffer;
+float3 minBoxBoundarys;
+float3 maxBoxBoundarys;
 
 [numthreads(THREADS, 1, 1)]
 void calcIntegration(uint3 id : SV_DispatchThreadID)
 {
-    // force integration
+    const float3 g = xSPH_g;
+    const float width = xSPH_width;
+    const float damping = xSPH_damping;
     const float deltaTime = 0.005f;
-    const float3 g = float3(0, -9.8f, 0);
-    const float width = 3.0f;
-    const float damping = 0.3f;
 
+    // force integration
     uint particleIdx = particlesIndexBuffer[id.x];
-
     FluidParticle particleA = particlesBuffer[particleIdx];
     particleA.v += deltaTime * (forceBuffer[particleIdx] / densityBuffer[particleIdx] + g);
     particleA.pos += deltaTime * particleA.v;
-  
-    // box collision
-    if (particleA.pos.x < -width) {
-        particleA.pos.x = -width;
+
+    // box collision using edges of ground
+    if (particleA.pos.x < minBoxBoundarys.x) {
+        particleA.pos.x = minBoxBoundarys.x;
         particleA.v.x = -particleA.v.x * damping;
     } 
-    else if (particleA.pos.x > width) {
-        particleA.pos.x = width;
+    else if (particleA.pos.x > maxBoxBoundarys.x) {
+        particleA.pos.x = maxBoxBoundarys.x;
         particleA.v.x = -particleA.v.x * damping;
     }
-
-    if (particleA.pos.y < 0) {
-        particleA.pos.y = 0;
+    
+    if (particleA.pos.y < minBoxBoundarys.y) {
+        particleA.pos.y = minBoxBoundarys.y;
         particleA.v.y = -particleA.v.y * damping;
     } 
-    // Ignore box ceiling
+    
+    if (particleA.pos.z < minBoxBoundarys.z) {
+        particleA.pos.z = minBoxBoundarys.z;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+    else if (particleA.pos.z > maxBoxBoundarys.z) {
+        particleA.pos.z = maxBoxBoundarys.z;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+
+    // Ignore box ceiling for now
     /* else if (particleA.pos.y > width) {
         particleA.pos.y = width;
         particleA.v.y = -particleA.v.y * damping;
-    }*/
-
-    if (particleA.pos.z < -width) {
-        particleA.pos.z = -width;
-        particleA.v.z = -particleA.v.z * damping;
-    }
-    else if (particleA.pos.z > width) {
-        particleA.pos.z = width;
-        particleA.v.z = -particleA.v.z * damping;
-    }
-
+    } */
 
     particlesBuffer[particleIdx] = particleA;
 }

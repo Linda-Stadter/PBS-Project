@@ -5,6 +5,8 @@ using UnityEngine;
 public class GPURendering : MonoBehaviour
 {
     [SerializeField]
+    GameObject ground;
+    [SerializeField]
     Material material = default;
 	[SerializeField]
 	Mesh mesh = default;
@@ -23,9 +25,8 @@ public class GPURendering : MonoBehaviour
     [SerializeField]
     ComputeShader SPHIntegration = default;
 
-
-    private const int THREAD_GROUPS = 2;
-    private const int PARTICLE_NUMBER = 8;
+    private const int THREAD_GROUPS = 4;
+    private const int PARTICLE_NUMBER = 1024;
     private const float PARTICLE_RADIUS = 0.25f;
     private Vector3 SPAWN_OFFSET = new Vector3(-5, 2, -5);
 
@@ -57,8 +58,6 @@ public class GPURendering : MonoBehaviour
     
     // Particle bounds for Unity's frustum culling
     private Bounds particleBound;
-
-    // Bitonic sort on GPU
     private MergeSort.BitonicMergeSort bitonicSort;
 
     struct FluidParticle{
@@ -210,13 +209,17 @@ public class GPURendering : MonoBehaviour
         SPHIntegration.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
         SPHIntegration.SetBuffer(integrationKi, "densityBuffer", densityBuffer);
         SPHIntegration.SetBuffer(integrationKi, "forceBuffer", forceBuffer);
+
+        Renderer rend = ground.gameObject.GetComponent<Renderer>();
+        SPHIntegration.SetVector("maxBoxBoundarys", rend.bounds.max);
+        SPHIntegration.SetVector("minBoxBoundarys", rend.bounds.min);
     }
     
 
     void Update()
     {
         /* Executing one Timestep per frame */
-        // ExecuteTimeStep();
+        ExecuteTimeStep();
 
         /* The following is for debugging */
         if (Input.GetKeyDown("0")) {

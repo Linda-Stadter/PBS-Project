@@ -58,7 +58,7 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 				while (neighborIterator != 0x0FFFFFFF && neighborIterator < PARTICLE_COUNT)
 				{
 					uint particleIdxB = particlesIndexBuffer[neighborIterator];
-					if ((uint)cellIndexBuffer[particleIdxB] != flatNeighborIndex)
+					if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)
 					{
 						// here means we stepped out of the neighbor cell list!
 						break;
