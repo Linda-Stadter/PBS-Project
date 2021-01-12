@@ -6,7 +6,7 @@ RWStructuredBuffer<FluidParticle> particlesBuffer;
 RWStructuredBuffer<uint> particlesIndexBuffer;
 RWStructuredBuffer<float> cellIndexBuffer;
 RWStructuredBuffer<float> sortedCellIndexBuffer;;
-RWStructuredBuffer<float> offsetBuffer;
+RWStructuredBuffer<uint> offsetBuffer;
 
 [numthreads(THREADS,1,1)]
 void calcCellIndices(uint3 id : SV_DispatchThreadID)
@@ -23,5 +23,5 @@ void calcCellIndices(uint3 id : SV_DispatchThreadID)
 
 	cellIndexBuffer[particleIdx] = (float)flatCellIndex;
 	sortedCellIndexBuffer[particleIdx] = (float)flatCellIndex;
-	offsetBuffer[particleIdx] = 0xFFFFFFFF;
+	offsetBuffer[particleIdx] = 0xFFFFFFF;
 }

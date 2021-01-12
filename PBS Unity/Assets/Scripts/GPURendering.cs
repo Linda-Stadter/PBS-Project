@@ -37,7 +37,7 @@ public class GPURendering : MonoBehaviour
     private float[] cellIndexArray;
     private int[] offsetArray;
     private float[] densityArray;
-    private float[] forceArray;
+    private Vector3[] forceArray;
     private float[] sortedCellIndexArray;
 
     // GPU Buffer
@@ -54,6 +54,7 @@ public class GPURendering : MonoBehaviour
     private Bounds particleBound;
 
     private MergeSort.BitonicMergeSort _sort;
+    public  GameObject ground;
 
     struct FluidParticle{
         public Vector3 pos;
@@ -62,16 +63,16 @@ public class GPURendering : MonoBehaviour
 
     void Start()
     {
-        particleNumber = 1024;
+        particleNumber = 2048;
         particleRadius = 0.1f;
-        spawnOffset = new Vector3(-5, 5, -5);
+        spawnOffset = new Vector3(-5, 19, -5);
 
         particlesArray = new FluidParticle[particleNumber];
         particlesIndexArray = new int[particleNumber];
         cellIndexArray = new float[particleNumber];
         offsetArray = new int[particleNumber];
         densityArray = new float[particleNumber];
-        forceArray = new float[particleNumber];
+        forceArray = new Vector3[particleNumber];
         sortedCellIndexArray = new float[particleNumber];
 
         int length = (int) Mathf.Pow(particleNumber, 1f / 3f);
@@ -104,7 +105,7 @@ public class GPURendering : MonoBehaviour
         densityBuffer = new ComputeBuffer(particleNumber, sizeof(int));
         densityBuffer.SetData(densityArray);
 
-        forceBuffer = new ComputeBuffer(particleNumber, sizeof(int));
+        forceBuffer = new ComputeBuffer(particleNumber, sizeof(float) * 3);
         forceBuffer.SetData(forceArray);
 
         sortedCellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
@@ -150,6 +151,11 @@ public class GPURendering : MonoBehaviour
         
         particleBound = new Bounds(Vector3.zero, Vector3.one);
 
+        // set boundarys of box
+        Renderer rend = ground.gameObject.GetComponent<Renderer>();
+        integrationShader.SetVector("maxBoxBoundarys", rend.bounds.max);
+        integrationShader.SetVector("minBoxBoundarys", rend.bounds.min);
+
     }
 
     void OnDisable () {
@@ -171,11 +177,11 @@ public class GPURendering : MonoBehaviour
     void Update()
     {
         /* Executing one Timestep per frame */
-        integrationShader.SetFloat("deltaTime", Time.deltaTime);
         ExecuteTimeStep();
 
         /* The following is for debugging */
         if (Input.GetKeyDown("0")) {
+            
             Debug.Log("Executing one time step ...");
             ExecuteTimeStep();
         }
@@ -245,6 +251,8 @@ public class GPURendering : MonoBehaviour
         offsetShader.Dispatch(offsetKi, 4, 1, 1);
         densityShader.Dispatch(densityKi, 4, 1, 1);
         forceShader.Dispatch(forceKi, 4, 1, 1);
+        //forceBuffer.GetData(forceArray);
+        //PrintArray("forceArray\t", forceArray);
         integrationShader.Dispatch(integrationKi, 4, 1, 1);
         
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, particleNumber);
