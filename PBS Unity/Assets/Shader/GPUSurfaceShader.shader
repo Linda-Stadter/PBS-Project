@@ -21,6 +21,7 @@
 
         #if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
             StructuredBuffer<FluidParticle> particlesBuffer;
+            StructuredBuffer<float> densityBuffer;
             float particleRadius;
         #endif
 
@@ -30,6 +31,7 @@
                 unity_ObjectToWorld = 0.0;
                 unity_ObjectToWorld._m03_m13_m23_m33 = float4(position, 1.0);
                 unity_ObjectToWorld._m00_m11_m22 = particleRadius;
+                // saturate(float3(densityBuffer[unity_InstanceID], 0, 0));
 			#endif
         }
 

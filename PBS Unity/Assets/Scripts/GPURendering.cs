@@ -28,6 +28,7 @@ public class GPURendering : MonoBehaviour
     private const int THREAD_GROUPS = 4;
     private const int PARTICLE_NUMBER = 1024;
     private const float PARTICLE_RADIUS = 0.25f;
+    private const bool USE_LEAPFROG = true;
     private Vector3 SPAWN_OFFSET = new Vector3(-5, 2, -5);
 
     // Kernel
@@ -62,7 +63,10 @@ public class GPURendering : MonoBehaviour
 
     struct FluidParticle{
         public Vector3 pos;
+        public Vector3 posLF;
+
         public Vector3 v;
+        public Vector3 vLF;
     }
 
 
@@ -74,6 +78,7 @@ public class GPURendering : MonoBehaviour
         InitializeShader();
 
         material.SetBuffer("particlesBuffer", particlesBuffer);
+        material.SetBuffer("densityBuffer", densityBuffer);
         material.SetFloat("particleRadius", PARTICLE_RADIUS);
         
         bitonicSort = new MergeSort.BitonicMergeSort(sortShader);
@@ -150,7 +155,7 @@ public class GPURendering : MonoBehaviour
 
 
     void InitializeBuffers() {
-        particlesBuffer = new ComputeBuffer(particlesArray.Length, 6 * sizeof(float));
+        particlesBuffer = new ComputeBuffer(particlesArray.Length, 12 * sizeof(float));
         particlesBuffer.SetData(particlesArray);
 
         particlesIndexBuffer = new ComputeBuffer(particlesIndexArray.Length, sizeof(int));
@@ -211,8 +216,9 @@ public class GPURendering : MonoBehaviour
         SPHIntegration.SetBuffer(integrationKi, "forceBuffer", forceBuffer);
 
         Renderer rend = ground.gameObject.GetComponent<Renderer>();
-        SPHIntegration.SetVector("maxBoxBoundarys", rend.bounds.max);
-        SPHIntegration.SetVector("minBoxBoundarys", rend.bounds.min);
+        Vector3 radiusVector = new Vector3(0.5f * PARTICLE_RADIUS, 0.5f * PARTICLE_RADIUS, 0.5f * PARTICLE_RADIUS);
+        SPHIntegration.SetVector("maxBoxBoundarys", rend.bounds.max - radiusVector);
+        SPHIntegration.SetVector("minBoxBoundarys", rend.bounds.min + radiusVector);
     }
     
 
@@ -309,10 +315,41 @@ public class GPURendering : MonoBehaviour
         partitionShader.Dispatch(partitionKi, THREAD_GROUPS, 1, 1);
         bitonicSort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
         offsetShader.Dispatch(offsetKi, THREAD_GROUPS, 1, 1);
-        SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
-        SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
-        SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);
-        
+
+        if(USE_LEAPFROG)
+        {   
+            // Compute dens_i and f_i for a_i
+            SPHDensity.SetBool("IsLFtime", true);
+            SPHForce.SetBool("IsLFtime", true);
+
+            SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
+            SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
+            //compute v_i+0.5 and pos_i+0.5
+            SPHIntegration.SetBool("IsLFtime",true);
+            SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);
+
+            //compute dens_i+0.5 and f_i0.5 for a_i+0.5
+            SPHDensity.SetBool("IsLFtime", false);
+            SPHForce.SetBool("IsLFtime", false);
+
+            SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
+            SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
+
+            //compute v_i+1 and pos_i+1 and clamp to box
+            SPHIntegration.SetBool("IsLFtime", false);
+            SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);
+        }
+        else //Forward Euler Integration
+        {
+            SPHDensity.SetBool("IsLFtime", false);
+            SPHForce.SetBool("IsLFtime", false);
+            SPHIntegration.SetBool("IsLFtime", false);
+
+            SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
+            SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
+            SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);
+        }
+
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, PARTICLE_NUMBER);
     }
 }
