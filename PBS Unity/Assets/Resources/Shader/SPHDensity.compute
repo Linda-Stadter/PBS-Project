@@ -1,16 +1,15 @@
-﻿#include "./SPHGlobals.cginc"
+﻿#include "./Globals.cginc"
+
 #pragma kernel calcDensity
 
-
 RWStructuredBuffer<float> densityBuffer;
-RWStructuredBuffer<float3> debugBuffer;
 
 StructuredBuffer<FluidParticle> particlesBuffer;
 StructuredBuffer<uint> particlesIndexBuffer;
 StructuredBuffer<float> cellIndexBuffer;
 StructuredBuffer<uint> offsetBuffer;
 
-bool IsLFtime;
+uint particleCount;
 
 [numthreads(THREADS,1,1)]
 void calcDensity(uint3 id : SV_DispatchThreadID)
@@ -23,13 +22,7 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 	const float e = xSPH_e;			// viscosity constant
 
 	uint particleIdxA = particlesIndexBuffer[id.x];
-	float3 posA;
-
-	if (IsLFtime) {
-		posA = particlesBuffer[particleIdxA].pos;
-	} else {
-		posA = particlesBuffer[particleIdxA].posLF;
-	}
+	float3 posA = particlesBuffer[particleIdxA].pos;
 	
     // Grid cell is of size [SPH smoothing radius], so position is refitted into that
 	const float3 remappedPos = posA * xSPH_h_rcp;
@@ -40,7 +33,6 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 
 	// iterate through all [27] neighbor cells:
 	// -1 to +1 only applies for a grid cell size of 1 (grid cell size = h)
-	uint c = 0;
 	[loop]
 	for (int i = -1; i <= 1; ++i)
 	{
@@ -50,17 +42,16 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 			[loop]
 			for (int k = -1; k <= 1; ++k)
 			{
-				c = c + 1;
 				// hashed cell index is retrieved:
 				const int3 neighborIndex = cellIndex + int3(i, j, k);
-				const uint flatNeighborIndex = SPH_GridHash(neighborIndex);
+				const uint flatNeighborIndex = SPH_GridHash(neighborIndex, particleCount);
 
 				// look up the offset into particle list from neighbor cell:
 				uint neighborIterator = offsetBuffer[flatNeighborIndex];
 
 				// iterate through neighbor cell particles (if iterator offset is valid):
 				[loop]
-				while (neighborIterator != 0x0FFFFFFF && neighborIterator < PARTICLE_COUNT)
+				while (neighborIterator != 0x0FFFFFFF && neighborIterator < particleCount)
 				{
 
 					uint particleIdxB = particlesIndexBuffer[neighborIterator];
@@ -73,13 +64,7 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 
 					// SPH Density evaluation:
 					FluidParticle particleB = particlesBuffer[particleIdxB];
-					float3 posB;
-
-					if (IsLFtime) {
-						posB = particleB.pos;
-					} else {
-						posB = particleB.posLF;
-					}
+					float3 posB = particleB.pos;
 
 					float3 diff = posA - posB;
 					float r2 = dot(diff, diff); // distance squared
@@ -88,9 +73,6 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 					{
 						float W = xSPH_poly6_constant * pow(h2 - r2, 3);
 						density += xSPH_mass * W;
-
-						// debugBuffer[c + (id.x * 27 * 2)] = posA;
-						// debugBuffer[c + 1 + (id.x * 27 * 2)] = particleB.pos;
 					}
 					
 

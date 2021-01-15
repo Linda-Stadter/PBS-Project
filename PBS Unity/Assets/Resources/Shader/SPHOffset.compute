@@ -1,4 +1,4 @@
-﻿#include "./SPHGlobals.cginc"
+﻿#include "./Globals.cginc"
 
 #pragma kernel calcOffset
 

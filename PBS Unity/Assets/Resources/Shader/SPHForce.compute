@@ -1,4 +1,4 @@
-﻿#include "./SPHGlobals.cginc"
+﻿#include "./Globals.cginc"
 #pragma kernel calcForce
 
 
@@ -10,7 +10,7 @@ StructuredBuffer<float> cellIndexBuffer;
 StructuredBuffer<uint> offsetBuffer;
 StructuredBuffer<float> densityBuffer;
 
-bool IsLFtime;
+uint particleCount;
 
 [numthreads(THREADS, 1, 1)]
 void calcForce(uint3 id : SV_DispatchThreadID)
@@ -27,13 +27,7 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 	float densityA = densityBuffer[particleIdxA];
 
 	FluidParticle particleA = particlesBuffer[particleIdxA];
-	float3 posA;
-
-	if (IsLFtime) {
-		posA = particleA.pos;
-	} else {
-		posA = particleA.posLF;
-	}
+	float3 posA = particleA.pos;
 
 	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
 	const float3 remappedPos = posA * xSPH_h_rcp;
@@ -56,14 +50,14 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 			{
 				// hashed cell index is retrieved:
 				const int3 neighborIndex = cellIndex + int3(i, j, k);
-				const uint flatNeighborIndex = SPH_GridHash(neighborIndex);
+				const uint flatNeighborIndex = SPH_GridHash(neighborIndex, particleCount);
 
 				// look up the offset into particle list from neighbor cell:
 				uint neighborIterator = offsetBuffer[flatNeighborIndex];
 
 				// iterate through neighbor cell particles (if iterator offset is valid):
 				[loop]
-				while (neighborIterator != 0x0FFFFFFF && neighborIterator < PARTICLE_COUNT)
+				while (neighborIterator != 0x0FFFFFFF && neighborIterator < particleCount)
 				{
 					uint particleIdxB = particlesIndexBuffer[neighborIterator];
 					if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)
@@ -74,13 +68,7 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 
 					// SPH Force evaluation:
 					FluidParticle particleB = particlesBuffer[particleIdxB];
-					float3 posB;
-
-					if (IsLFtime) {
-						posB = particleB.pos;
-					} else {
-						posB = particleB.posLF;
-					}
+					float3 posB = particleB.pos;
 
 					const float3 diff = posA - posB;
 					const float r2 = dot(diff, diff);
@@ -95,6 +83,7 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 
 						float densityB = densityBuffer[particleIdxB];
 
+
 						/* Pressure Calculation */
 						/* (1) Final Thesis (Tait equation with gamma = 7) */
 						// float pressureA = xSPH_K * (pow((densityA / p0), xSPH_gamma) - 1);
@@ -103,9 +92,11 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 						float pressureA = K * (densityA - p0);
 						float pressureB = K * (densityB - p0);
 
+
 						/* Pressure gradient */
 						/* (1) Final Thesis (Symmetrizing pressure gradient) */
 						f_a += xSPH_mass * (pressureA / pow(densityA, 2) + pressureB / pow(densityB, 2)) * Wpress * rNorm;
+
 						/* (2) Wicked Engine */
 						// f_a += (xSPH_mass / xSPH_mass) * ((pressureA + pressureB) / (2 * densityA * densityB)) * Wpress * rNorm;
 						
@@ -113,15 +104,9 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 						/* Poly6-Kernel for viscosity forces */
 						/* (1) Final Report */
 						const float Wvis = -xSPH_spiky_constant * (h - r);
-						float3 vDiff;
-
-						if (IsLFtime) {
-							vDiff = particleA.v - particleB.v;
-						} else {
-							vDiff = particleA.vLF - particleB.vLF;
-						}
-
+						float3 vDiff = particleA.v - particleB.v;
 						f_av = xSPH_mass * (vDiff/ densityB) * Wvis;
+
 						/* (2) Wicked-Engine */
 						// const float r3 = r2 * r;
 						// const float Wvis = -(r3 / (2 * h3)) + (r2 / h2) + (h / (2 * r)) - 1; // Laplacian smoothing function

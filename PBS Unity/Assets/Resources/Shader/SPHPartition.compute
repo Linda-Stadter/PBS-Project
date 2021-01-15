@@ -1,4 +1,4 @@
-﻿#include "./SPHGlobals.cginc"
+﻿#include "./Globals.cginc"
 
 #pragma kernel calcCellIndices
 
@@ -8,6 +8,8 @@ RWStructuredBuffer<float> sortedCellIndexBuffer;;
 StructuredBuffer<uint> particlesIndexBuffer;
 StructuredBuffer<uint> offsetBuffer;
 StructuredBuffer<FluidParticle> particlesBuffer;
+
+uint particleCount;
 
 [numthreads(THREADS,1,1)]
 void calcCellIndices(uint3 id : SV_DispatchThreadID)
@@ -19,8 +21,10 @@ void calcCellIndices(uint3 id : SV_DispatchThreadID)
 	float3 remappedPos = particle.pos * xSPH_h_rcp;
 
 	int3 cellIndex = floor(remappedPos);
-	uint flatCellIndex = SPH_GridHash(cellIndex);
+	uint flatCellIndex = SPH_GridHash(cellIndex, particleCount);
 
 	cellIndexBuffer[particleIdx] = (float)flatCellIndex;
 	sortedCellIndexBuffer[particleIdx] = (float)flatCellIndex;
 }
+
+

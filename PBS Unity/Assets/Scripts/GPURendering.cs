@@ -1,45 +1,69 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Homebrew;
+
+public enum IntegrationMethod {Leapfrog, ForwardEuler};
 
 public class GPURendering : MonoBehaviour
-{
-    [SerializeField]
-    GameObject ground;
-    [SerializeField]
-    Material material = default;
-	[SerializeField]
-	Mesh mesh = default;
-    [SerializeField]
-	ComputeShader initShader = default;
-    [SerializeField]
-	ComputeShader partitionShader = default;
-    [SerializeField]
-    ComputeShader sortShader = default;
-    [SerializeField]
-	ComputeShader offsetShader = default;
-    [SerializeField]
-	ComputeShader SPHDensity = default;
-    [SerializeField]
-	ComputeShader SPHForce = default;
-    [SerializeField]
-    ComputeShader SPHIntegration = default;
+{    
+    /* Simulation parameters visible in Inspector */
+    public bool debugMode;
 
-    private const int THREAD_GROUPS = 4;
-    private const int PARTICLE_NUMBER = 1024;
-    private const float PARTICLE_RADIUS = 0.25f;
-    private const bool USE_LEAPFROG = true;
-    private Vector3 SPAWN_OFFSET = new Vector3(-5, 2, -5);
+    [Foldout("General Parameters", true)]
+    public Mesh particleMesh;
+    [Range(8, 8192)]
+    public int particleNumber;
+    [Range(0.1f, 1.0f)]
+    public float particleRadius;
+    [Range(0.1f, 1.0f)]
+    public float damping;
+    [Space(15)]
+    public IntegrationMethod integrationMethod;
+    public float timeStep;
+    
+    [Foldout("SPH Related Parameters", true)]
+    public float particleMass;
+    public float smoothingRadiusH;
+    public float pressureConstantK;
+    public float referenceDensityP0;
+    public float viscosityConstantE;
 
-    // Kernel
+
+    // Threads are fixed to 256
+    private const int THREADS = 256;
+    // Amount of thread groups depends on particleNumber
+    private int threadGroups;
+
+    struct FluidParticle{
+        public Vector3 pos;
+        public Vector3 v;
+    }
+
+    private Vector3 spawnOffset = new Vector3(-5, 2, -5);
+    private GameObject boxGround;
+    private Material particleMaterial;
+
+    /* Computer Shader for GPU */
+	private ComputeShader initShader;
+	private ComputeShader partitionShader;
+    private ComputeShader sortShader;
+	private ComputeShader offsetShader;
+	private ComputeShader SPHDensity;
+	private ComputeShader SPHForce;
+    private ComputeShader SPHIntegration;
+    private ComputeShader leapfrogStep;
+
+    /* Kernel IDs */
     private int initializeKi;
     private int partitionKi;
     private int offsetKi;
     private int densityKi;
     private int forceKi;
     private int integrationKi;
+    private int leapfrogKi;
 
-    // Arrays for Debugging
+    /* Arrays for Debugging */
     private FluidParticle[] particlesArray;
     private int[] particlesIndexArray;
     private float[] cellIndexArray;
@@ -48,7 +72,7 @@ public class GPURendering : MonoBehaviour
     private float[] densityArray;
     private Vector3[] forceArray;
 
-    // GPU Buffer
+    /* GPU Buffer */
     private ComputeBuffer particlesBuffer;
     private ComputeBuffer particlesIndexBuffer;
     private ComputeBuffer cellIndexBuffer;
@@ -59,34 +83,31 @@ public class GPURendering : MonoBehaviour
     
     // Particle bounds for Unity's frustum culling
     private Bounds particleBound;
+    // GPU bitonic sort for neigherst neighboors problem
     private MergeSort.BitonicMergeSort bitonicSort;
 
-    struct FluidParticle{
-        public Vector3 pos;
-        public Vector3 posLF;
 
-        public Vector3 v;
-        public Vector3 vLF;
-    }
-
-
+    /* Initialize all data structures required for SPH simulation on GPU */
     void OnEnable()
     {
+        float threadGroups = (float)particleNumber / THREADS;
+        this.threadGroups = Mathf.Max(1, Mathf.CeilToInt(threadGroups));
+        
+        particleBound = new Bounds(Vector3.zero, Vector3.one);
+        boxGround = GameObject.Find("Ground/Ground");
+        particleMaterial = Resources.Load<Material>("Materials/Sphere Surface");
+
         InitializeArrays();
         InitializeParticles();
         InitializeBuffers();
+        LoadShader();
         InitializeShader();
 
-        material.SetBuffer("particlesBuffer", particlesBuffer);
-        material.SetBuffer("densityBuffer", densityBuffer);
-        material.SetFloat("particleRadius", PARTICLE_RADIUS);
-        
         bitonicSort = new MergeSort.BitonicMergeSort(sortShader);
-        particleBound = new Bounds(Vector3.zero, Vector3.one);
     }
 
 
-    /* Release Memory after terminating simulation */
+    /* Release GPU memory after terminating simulation */
     void OnDisable () {
 		particlesBuffer.Release();
         particlesBuffer.Release();
@@ -98,85 +119,69 @@ public class GPURendering : MonoBehaviour
         forceBuffer.Release();
 	}
 
-
-    /* Function to display arrays in a convenient format */
-    void PrintArray<T>(string name, T[] array) {
-        string str = "";
-        for (int i = 0; i < array.Length; ++i) {
-            str += array[i].ToString() + "\t";
-        }
-        Debug.Log(name + ":\t\t" + str);
-    }
-
-
-    void PrintParticlePos(string name, FluidParticle[] array) {
-        string str = "";
-        for (int i = 0; i < array.Length; ++i) {
-            str += array[i].pos + "\t";
-        }
-        Debug.Log(name + ":\t\t" + str);
-    }
-
-    void PrintDebug(string name, Vector3[] array) {
-        string str = "";
-        for (int i = 0; i < array.Length; ++i) {
-            str += array[i] + "\t";
-        }
-        Debug.Log(name + ":\t\t" + str);
-    }
-
-
+    /* Arrange the particles in a cube form */
     void InitializeParticles() {
-        int length = (int) Mathf.Pow(PARTICLE_NUMBER, 1f / 3f);
+        int length = (int) Mathf.Pow(particleNumber, 1f / 3f);
     
-        for(int i = 0; i < PARTICLE_NUMBER; ++i) {
-            float x_pos = ((i % length) + SPAWN_OFFSET.x) * PARTICLE_RADIUS;
-            float y_pos = (((i / length) % length) + SPAWN_OFFSET.y) * PARTICLE_RADIUS;
-            float z_pos = (((i / (length * length))) + SPAWN_OFFSET.z) * PARTICLE_RADIUS;
+        for(int i = 0; i < particleNumber; ++i) {
+            float x_pos = ((i % length) + spawnOffset.x) * particleRadius;
+            float y_pos = (((i / length) % length) + spawnOffset.y) * particleRadius;
+            float z_pos = (((i / (length * length))) + spawnOffset.z) * particleRadius;
 
             particlesArray[i].pos = new Vector3(x_pos, y_pos, z_pos);
             particlesArray[i].v = new Vector3(0f, 0f, 0f);
             particlesIndexArray[i] = i;
-
-            // Debug.Log(particlesArray[i].pos);
         }
     }
 
-
+    /* Initialize Arrays for Debugging */
     void InitializeArrays() {
-        particlesArray = new FluidParticle[PARTICLE_NUMBER];
-        particlesIndexArray = new int[PARTICLE_NUMBER];
-        cellIndexArray = new float[PARTICLE_NUMBER];
-        offsetArray = new int[PARTICLE_NUMBER];
-        densityArray = new float[PARTICLE_NUMBER];
-        forceArray = new Vector3[PARTICLE_NUMBER];
-        sortedCellIndexArray = new float[PARTICLE_NUMBER];
+        particlesArray = new FluidParticle[particleNumber];
+        particlesIndexArray = new int[particleNumber];
+        cellIndexArray = new float[particleNumber];
+        offsetArray = new int[particleNumber];
+        densityArray = new float[particleNumber];
+        forceArray = new Vector3[particleNumber];
+        sortedCellIndexArray = new float[particleNumber];
     }
 
-
+    /* Assign arrays on CPU side to GPU compute buffers */
     void InitializeBuffers() {
-        particlesBuffer = new ComputeBuffer(particlesArray.Length, 12 * sizeof(float));
+        particlesBuffer = new ComputeBuffer(particlesArray.Length, 6 * sizeof(float));
         particlesBuffer.SetData(particlesArray);
 
         particlesIndexBuffer = new ComputeBuffer(particlesIndexArray.Length, sizeof(int));
         particlesIndexBuffer.SetData(particlesIndexArray);
 
-        cellIndexBuffer = new ComputeBuffer(PARTICLE_NUMBER, sizeof(float));
+        cellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
         cellIndexBuffer.SetData(cellIndexArray);
 
-        offsetBuffer = new ComputeBuffer(PARTICLE_NUMBER, sizeof(int));
+        offsetBuffer = new ComputeBuffer(particleNumber, sizeof(int));
         offsetBuffer.SetData(offsetArray);
 
-        densityBuffer = new ComputeBuffer(PARTICLE_NUMBER, sizeof(float));
+        densityBuffer = new ComputeBuffer(particleNumber, sizeof(float));
         densityBuffer.SetData(densityArray);
 
-        forceBuffer = new ComputeBuffer(PARTICLE_NUMBER, 3 * sizeof(float));
+        forceBuffer = new ComputeBuffer(particleNumber, 3 * sizeof(float));
         forceBuffer.SetData(forceArray);
 
-        sortedCellIndexBuffer = new ComputeBuffer(PARTICLE_NUMBER, sizeof(float));
+        sortedCellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
         sortedCellIndexBuffer.SetData(sortedCellIndexArray);
     }
 
+    /* Load shader from Assets/Resources folder */
+    void LoadShader() {
+        initShader = Resources.Load<ComputeShader>("Shader/SPHInitialize");
+        partitionShader = Resources.Load<ComputeShader>("Shader/SPHPartition");
+        sortShader = Resources.Load<ComputeShader>("Shader/BitonicMergeSort");
+	    offsetShader = Resources.Load<ComputeShader>("Shader/SPHOffset");
+	    SPHDensity = Resources.Load<ComputeShader>("Shader/SPHDensity");
+	    SPHForce = Resources.Load<ComputeShader>("Shader/SPHForce");
+        SPHIntegration = Resources.Load<ComputeShader>("Shader/SPHIntegration");
+        leapfrogStep = Resources.Load<ComputeShader>("Shader/LeapfrogStep");
+    }
+
+    /* Assign compute buffers to shaders */
     void InitializeShader() {
         initializeKi = initShader.FindKernel("initialize");
         initShader.SetBuffer(initializeKi, "particlesIndexBuffer", particlesIndexBuffer);
@@ -188,6 +193,7 @@ public class GPURendering : MonoBehaviour
         partitionShader.SetBuffer(partitionKi, "cellIndexBuffer", cellIndexBuffer);
         partitionShader.SetBuffer(partitionKi, "sortedCellIndexBuffer", sortedCellIndexBuffer);
         partitionShader.SetBuffer(partitionKi, "offsetBuffer", offsetBuffer);
+        partitionShader.SetInt("particleCount", particleNumber);
 
         offsetKi = offsetShader.FindKernel("calcOffset");
         offsetShader.SetBuffer(offsetKi, "particlesIndexBuffer", particlesIndexBuffer);
@@ -200,6 +206,7 @@ public class GPURendering : MonoBehaviour
         SPHDensity.SetBuffer(densityKi, "cellIndexBuffer", sortedCellIndexBuffer);
         SPHDensity.SetBuffer(densityKi, "offsetBuffer", offsetBuffer);
         SPHDensity.SetBuffer(densityKi, "densityBuffer", densityBuffer);
+        SPHDensity.SetInt("particleCount", particleNumber);
 
         forceKi = SPHForce.FindKernel("calcForce");
         SPHForce.SetBuffer(forceKi, "particlesBuffer", particlesBuffer);
@@ -208,24 +215,46 @@ public class GPURendering : MonoBehaviour
         SPHForce.SetBuffer(forceKi, "offsetBuffer", offsetBuffer);
         SPHForce.SetBuffer(forceKi, "densityBuffer", densityBuffer);
         SPHForce.SetBuffer(forceKi, "forceBuffer", forceBuffer);
+        SPHForce.SetInt("particleCount", particleNumber);
 
         integrationKi = SPHIntegration.FindKernel("calcIntegration");
         SPHIntegration.SetBuffer(integrationKi, "particlesBuffer", particlesBuffer);
         SPHIntegration.SetBuffer(integrationKi, "particlesIndexBuffer", particlesIndexBuffer);
-        SPHIntegration.SetBuffer(integrationKi, "densityBuffer", densityBuffer);
         SPHIntegration.SetBuffer(integrationKi, "forceBuffer", forceBuffer);
+        SPHIntegration.SetInt("integrationMethod", (int)integrationMethod);
+        SPHIntegration.SetFloat("deltaTime", timeStep);
 
-        Renderer rend = ground.gameObject.GetComponent<Renderer>();
-        Vector3 radiusVector = new Vector3(0.5f * PARTICLE_RADIUS, 0.5f * PARTICLE_RADIUS, 0.5f * PARTICLE_RADIUS);
+        Renderer rend = boxGround.gameObject.GetComponent<Renderer>();
+        Vector3 radiusVector = new Vector3(0.5f * particleRadius, 0.5f * particleRadius, 0.5f * particleRadius);
         SPHIntegration.SetVector("maxBoxBoundarys", rend.bounds.max - radiusVector);
         SPHIntegration.SetVector("minBoxBoundarys", rend.bounds.min + radiusVector);
+
+        leapfrogKi = leapfrogStep.FindKernel("leapfrogStep");
+        leapfrogStep.SetBuffer(leapfrogKi, "particlesBuffer", particlesBuffer);
+        leapfrogStep.SetBuffer(leapfrogKi, "particlesIndexBuffer", particlesIndexBuffer);
+        leapfrogStep.SetBuffer(leapfrogKi, "forceBuffer", forceBuffer);
+        leapfrogStep.SetFloat("deltaTime", timeStep);
+
+        /* Set Values in surface shader required for rendering */
+        particleMaterial.SetBuffer("particlesBuffer", particlesBuffer);
+        particleMaterial.SetBuffer("densityBuffer", densityBuffer);
+        particleMaterial.SetFloat("particleRadius", particleRadius);
     }
     
 
+    /* Update is executed on every frame and invokes particle update*/
     void Update()
     {
-        /* Executing one Timestep per frame */
-        ExecuteTimeStep();
+        
+        if (!debugMode)
+            /* Executing one Timestep per frame */
+            ExecuteTimeStep();
+
+        // densityBuffer.GetData(densityArray);
+        // PrintArray("densityArray\t", densityArray);
+
+        // forceBuffer.GetData(forceArray);
+        // PrintArray("forceArray\t", forceArray);
 
         /* The following is for debugging */
         if (Input.GetKeyDown("0")) {
@@ -234,7 +263,7 @@ public class GPURendering : MonoBehaviour
         }
         else if (Input.GetKeyDown("1")) {
             Debug.Log("Executing Initialization Shader ...");
-            initShader.Dispatch(initializeKi, THREAD_GROUPS, 1, 1);
+            initShader.Dispatch(initializeKi, threadGroups, 1, 1);
             particlesIndexBuffer.GetData(particlesIndexArray);
             offsetBuffer.GetData(offsetArray);
 
@@ -243,7 +272,7 @@ public class GPURendering : MonoBehaviour
         }
         else if (Input.GetKeyDown("2")) {
             Debug.Log("Executing Partition Shader ...");
-            partitionShader.Dispatch(partitionKi, THREAD_GROUPS, 1, 1);
+            partitionShader.Dispatch(partitionKi, threadGroups, 1, 1);
 
             particlesBuffer.GetData(particlesArray);
             particlesIndexBuffer.GetData(particlesIndexArray);
@@ -269,7 +298,7 @@ public class GPURendering : MonoBehaviour
         }
         else if (Input.GetKeyDown("4")) {
             Debug.Log("Executing Offset Shader ...");
-            offsetShader.Dispatch(offsetKi, THREAD_GROUPS, 1, 1);
+            offsetShader.Dispatch(offsetKi, threadGroups, 1, 1);
             particlesIndexBuffer.GetData(particlesIndexArray);
             sortedCellIndexBuffer.GetData(sortedCellIndexArray);
             offsetBuffer.GetData(offsetArray);
@@ -280,76 +309,80 @@ public class GPURendering : MonoBehaviour
         }
         else if (Input.GetKeyDown("5")) {
             Debug.Log("Executing Density Shader ...");
-            ComputeBuffer debugBuffer = new ComputeBuffer(PARTICLE_NUMBER * 27 * 3 * 3, sizeof(float));
-            Vector3[] debugArray = new Vector3[PARTICLE_NUMBER * 27 * 3];
-            debugBuffer.SetData(debugArray);
-            SPHDensity.SetBuffer(densityKi, "debugBuffer", debugBuffer);
 
-            SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
-            densityBuffer.GetData(densityArray);
+            SPHDensity.Dispatch(densityKi, threadGroups, 1, 1);
             particlesBuffer.GetData(particlesArray);
-            debugBuffer.GetData(debugArray);
+            densityBuffer.GetData(densityArray);
 
-            PrintDebug("DebugArray\t", debugArray);
             PrintParticlePos("Positions\t", particlesArray);
             PrintArray("densityArray\t", densityArray);
         }
         else if (Input.GetKeyDown("6")) {
             Debug.Log("Executing Force Shader ...");
-            SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
+            SPHForce.Dispatch(forceKi, threadGroups, 1, 1);
             forceBuffer.GetData(forceArray);
 
             PrintArray("forceArray\t", forceArray);
         }
         else if (Input.GetKeyDown("7")) {
             Debug.Log("Executing Integration Shader ...");
-            SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);    
+            SPHIntegration.Dispatch(integrationKi, threadGroups, 1, 1);    
         }
 
         /* Draw Meshes on GPU */
-        Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, PARTICLE_NUMBER);
+        Graphics.DrawMeshInstancedProcedural(particleMesh, 0, particleMaterial, particleBound, particleNumber);
     }
 
+
+    /* Assign arrays on CPU side to GPU compute buffers */
     void ExecuteTimeStep() {
-        initShader.Dispatch(initializeKi, THREAD_GROUPS, 1, 1);
-        partitionShader.Dispatch(partitionKi, THREAD_GROUPS, 1, 1);
+        initShader.Dispatch(initializeKi, threadGroups, 1, 1);
+        partitionShader.Dispatch(partitionKi, threadGroups, 1, 1);
         bitonicSort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
-        offsetShader.Dispatch(offsetKi, THREAD_GROUPS, 1, 1);
+        offsetShader.Dispatch(offsetKi, threadGroups, 1, 1);
 
-        if(USE_LEAPFROG)
-        {   
-            // Compute dens_i and f_i for a_i
-            SPHDensity.SetBool("IsLFtime", true);
-            SPHForce.SetBool("IsLFtime", true);
+        switch (integrationMethod) {
+            case 0: /* Leapfrog */
+                SPHDensity.Dispatch(densityKi, threadGroups, 1, 1);
+                SPHForce.Dispatch(forceKi, threadGroups, 1, 1);
+                leapfrogStep.Dispatch(integrationKi, threadGroups, 1, 1);
+                break;
+        }            
 
-            SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
-            SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
-            //compute v_i+0.5 and pos_i+0.5
-            SPHIntegration.SetBool("IsLFtime",true);
-            SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);
+        SPHDensity.Dispatch(densityKi, threadGroups, 1, 1);
+        SPHForce.Dispatch(forceKi, threadGroups, 1, 1);
+        SPHIntegration.Dispatch(integrationKi, threadGroups, 1, 1);
 
-            //compute dens_i+0.5 and f_i0.5 for a_i+0.5
-            SPHDensity.SetBool("IsLFtime", false);
-            SPHForce.SetBool("IsLFtime", false);
+        Graphics.DrawMeshInstancedProcedural(particleMesh, 0, particleMaterial, particleBound, particleNumber);
+    }
 
-            SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
-            SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
 
-            //compute v_i+1 and pos_i+1 and clamp to box
-            SPHIntegration.SetBool("IsLFtime", false);
-            SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);
+    /* Function to display arrays in a convenient format */
+    void PrintArray<T>(string name, T[] array) {
+        string str = "";
+        for (int i = 0; i < array.Length; ++i) {
+            str += array[i].ToString() + "\t";
         }
-        else //Forward Euler Integration
-        {
-            SPHDensity.SetBool("IsLFtime", false);
-            SPHForce.SetBool("IsLFtime", false);
-            SPHIntegration.SetBool("IsLFtime", false);
+        Debug.Log(name + ":\t\t" + str);
+    }
 
-            SPHDensity.Dispatch(densityKi, THREAD_GROUPS, 1, 1);
-            SPHForce.Dispatch(forceKi, THREAD_GROUPS, 1, 1);
-            SPHIntegration.Dispatch(integrationKi, THREAD_GROUPS, 1, 1);
+
+    void PrintParticlePos(string name, FluidParticle[] array) {
+        string str = "";
+        for (int i = 0; i < array.Length; ++i) {
+            str += array[i].pos + "\t";
         }
+        Debug.Log(name + ":\t\t" + str);
+    }
 
-        Graphics.DrawMeshInstancedProcedural(mesh, 0, material, particleBound, PARTICLE_NUMBER);
+
+    void PrintDebug(string name, Vector3[] array) {
+        string str = "";
+        for (int i = 0; i < array.Length; ++i) {
+            str += array[i] + "\t";
+        }
+        Debug.Log(name + ":\t\t" + str);
     }
 }
+
+

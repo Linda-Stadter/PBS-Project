@@ -1,0 +1,69 @@
+﻿#include "./Globals.cginc"
+
+#pragma kernel calcIntegration
+
+RWStructuredBuffer<FluidParticle> particlesBuffer;
+
+StructuredBuffer<uint> particlesIndexBuffer;
+StructuredBuffer<float3> forceBuffer;
+
+float deltaTime;
+uint integrationMethod;
+float3 minBoxBoundarys;
+float3 maxBoxBoundarys;
+
+/* This shader performs final position update before rendering */
+[numthreads(THREADS, 1, 1)]
+void calcIntegration(uint3 id : SV_DispatchThreadID)
+{
+    const float3 g = xSPH_g;
+    const float damping = xSPH_damping;
+
+    uint particleIdx = particlesIndexBuffer[id.x];
+    FluidParticle particleA = particlesBuffer[particleIdx];
+
+    float3 vel = deltaTime * forceBuffer[particleIdx];
+
+    [branch]
+    switch(integrationMethod) {
+        case 0: /* Leapfrog */
+            particleA.pos += deltaTime * 0.5 * (particleA.v + vel); break;
+        case 1: /* Forward Euler */
+            particleA.v += vel;
+            particleA.pos += deltaTime * particleA.v; break;
+        default: break;
+    }
+    
+
+    /* Box collision using edges of ground */
+    if (particleA.pos.x < minBoxBoundarys.x) {
+        particleA.pos.x = minBoxBoundarys.x;
+        particleA.v.x = -particleA.v.x * damping;
+    } 
+    else if (particleA.pos.x > maxBoxBoundarys.x) {
+        particleA.pos.x = maxBoxBoundarys.x;
+        particleA.v.x = -particleA.v.x * damping;
+    }
+    
+    if (particleA.pos.y < minBoxBoundarys.y) {
+        particleA.pos.y = minBoxBoundarys.y;
+        particleA.v.y = -particleA.v.y * damping;
+    } 
+    
+    if (particleA.pos.z < minBoxBoundarys.z) {
+        particleA.pos.z = minBoxBoundarys.z;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+    else if (particleA.pos.z > maxBoxBoundarys.z) {
+        particleA.pos.z = maxBoxBoundarys.z;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+
+    // Ignore box ceiling for now
+    /* else if (particleA.pos.y > width) {
+        particleA.pos.y = width;
+        particleA.v.y = -particleA.v.y * damping;
+    } */
+
+    particlesBuffer[particleIdx] = particleA;
+}

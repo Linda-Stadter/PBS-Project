@@ -1,0 +1,23 @@
+﻿#include "./Globals.cginc"
+
+#pragma kernel leapfrogStep
+
+RWStructuredBuffer<FluidParticle> particlesBuffer;
+
+StructuredBuffer<uint> particlesIndexBuffer;
+StructuredBuffer<float3> forceBuffer;
+
+float deltaTime;
+
+/* This shader is called once for the leapfrog integration before performing the final position update */
+[numthreads(THREADS, 1, 1)]
+void leapfrogStep(uint3 id : SV_DispatchThreadID)
+{
+    uint particleIdx = particlesIndexBuffer[id.x];
+    FluidParticle particleA = particlesBuffer[particleIdx];
+
+    particleA.v = particleA.v + 0.5 * deltaTime * forceBuffer[particleIdx];
+    particleA.pos = particleA.pos + 0.5 * deltaTime * particleA.v;
+
+    particlesBuffer[particleIdx] = particleA;
+}
