@@ -325,7 +325,7 @@ public class GPURendering : MonoBehaviour
             PrintArray("forceArray\t", forceArray);
         }
         else if (Input.GetKeyDown("7")) {
-            Debug.Log("Executing Integration Shader ...");
+            Debug.Log("Executing Integration Shader (Forward Euler!) ...");
             SPHIntegration.Dispatch(integrationKi, threadGroups, 1, 1);    
         }
 
@@ -341,11 +341,22 @@ public class GPURendering : MonoBehaviour
         bitonicSort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
         offsetShader.Dispatch(offsetKi, threadGroups, 1, 1);
 
-        switch (integrationMethod) {
+        switch ((int)integrationMethod) {
             case 0: /* Leapfrog */
                 SPHDensity.Dispatch(densityKi, threadGroups, 1, 1);
                 SPHForce.Dispatch(forceKi, threadGroups, 1, 1);
                 leapfrogStep.Dispatch(integrationKi, threadGroups, 1, 1);
+
+                SPHDensity.Dispatch(densityKi, threadGroups, 1, 1);
+                SPHForce.Dispatch(forceKi, threadGroups, 1, 1);
+                SPHIntegration.Dispatch(integrationKi, threadGroups, 1, 1);
+                break;
+            case 1: /* Forward Euler */
+                SPHDensity.Dispatch(densityKi, threadGroups, 1, 1);
+                SPHForce.Dispatch(forceKi, threadGroups, 1, 1);
+                SPHIntegration.Dispatch(integrationKi, threadGroups, 1, 1);
+                break;
+            case 3: /* Another integration method ...*/
                 break;
         }            
 
