@@ -10,22 +10,24 @@ StructuredBuffer<float> cellIndexBuffer;
 StructuredBuffer<uint> offsetBuffer;
 
 uint particleCount;
+float h, h_inv, h2, h3;
+float poly6, spiky;
+float mass;
+float K;
+float p0;
+float e;
+
+float gamma;
+
 
 [numthreads(THREADS,1,1)]
 void calcDensity(uint3 id : SV_DispatchThreadID)
 {
-	const float h = xSPH_h;			// smoothing radius
-	const float h2 = xSPH_h2;		// smoothing radius ^ 2
-	const float h3 = xSPH_h3;		// smoothing radius ^ 3
-	const float K = xSPH_K;			// pressure constant
-	const float p0 = xSPH_p0;		// reference density
-	const float e = xSPH_e;			// viscosity constant
-
 	uint particleIdxA = particlesIndexBuffer[id.x];
 	float3 posA = particlesBuffer[particleIdxA].pos;
 	
     // Grid cell is of size [SPH smoothing radius], so position is refitted into that
-	const float3 remappedPos = posA * xSPH_h_rcp;
+	const float3 remappedPos = posA * h_inv;
 	const int3 cellIndex = floor(remappedPos);
 
     // Compute density field:
@@ -71,8 +73,8 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 
 					if (r2 < h2)
 					{
-						float W = xSPH_poly6_constant * pow(h2 - r2, 3);
-						density += xSPH_mass * W;
+						float W = poly6 * pow(h2 - r2, 3);
+						density += mass * W;
 					}
 					
 
@@ -85,7 +87,7 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 
     
 	// Can't be lower than reference density to avoid negative pressure!
-	density = max(xSPH_h, density); // Oder: max(0, density)?
+	density = max(h, density); // Oder: max(0, density)?
 
 	// Store the result
 	densityBuffer[particleIdxA] = density;

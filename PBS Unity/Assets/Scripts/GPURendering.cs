@@ -23,11 +23,25 @@ public class GPURendering : MonoBehaviour
     public float timeStep;
     
     [Foldout("SPH Related Parameters", true)]
-    public float particleMass;
-    public float smoothingRadiusH;
-    public float pressureConstantK;
-    public float referenceDensityP0;
-    public float viscosityConstantE;
+    /* Particle mass */
+    public float mass;
+
+    /* Smoothing radius */
+    public float h;
+    private float hInv;
+    private float h2;
+    private float h3;
+
+    /* Pressure constant */
+    public float K;
+    /* Reference pressure */
+    public float p0;
+    /* Viscosity constant */
+    public float e;
+
+    /* Kernel constants */
+    private float poly6;
+    private float spiky;
 
 
     // Threads are fixed to 256
@@ -90,20 +104,19 @@ public class GPURendering : MonoBehaviour
     /* Initialize all data structures required for SPH simulation on GPU */
     void OnEnable()
     {
-        float threadGroups = (float)particleNumber / THREADS;
-        this.threadGroups = Mathf.Max(1, Mathf.CeilToInt(threadGroups));
+        float groups = (float)particleNumber / THREADS;
+        threadGroups = Mathf.Max(1, Mathf.CeilToInt(groups));
         
         particleBound = new Bounds(Vector3.zero, Vector3.one);
         boxGround = GameObject.Find("Ground/Ground");
         particleMaterial = Resources.Load<Material>("Materials/Sphere Surface");
 
+        InitializeConstants();
         InitializeArrays();
         InitializeParticles();
         InitializeBuffers();
         LoadShader();
         InitializeShader();
-
-        bitonicSort = new MergeSort.BitonicMergeSort(sortShader);
     }
 
 
@@ -132,6 +145,16 @@ public class GPURendering : MonoBehaviour
             particlesArray[i].v = new Vector3(0f, 0f, 0f);
             particlesIndexArray[i] = i;
         }
+    }
+
+    /* Initialize constants used on GPU */
+    void InitializeConstants() {
+        hInv = 1 / h;
+        h2 = h * h;
+        h3 = h * h * h;
+
+        poly6 = 315 / (64 * Mathf.PI * Mathf.Pow(h, 9));
+        spiky = -45 / (Mathf.PI * Mathf.Pow(h, 6));
     }
 
     /* Initialize Arrays for Debugging */
@@ -194,6 +217,7 @@ public class GPURendering : MonoBehaviour
         partitionShader.SetBuffer(partitionKi, "sortedCellIndexBuffer", sortedCellIndexBuffer);
         partitionShader.SetBuffer(partitionKi, "offsetBuffer", offsetBuffer);
         partitionShader.SetInt("particleCount", particleNumber);
+        partitionShader.SetFloat("h_inv", hInv);
 
         offsetKi = offsetShader.FindKernel("calcOffset");
         offsetShader.SetBuffer(offsetKi, "particlesIndexBuffer", particlesIndexBuffer);
@@ -207,6 +231,17 @@ public class GPURendering : MonoBehaviour
         SPHDensity.SetBuffer(densityKi, "offsetBuffer", offsetBuffer);
         SPHDensity.SetBuffer(densityKi, "densityBuffer", densityBuffer);
         SPHDensity.SetInt("particleCount", particleNumber);
+        SPHDensity.SetFloat("h", h);
+        SPHDensity.SetFloat("h_inv", hInv);
+        SPHDensity.SetFloat("h2", h2);
+        SPHDensity.SetFloat("h3", h3);
+        SPHDensity.SetFloat("mass", mass);
+        SPHDensity.SetFloat("K", K);
+        SPHDensity.SetFloat("p0", p0);
+        SPHDensity.SetFloat("e", e);
+        SPHDensity.SetFloat("poly6", poly6);
+        SPHDensity.SetFloat("spiky", spiky);
+        SPHDensity.SetFloat("gamma", 7.0f);
 
         forceKi = SPHForce.FindKernel("calcForce");
         SPHForce.SetBuffer(forceKi, "particlesBuffer", particlesBuffer);
@@ -216,6 +251,17 @@ public class GPURendering : MonoBehaviour
         SPHForce.SetBuffer(forceKi, "densityBuffer", densityBuffer);
         SPHForce.SetBuffer(forceKi, "forceBuffer", forceBuffer);
         SPHForce.SetInt("particleCount", particleNumber);
+        SPHForce.SetFloat("h", h);
+        SPHForce.SetFloat("h_inv", hInv);
+        SPHForce.SetFloat("h2", h2);
+        SPHForce.SetFloat("h3", h3);
+        SPHForce.SetFloat("mass", mass);
+        SPHForce.SetFloat("K", K);
+        SPHForce.SetFloat("p0", p0);
+        SPHForce.SetFloat("e", e);
+        SPHForce.SetFloat("poly6", poly6);
+        SPHForce.SetFloat("spiky", spiky);
+        SPHForce.SetVector("g", new Vector3(0, -9.81f, 0));
 
         integrationKi = SPHIntegration.FindKernel("calcIntegration");
         SPHIntegration.SetBuffer(integrationKi, "particlesBuffer", particlesBuffer);
@@ -223,6 +269,7 @@ public class GPURendering : MonoBehaviour
         SPHIntegration.SetBuffer(integrationKi, "forceBuffer", forceBuffer);
         SPHIntegration.SetInt("integrationMethod", (int)integrationMethod);
         SPHIntegration.SetFloat("deltaTime", timeStep);
+        SPHIntegration.SetFloat("damping", damping);
 
         Renderer rend = boxGround.gameObject.GetComponent<Renderer>();
         Vector3 radiusVector = new Vector3(0.5f * particleRadius, 0.5f * particleRadius, 0.5f * particleRadius);
@@ -239,6 +286,9 @@ public class GPURendering : MonoBehaviour
         particleMaterial.SetBuffer("particlesBuffer", particlesBuffer);
         particleMaterial.SetBuffer("densityBuffer", densityBuffer);
         particleMaterial.SetFloat("particleRadius", particleRadius);
+
+        /* Initialize bitonic sort class */
+        bitonicSort = new MergeSort.BitonicMergeSort(sortShader);
     }
     
 
@@ -358,12 +408,9 @@ public class GPURendering : MonoBehaviour
                 break;
             case 3: /* Another integration method ...*/
                 break;
-        }            
+        }
 
-        SPHDensity.Dispatch(densityKi, threadGroups, 1, 1);
-        SPHForce.Dispatch(forceKi, threadGroups, 1, 1);
-        SPHIntegration.Dispatch(integrationKi, threadGroups, 1, 1);
-
+        /* Draw Meshes on GPU */
         Graphics.DrawMeshInstancedProcedural(particleMesh, 0, particleMaterial, particleBound, particleNumber);
     }
 

@@ -11,14 +11,12 @@ float deltaTime;
 uint integrationMethod;
 float3 minBoxBoundarys;
 float3 maxBoxBoundarys;
+float damping;
 
 /* This shader performs final position update before rendering */
 [numthreads(THREADS, 1, 1)]
 void calcIntegration(uint3 id : SV_DispatchThreadID)
 {
-    const float3 g = xSPH_g;
-    const float damping = xSPH_damping;
-
     uint particleIdx = particlesIndexBuffer[id.x];
     FluidParticle particleA = particlesBuffer[particleIdx];
 

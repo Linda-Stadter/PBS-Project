@@ -11,17 +11,17 @@ StructuredBuffer<uint> offsetBuffer;
 StructuredBuffer<float> densityBuffer;
 
 uint particleCount;
+float h, h_inv, h2, h3;
+float poly6, spiky;
+float mass;
+float K;
+float p0;
+float e;
+float3 g;
 
 [numthreads(THREADS, 1, 1)]
 void calcForce(uint3 id : SV_DispatchThreadID)
 {
-	const float h = xSPH_h;			// smoothing radius
-	const float h2 = xSPH_h2;		// smoothing radius ^ 2
-	const float h3 = xSPH_h3;		// smoothing radius ^ 3
-	const float K = xSPH_K;			// pressure constant
-	const float p0 = xSPH_p0;		// reference density
-	const float e = xSPH_e;			// viscosity constant
-
 
 	uint particleIdxA = particlesIndexBuffer[id.x];
 	float densityA = densityBuffer[particleIdxA];
@@ -30,7 +30,7 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 	float3 posA = particleA.pos;
 
 	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
-	const float3 remappedPos = posA * xSPH_h_rcp;
+	const float3 remappedPos = posA * h_inv;
 	const int3 cellIndex = floor(remappedPos);
 
 	// Compute acceleration:
@@ -79,15 +79,15 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 						// Normalize distance between particles
 						const float3 rNorm = diff / r;
 						// Spiky kernel smoothing for pressure forces
-						const float Wpress = xSPH_spiky_constant * pow(h - r, 2);
+						const float Wpress = spiky * pow(h - r, 2);
 
 						float densityB = densityBuffer[particleIdxB];
 
 
 						/* Pressure Calculation */
 						/* (1) Final Thesis (Tait equation with gamma = 7) */
-						// float pressureA = xSPH_K * (pow((densityA / p0), xSPH_gamma) - 1);
-						// float pressureB = xSPH_K * (pow((densityB / p0), xSPH_gamma) - 1);
+						// float pressureA = K * (pow((densityA / p0), gamma) - 1);
+						// float pressureB = K * (pow((densityB / p0), gamma) - 1);
 						/* (2) Wicked Engine (Ideal gas law equation) */
 						float pressureA = K * (densityA - p0);
 						float pressureB = K * (densityB - p0);
@@ -95,22 +95,22 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 
 						/* Pressure gradient */
 						/* (1) Final Thesis (Symmetrizing pressure gradient) */
-						f_a += xSPH_mass * (pressureA / pow(densityA, 2) + pressureB / pow(densityB, 2)) * Wpress * rNorm;
+						f_a += mass * (pressureA / pow(densityA, 2) + pressureB / pow(densityB, 2)) * Wpress * rNorm;
 
 						/* (2) Wicked Engine */
-						// f_a += (xSPH_mass / xSPH_mass) * ((pressureA + pressureB) / (2 * densityA * densityB)) * Wpress * rNorm;
+						// f_a += (mass / mass) * ((pressureA + pressureB) / (2 * densityA * densityB)) * Wpress * rNorm;
 						
 
 						/* Poly6-Kernel for viscosity forces */
 						/* (1) Final Report */
-						const float Wvis = -xSPH_spiky_constant * (h - r);
+						const float Wvis = -spiky * (h - r);
 						float3 vDiff = particleA.v - particleB.v;
-						f_av = xSPH_mass * (vDiff/ densityB) * Wvis;
+						f_av = mass * (vDiff/ densityB) * Wvis;
 
 						/* (2) Wicked-Engine */
 						// const float r3 = r2 * r;
 						// const float Wvis = -(r3 / (2 * h3)) + (r2 / h2) + (h / (2 * r)) - 1; // Laplacian smoothing function
-						// f_av += (xSPH_mass / xSPH_mass) * (1.0f / densityB) * (vDiff) * Wvis * rNorm;
+						// f_av += (mass / mass) * (1.0f / densityB) * (vDiff) * Wvis * rNorm;
 					}
 
 					neighborIterator++;
@@ -122,6 +122,6 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 	f_a *= -1;
 	f_av *= e;
 
-	force_total = (f_a + f_av) / densityA + xSPH_g;
+	force_total = (f_a + f_av) / densityA + g;
 	forceBuffer[particleIdxA] = force_total;
 }

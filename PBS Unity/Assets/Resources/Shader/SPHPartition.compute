@@ -10,6 +10,7 @@ StructuredBuffer<uint> offsetBuffer;
 StructuredBuffer<FluidParticle> particlesBuffer;
 
 uint particleCount;
+float h_inv;
 
 [numthreads(THREADS,1,1)]
 void calcCellIndices(uint3 id : SV_DispatchThreadID)
@@ -18,7 +19,7 @@ void calcCellIndices(uint3 id : SV_DispatchThreadID)
 	FluidParticle particle = particlesBuffer[particleIdx];
 
 	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
-	float3 remappedPos = particle.pos * xSPH_h_rcp;
+	float3 remappedPos = particle.pos * h_inv;
 
 	int3 cellIndex = floor(remappedPos);
 	uint flatCellIndex = SPH_GridHash(cellIndex, particleCount);
