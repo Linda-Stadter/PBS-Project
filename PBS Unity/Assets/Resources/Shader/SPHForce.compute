@@ -57,7 +57,7 @@ void calcForce(uint3 id : SV_DispatchThreadID)
 
 				// iterate through neighbor cell particles (if iterator offset is valid):
 				[loop]
-				while (neighborIterator != 0x0FFFFFFF && neighborIterator < particleCount)
+				while (neighborIterator != 0x7FFFFFFF && neighborIterator < particleCount)
 				{
 					uint particleIdxB = particlesIndexBuffer[neighborIterator];
 					if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)

@@ -10,5 +10,5 @@ void initialize(uint3 id : SV_DispatchThreadID)
 {
 	uint particleIdx = id.x;
 	particlesIndexBuffer[particleIdx] = particleIdx;
-    offsetBuffer[particleIdx] = 0x0FFFFFFF;
+    offsetBuffer[particleIdx] = 0x7FFFFFFF;
 }

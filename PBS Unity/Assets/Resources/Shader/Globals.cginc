@@ -18,7 +18,7 @@ inline uint SPH_GridHash(int3 cellIndex, uint particleCount)
 	const uint p1 = 73856093;
 	const uint p2 = 19349663;
 	const uint p3 = 83492791;
-	int n = p1 * cellIndex.x ^ p2*cellIndex.y ^ p3*cellIndex.z;
+	int n = (p1*cellIndex.x) ^ (p2*cellIndex.y) ^ (p3*cellIndex.z);
 	n %= particleCount;
 	return n;
 }
