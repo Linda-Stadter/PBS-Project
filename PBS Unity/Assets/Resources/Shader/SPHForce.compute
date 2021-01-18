@@ -42,7 +42,7 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 	float3 force_total = forceBuffer[particleIdxA];
 	float3 f_press = 0;	// pressure force
 	float3 f_vis = 0;  // viscosity force
-
+	float neigh = 0.0;
 	// iterate through all [27] neighbor cells:
 	[loop]
 	for (int i = -1; i <= 1; ++i)
@@ -81,6 +81,7 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 					if (r > 0 && r < h)
 					{
+						neigh++;
 						// Normalize distance between particles
 						const float3 rNorm = diff / r;
 						// Spiky kernel smoothing for pressure forces
@@ -91,16 +92,16 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 						/* Pressure Calculation */
 						/* (1) Final Thesis (Tait equation with gamma = 7) */
-						float pressureA = K * (pow((densityA / p0), 7) - 1);
-						float pressureB = K * (pow((densityB / p0), 7) - 1);
+						//float pressureA = K * (pow((densityA / p0), 7) - 1);
+						//float pressureB = K * (pow((densityB / p0), 7) - 1);
 						/* (2) Wicked Engine (Ideal gas law equation) */
 						//debugging tait
 						
 
 						//pressureA = K * (densityA - p0);
 						//pressureB = K * (densityB - p0);
-						//float pressureA = K * (densityA - p0);
-						// pressureB = K * (densityB - p0);
+						float pressureA = K * (densityA - p0);
+						float pressureB = K * (densityB - p0);
 
 
 						/* Pressure gradient */
@@ -130,10 +131,10 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 	}
 
 	f_press *= -1;
-	//f_vis *= e;
+	f_vis *= e;
 
 	debugForce1[particleIdxA] = f_press / densityA;
-	debugForce2[particleIdxA] = f_vis ;
+	debugForce2[particleIdxA] = float3(neigh, neigh,neigh) ;
 
 	force_total = (f_press + f_vis) / densityA + g;
 	
@@ -230,7 +231,7 @@ void calcForce2(uint3 id : SV_DispatchThreadID)
 						/* (1) Final Report */
 						const float Wvis = -spiky * (h - r);
 						float3 vDiff = particleA.vLF - particleB.vLF;
-						f_vis = mass * (vDiff/ densityB) * Wvis;
+						f_vis += mass * (vDiff/ densityB) * Wvis;
 
 						/* (2) Wicked-Engine */
 						// const float r3 = r2 * r;
@@ -245,7 +246,7 @@ void calcForce2(uint3 id : SV_DispatchThreadID)
 	}
 
 	f_press *= -1;
-	//f_vis *= e;
+	f_vis *= e;
 
 	force_total = (f_press + f_vis) / densityA + g;
 	
