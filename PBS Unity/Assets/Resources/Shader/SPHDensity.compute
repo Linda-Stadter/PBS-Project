@@ -1,6 +1,6 @@
 ﻿#include "./Globals.cginc"
-
-#pragma kernel calcDensity
+#pragma kernel calcDensity1
+#pragma kernel calcDensity2
 
 RWStructuredBuffer<float> densityBuffer;
 
@@ -19,9 +19,9 @@ float e;
 
 float gamma;
 
-
+//DOSEN'T USE 1/2 POSITIONS
 [numthreads(THREADS,1,1)]
-void calcDensity(uint3 id : SV_DispatchThreadID)
+void calcDensity1(uint3 id : SV_DispatchThreadID)
 {
 	uint particleIdxA = particlesIndexBuffer[id.x];
 	float3 posA = particlesBuffer[particleIdxA].pos;
@@ -92,5 +92,84 @@ void calcDensity(uint3 id : SV_DispatchThreadID)
 	// Store the result
 	densityBuffer[particleIdxA] = density;
 	
+
+}
+
+
+
+//USES 1/2 POSITIONS
+
+[numthreads(THREADS, 1, 1)]
+void calcDensity2(uint3 id : SV_DispatchThreadID)
+{
+	uint particleIdxA = particlesIndexBuffer[id.x];
+	float3 posA = particlesBuffer[particleIdxA].posLF;
+
+	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
+	const float3 remappedPos = posA * h_inv;
+	const int3 cellIndex = floor(remappedPos);
+
+	// Compute density field:
+	float density = 0;
+
+	// iterate through all [27] neighbor cells:
+	// -1 to +1 only applies for a grid cell size of 1 (grid cell size = h)
+	[loop]
+	for (int i = -1; i <= 1; ++i)
+	{
+		[loop]
+		for (int j = -1; j <= 1; ++j)
+		{
+			[loop]
+			for (int k = -1; k <= 1; ++k)
+			{
+				// hashed cell index is retrieved:
+				const int3 neighborIndex = cellIndex + int3(i, j, k);
+				const uint flatNeighborIndex = SPH_GridHash(neighborIndex, particleCount);
+
+				// look up the offset into particle list from neighbor cell:
+				uint neighborIterator = offsetBuffer[flatNeighborIndex];
+
+				// iterate through neighbor cell particles (if iterator offset is valid):
+				[loop]
+				while (neighborIterator != 0x0FFFFFFF && neighborIterator < particleCount)
+				{
+
+					uint particleIdxB = particlesIndexBuffer[neighborIterator];
+					if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)
+					{
+						// here means we stepped out of the neighbor cell list!
+						break;
+					}
+
+
+					// SPH Density evaluation:
+					FluidParticle particleB = particlesBuffer[particleIdxB];
+					float3 posB = particleB.posLF;
+
+					float3 diff = posA - posB;
+					float r2 = dot(diff, diff); // distance squared
+
+					if (r2 < h2)
+					{
+						float W = poly6 * pow(h2 - r2, 3);
+						density += mass * W;
+					}
+
+
+					neighborIterator++;
+				}
+			}
+		}
+	}
+
+
+
+	// Can't be lower than reference density to avoid negative pressure!
+	density = max(h, density); // Oder: max(0, density)?
+
+	// Store the result
+	densityBuffer[particleIdxA] = density;
+
 
 }

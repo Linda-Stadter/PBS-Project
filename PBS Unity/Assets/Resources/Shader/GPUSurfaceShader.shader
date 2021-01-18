@@ -22,6 +22,8 @@
         struct FluidParticle{
             float3 pos;
             float3 v;
+            float3 posLF;
+            float3 vLF;
         };
 
         #if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)

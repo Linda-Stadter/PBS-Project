@@ -10,6 +10,8 @@ static const uint THREADS = 256;
 struct FluidParticle{
     float3 pos;
 	float3 v;
+	float3 posLF;
+	float3 vLF;
 };
 
 /* Used in SPHPartition, SPHDensity, and SPHForce */
