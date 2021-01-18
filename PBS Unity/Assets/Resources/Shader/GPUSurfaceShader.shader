@@ -37,10 +37,10 @@
                 float3 position = particlesBuffer[unity_InstanceID].pos;
                 unity_ObjectToWorld = 0.0;
                 unity_ObjectToWorld._m03_m13_m23_m33 = float4(position, 1.0);
-                unity_ObjectToWorld._m00_m11_m22 = particleRadius;
+                unity_ObjectToWorld._m00_m11_m22 = particleRadius * 2;
 			#endif
         }
-
+        
         float _Smoothness;
         void ConfigureSurface (Input input, inout SurfaceOutputStandard surface) {
             #ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED

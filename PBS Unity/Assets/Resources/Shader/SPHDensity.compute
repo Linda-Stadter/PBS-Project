@@ -50,20 +50,19 @@ void calcDensity1(uint3 id : SV_DispatchThreadID)
 
 				// look up the offset into particle list from neighbor cell:
 				uint neighborIterator = offsetBuffer[flatNeighborIndex];
-
+				
 				// iterate through neighbor cell particles (if iterator offset is valid):
 				[loop]
-				while (neighborIterator != 0x0FFFFFFF && neighborIterator < particleCount)
+				while (neighborIterator != 0x7FFFFFFF && neighborIterator < particleCount)
 				{
-
+					
 					uint particleIdxB = particlesIndexBuffer[neighborIterator];
 					if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)
 					{
 						// here means we stepped out of the neighbor cell list!
 						break;
 					}
-
-
+					
 					// SPH Density evaluation:
 					FluidParticle particleB = particlesBuffer[particleIdxB];
 					float3 posB = particleB.pos;
@@ -87,7 +86,7 @@ void calcDensity1(uint3 id : SV_DispatchThreadID)
 
     
 	// Can't be lower than reference density to avoid negative pressure!
-	density = max(h, density); // Oder: max(0, density)?
+	density = max(p0, density); // Oder: max(0, density)?
 
 	// Store the result
 	densityBuffer[particleIdxA] = density;

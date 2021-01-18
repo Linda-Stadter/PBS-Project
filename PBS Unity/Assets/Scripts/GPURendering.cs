@@ -119,7 +119,7 @@ public class GPURendering : MonoBehaviour
         threadGroups = Mathf.Max(1, Mathf.CeilToInt(groups));
         
         particleBound = new Bounds(Vector3.zero, Vector3.one);
-        boxGround = GameObject.Find("Ground/Ground");
+        boxGround = GameObject.Find("Box/Ground");
         particleMaterial = Resources.Load<Material>("Materials/Sphere Surface");
 
         InitializeConstants();
@@ -150,9 +150,9 @@ public class GPURendering : MonoBehaviour
         int length = (int) Mathf.Pow(particleNumber, 1f / 3f);
     
         for(int i = 0; i < particleNumber; ++i) {
-            float x_pos = ((i % length) + spawnOffset.x) * particleRadius;
-            float y_pos = (((i / length) % length) + spawnOffset.y) * particleRadius;
-            float z_pos = (((i / (length * length))) + spawnOffset.z) * particleRadius;
+            float x_pos = ((i % length) + spawnOffset.x) * particleRadius * 2;
+            float y_pos = (((i / length) % length) + spawnOffset.y) * particleRadius * 2;
+            float z_pos = (((i / (length * length))) + spawnOffset.z) * particleRadius * 2;
 
             particlesArray[i].pos = new Vector3(x_pos, y_pos, z_pos);
             particlesArray[i].v = new Vector3(0f, 0f, 0f);
@@ -333,7 +333,7 @@ public class GPURendering : MonoBehaviour
         SPHIntegration.SetFloat("damping", damping);
 
         Renderer rend = boxGround.gameObject.GetComponent<Renderer>();
-        Vector3 radiusVector = new Vector3(0.5f * particleRadius, 0.5f * particleRadius, 0.5f * particleRadius);
+        Vector3 radiusVector = new Vector3(0.5f * (particleRadius * 2), 0.5f * (particleRadius * 2), 0.5f * (particleRadius * 2));
         SPHIntegration.SetVector("maxBoxBoundarys", rend.bounds.max - radiusVector);
         SPHIntegration.SetVector("minBoxBoundarys", rend.bounds.min + radiusVector);
 
