@@ -26,6 +26,9 @@ public class DrawBoundingBox : MonoBehaviour
         float newX = (groundRend.bounds.max.x - groundRend.bounds.min.x) / 2;
         float newZ = (groundRend.bounds.max.z - groundRend.bounds.min.z) / 2;
 
+        // the height is currently determined by the length in z direction. Not optimal for rectangular shapes.
+        float height = groundRend.bounds.max.z - groundRend.bounds.min.z;
+
         // create walls on z-axis by copying ground and rotating on x-axis
         wall = GameObject.Instantiate(ground, new Vector3(oldX, oldY + newZ, oldZ + newZ), Quaternion.Euler(-90, 0, 0));
         wall.transform.parent = gameObject.transform;
@@ -46,11 +49,10 @@ public class DrawBoundingBox : MonoBehaviour
         wall = GameObject.Instantiate(ground, new Vector3(oldX - newX, oldY + offsetY, oldZ), Quaternion.Euler(0, 0, 90));
         wall.transform.parent = gameObject.transform;
         wall.transform.localScale = scaling;
-        /*
-        //// create top
-        float height = groundRend.bounds.max.z - groundRend.bounds.min.z;
-        GameObject top = GameObject.Instantiate(ground, new Vector3(oldX, height, oldZ), Quaternion.identity);
-        top.transform.parent = gameObject.transform;*/
+        
+        // create top
+        GameObject top = GameObject.Instantiate(ground, new Vector3(oldX, oldY + height, oldZ), Quaternion.identity);
+        top.transform.parent = gameObject.transform;
 
     }
 

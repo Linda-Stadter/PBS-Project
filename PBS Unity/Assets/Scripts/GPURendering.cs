@@ -332,10 +332,12 @@ public class GPURendering : MonoBehaviour
         SPHIntegration.SetFloat("deltaTime", timeStep);
         SPHIntegration.SetFloat("damping", damping);
 
-        Renderer rend = boxGround.gameObject.GetComponent<Renderer>();
-        Vector3 radiusVector = new Vector3(0.5f * (particleRadius * 2), 0.5f * (particleRadius * 2), 0.5f * (particleRadius * 2));
-        SPHIntegration.SetVector("maxBoxBoundarys", rend.bounds.max - radiusVector);
-        SPHIntegration.SetVector("minBoxBoundarys", rend.bounds.min + radiusVector);
+        Renderer boxRend = boxGround.gameObject.GetComponent<Renderer>();
+        float thickness = boxRend.bounds.max.y - boxRend.bounds.min.y;
+        Vector3 radiusVector = new Vector3(particleRadius, particleRadius, particleRadius);
+        Vector3 thicknessVector = new Vector3(thickness/2, thickness, thickness/2);
+        SPHIntegration.SetVector("maxBoxBoundarys", boxRend.bounds.max - thicknessVector - radiusVector);
+        SPHIntegration.SetVector("minBoxBoundarys", boxRend.bounds.min + thicknessVector + radiusVector );
 
         /*leapfrog compute shader no longer exists
         leapfrogKi = leapfrogStep.FindKernel("leapfrogStep");
