@@ -165,7 +165,7 @@ void calcDensity2(uint3 id : SV_DispatchThreadID)
 
 
 	// Can't be lower than reference density to avoid negative pressure!
-	density = max(h, density); // Oder: max(0, density)?
+	density = max(p0, density); // Oder: max(0, density)?
 
 	// Store the result
 	densityBuffer[particleIdxA] = density;

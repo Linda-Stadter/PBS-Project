@@ -42,7 +42,18 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 	float3 force_total = forceBuffer[particleIdxA];
 	float3 f_press = 0;	// pressure force
 	float3 f_vis = 0;  // viscosity force
+	/* SURFACE TENSION
+	float3 f_surface = 0;
+	 
+	
+	
+	*/
+
+
 	float neigh = 0.0;
+
+
+
 	// iterate through all [27] neighbor cells:
 	[loop]
 	for (int i = -1; i <= 1; ++i)
@@ -106,6 +117,8 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 						/* Pressure gradient */
 						/* (1) Final Thesis (Symmetrizing pressure gradient) */
+
+
 						f_press += mass * (pressureA / pow(densityA, 2) + pressureB / pow(densityB, 2)) * Wpress * rNorm;
 
 						/* (2) Wicked Engine */
@@ -114,14 +127,28 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 						/* Poly6-Kernel for viscosity forces */
 						/* (1) Final Report */
+
 						const float Wvis = -spiky * (h - r);
-						float3 vDiff = particleA.v - particleB.v;
+						float3 vDiff = particleB.v - particleA.v;
 						f_vis += mass * (vDiff / densityB) * Wvis;
 
 						/* (2) Wicked-Engine */
 						// const float r3 = r2 * r;
 						// const float Wvis = -(r3 / (2 * h3)) + (r2 / h2) + (h / (2 * r)) - 1; // Laplacian smoothing function
 						// f_vis += (mass / mass) * (1.0f / densityB) * (vDiff) * Wvis * rNorm;
+
+						/*SURFACE TENSION
+						 
+						float3 f_cohesion;
+						float3 f_curvature;
+
+						
+						
+						
+						f_surface += (2*p0/(densityA+densityB))*(f_cohesion + f_curvature);
+						*/
+
+
 					}
 
 					neighborIterator++;
@@ -132,12 +159,13 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 	f_press *= -1;
 	f_vis *= e;
-
-	debugForce1[particleIdxA] = f_press / densityA;
-	debugForce2[particleIdxA] = float3(neigh, neigh,neigh) ;
-
-	force_total = (f_press + f_vis) / densityA + g;
 	
+	float3 f_debug = particleA.v *-0.1;
+	debugForce1[particleIdxA] = f_press;
+	debugForce2[particleIdxA] = f_vis;
+
+	//force_total = (f_press + f_vis) / densityA + g;
+	force_total = (f_press + f_vis) / densityA+g;
 	forceBuffer[particleIdxA] = force_total;
 }
 
@@ -230,7 +258,7 @@ void calcForce2(uint3 id : SV_DispatchThreadID)
 						/* Poly6-Kernel for viscosity forces */
 						/* (1) Final Report */
 						const float Wvis = -spiky * (h - r);
-						float3 vDiff = particleA.vLF - particleB.vLF;
+						float3 vDiff = particleB.vLF - particleA.vLF;
 						f_vis += mass * (vDiff/ densityB) * Wvis;
 
 						/* (2) Wicked-Engine */
@@ -248,7 +276,8 @@ void calcForce2(uint3 id : SV_DispatchThreadID)
 	f_press *= -1;
 	f_vis *= e;
 
-	force_total = (f_press + f_vis) / densityA + g;
-	
+	//force_total = (f_press + f_vis) / densityA + g;
+	force_total = (f_press + f_vis) / densityA +g;
+
 	forceBuffer[particleIdxA] = force_total;
 }

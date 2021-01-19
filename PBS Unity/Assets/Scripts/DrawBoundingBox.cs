@@ -46,11 +46,11 @@ public class DrawBoundingBox : MonoBehaviour
         wall = GameObject.Instantiate(ground, new Vector3(oldX - newX, oldY + offsetY, oldZ), Quaternion.Euler(0, 0, 90));
         wall.transform.parent = gameObject.transform;
         wall.transform.localScale = scaling;
-
+        /*
         //// create top
-        //float height = rend.bounds.max.z - rend.bounds.min.z;
-        //GameObject top = GameObject.Instantiate(ground, new Vector3(oldX, height, oldZ), Quaternion.identity);
-        //top.transform.parent = gameObject.transform;
+        float height = groundRend.bounds.max.z - groundRend.bounds.min.z;
+        GameObject top = GameObject.Instantiate(ground, new Vector3(oldX, height, oldZ), Quaternion.identity);
+        top.transform.parent = gameObject.transform;*/
 
     }
 

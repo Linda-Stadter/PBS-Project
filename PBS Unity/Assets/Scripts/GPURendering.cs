@@ -14,9 +14,9 @@ public class GPURendering : MonoBehaviour
     public Mesh particleMesh;
     [Range(8, 8192)]
     public int particleNumber;
-    [Range(0.1f, 1.0f)]
+    [Range(0.00001f, 1.0f)]
     public float particleRadius;
-    [Range(0.1f, 1.0f)]
+    [Range(0.0f, 1.0f)]
     public float damping;
     [Space(15)]
     public IntegrationMethod integrationMethod;
