@@ -209,9 +209,9 @@ public class GPURendering : MonoBehaviour
 
 
 
-        Debug.Log("particleNr"+particleNumber);
-        Debug.Log("mass" +mass);
-        Debug.Log("h" +h);
+        Debug.Log("particle number: "+particleNumber);
+        Debug.Log("mass: " +mass);
+        Debug.Log("h: " +h);
         hInv = 1 / h;
         h2 = h * h;
         h3 = h * h * h;
