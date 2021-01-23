@@ -1,0 +1,122 @@
+﻿#include "./Globals.cginc"
+
+
+#pragma kernel calcIntegrationLF1
+#pragma kernel calcIntegrationLF2
+#pragma kernel calcIntegrationEULER
+RWStructuredBuffer<FluidParticle> particlesBuffer;
+
+StructuredBuffer<uint> particlesIndexBuffer;
+StructuredBuffer<float3> forceBuffer;
+
+float deltaTime;
+//uint integrationMethod;
+float3 minBoxBoundarys;
+float3 maxBoxBoundarys;
+float damping;
+
+/* This shader performs final position update before rendering */
+[numthreads(THREADS, 1, 1)]
+void calcIntegrationLF1(uint3 id : SV_DispatchThreadID)
+{
+    uint particleIdx = particlesIndexBuffer[id.x];
+    FluidParticle particleA = particlesBuffer[particleIdx];
+
+    particleA.posLF = particleA.pos + deltaTime * 0.5 * particleA.v;
+    particleA.vLF = particleA.v + deltaTime * 0.5 * forceBuffer[particleIdx];
+
+    particlesBuffer[particleIdx] = particleA;
+
+    //no box collision because we compute the +1/2 values 
+}
+
+
+
+[numthreads(THREADS, 1, 1)]
+void calcIntegrationLF2(uint3 id : SV_DispatchThreadID)
+{
+    uint particleIdx = particlesIndexBuffer[id.x];
+    FluidParticle particleA = particlesBuffer[particleIdx];
+
+    float3 v_old = particleA.v;
+
+    particleA.v = particleA.v + deltaTime * forceBuffer[particleIdx];
+    particleA.pos = particleA.pos + deltaTime * 0.5 * (particleA.v + v_old);
+
+
+    /* Box collision using edges of ground */
+    if (particleA.pos.x < minBoxBoundarys.x) {
+        particleA.pos.x = minBoxBoundarys.x;
+        particleA.v.x = -particleA.v.x * damping;
+    }
+    else if (particleA.pos.x > maxBoxBoundarys.x) {
+        particleA.pos.x = maxBoxBoundarys.x;
+        particleA.v.x = -particleA.v.x * damping;
+    }
+
+    if (particleA.pos.y < minBoxBoundarys.y) {
+        particleA.pos.y = minBoxBoundarys.y;
+        particleA.v.y = -particleA.v.y * damping;
+    }
+    else if (particleA.pos.y > maxBoxBoundarys.z - minBoxBoundarys.z) {
+        particleA.pos.y = maxBoxBoundarys.z - minBoxBoundarys.z;
+        particleA.v.y = -particleA.v.y * damping;
+    }
+
+    if (particleA.pos.z < minBoxBoundarys.z) {
+        particleA.pos.z = minBoxBoundarys.z;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+    else if (particleA.pos.z > maxBoxBoundarys.z) {
+        particleA.pos.z = maxBoxBoundarys.z;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+
+
+    particlesBuffer[particleIdx] = particleA;
+}
+
+
+[numthreads(THREADS, 1, 1)]
+void calcIntegrationEULER(uint3 id : SV_DispatchThreadID)
+{
+    uint particleIdx = particlesIndexBuffer[id.x];
+    FluidParticle particleA = particlesBuffer[particleIdx];
+
+    float3 vel = deltaTime * forceBuffer[particleIdx];
+
+    particleA.v += vel;
+    particleA.pos += deltaTime * particleA.v;
+
+
+    /* Box collision using edges of ground */
+    if (particleA.pos.x < minBoxBoundarys.x) {
+        particleA.pos.x = minBoxBoundarys.x;
+        particleA.v.x = -particleA.v.x * damping;
+    }
+    else if (particleA.pos.x > maxBoxBoundarys.x) {
+        particleA.pos.x = maxBoxBoundarys.x;
+        particleA.v.x = -particleA.v.x * damping;
+    }
+
+    if (particleA.pos.y < minBoxBoundarys.y) {
+        particleA.pos.y = minBoxBoundarys.y;
+        particleA.v.y = -particleA.v.y * damping;
+    }
+    else if (particleA.pos.y > maxBoxBoundarys.z - minBoxBoundarys.z) {
+        particleA.pos.y = maxBoxBoundarys.z - minBoxBoundarys.z;
+        particleA.v.y = -particleA.v.y * damping;
+    }
+
+    if (particleA.pos.z < minBoxBoundarys.z) {
+        particleA.pos.z = minBoxBoundarys.z;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+    else if (particleA.pos.z > maxBoxBoundarys.z) {
+        particleA.pos.z = maxBoxBoundarys.z;
+        particleA.v.z = -particleA.v.z * damping;
+    }
+
+
+    particlesBuffer[particleIdx] = particleA;
+}

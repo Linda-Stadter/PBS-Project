@@ -1,4 +1,4 @@
-﻿#include "./SPHGlobals.cginc"
+﻿#include "./Globals.cginc"
 #define GROUP_SIZE 256
 #define MAX_DIM_GROUPS 1024
 #define MAX_DIM_THREADS (GROUP_SIZE * MAX_DIM_GROUPS)
@@ -9,11 +9,11 @@
 int block;
 int dim;
 uint count;
-bool dir;
 
 
 RWStructuredBuffer<uint> Keys;
 RWStructuredBuffer<float> SortedValues;
+
 StructuredBuffer<float> Values;
 StructuredBuffer<int> IntValues;
 
