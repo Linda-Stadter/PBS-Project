@@ -22,13 +22,11 @@ public class GPURendering : MonoBehaviour
     [Range(1, 32)]
     public int spwDepth;
     [Range(0.02f, 0.02f)]
-    public float boxHeight;
+    public float boxThickness;
     [Range(1, 10)]
     public int boxWidth;
     [Range(1, 10)]
     public int boxDepth;
-    [Range(0.00001f, 5.0f)]
-    public float particleRadius;
     [Range(0.00001f, 5.0f)]
     public float spawnDistance;
     [Range(0.0f, 1.0f)]
@@ -58,7 +56,14 @@ public class GPURendering : MonoBehaviour
     private float poly6;
     private float spiky;
 
+    [Foldout("Rendering Related Parameters", true)]
+    [Range(0.00001f, 5.0f)]
+    public float particleRadius;
+    [Range(1, 1024)]
+    public int referenceNeighbors;
 
+    /* Box constants */
+    private float boxHeight;
 
 
     // Threads are fixed to 256
@@ -73,8 +78,6 @@ public class GPURendering : MonoBehaviour
         public Vector3 posLF;
         public Vector3 vLF;
     }
-    //private Vector3 spawnOffset = new Vector3(0, 0, 0);
-    private Vector3 spawnOffset = new Vector3(-0, 0.5f, -0);
     private GameObject boxGround;
     private Material particleMaterial;
 
@@ -134,13 +137,15 @@ public class GPURendering : MonoBehaviour
     /* Initialize all data structures required for SPH simulation on GPU */
     void OnEnable()
     {
+        boxHeight = boxDepth;
+
         particleNumber = spwWidth * spwHeight * spwDepth;
         float groups = (float)particleNumber / THREADS;
         threadGroups = Mathf.Max(1, Mathf.CeilToInt(groups));
 
         particleBound = new Bounds(Vector3.zero, Vector3.one);
         boxGround = GameObject.Find("Box/Ground");
-        boxGround.transform.localScale = new Vector3(boxWidth, boxHeight, boxDepth);
+        boxGround.transform.localScale = new Vector3(boxWidth, boxThickness, boxDepth);
            
         particleMaterial = Resources.Load<Material>("Materials/Sphere Surface");
 
@@ -151,7 +156,6 @@ public class GPURendering : MonoBehaviour
         LoadShader();
         InitializeShader();
     }
-
 
     /* Release GPU memory after terminating simulation */
     void OnDisable()
@@ -169,13 +173,15 @@ public class GPURendering : MonoBehaviour
     }
 
 
-
-
     /* Arrange the particles in a cube form */
     void InitializeParticles()
     {
         int length = (int)Mathf.Pow(particleNumber, 1f / 3f);
         float rad100 = particleRadius * 0.01f;
+        float spawnWidthLength = (spwWidth - 1) * (particleRadius * 2 + spawnDistance); // add particleRadius * 2 for whole length
+        float spawnDepthLength = (spwDepth - 1) * (particleRadius * 2 + spawnDistance); // add particleRadius * 2 for whole length
+        float spawnHeightLength = (spwHeight - 1) * (particleRadius * 2 + spawnDistance);
+
         for (int i = 0; i < particleNumber; ++i)
         {
 
@@ -185,9 +191,9 @@ public class GPURendering : MonoBehaviour
             float z_pos = (((i / (length * length))) + spawnOffset.z) * particleRadius * 2;
             */
 
-            float x_pos = (i % spwWidth) * (2 * particleRadius + spawnDistance) + Random.Range(-rad100, rad100) + spawnOffset.x;
-            float z_pos = ((i / spwWidth) % spwDepth) * (2 * particleRadius + spawnDistance) + Random.Range(-rad100, rad100) + spawnOffset.z;
-            float y_pos = (i / (spwDepth * spwWidth)) * (2 * particleRadius + spawnDistance) + Random.Range(-rad100, rad100) + spawnOffset.y;
+            float x_pos = (i % spwWidth) * (2 * particleRadius + spawnDistance) - spawnWidthLength/2 + Random.Range(-rad100, rad100);
+            float z_pos = ((i / spwWidth) % spwDepth) * (2 * particleRadius + spawnDistance) - spawnDepthLength / 2 + Random.Range(-rad100, rad100);
+            float y_pos = (i / (spwDepth * spwWidth)) * (2 * particleRadius + spawnDistance) + boxHeight/2 - spawnHeightLength / 2 + Random.Range(-rad100, rad100);
 
             particlesArray[i].pos = new Vector3(x_pos, y_pos, z_pos);
             particlesArray[i].v = new Vector3(0f, 0f, 0f);
@@ -202,7 +208,7 @@ public class GPURendering : MonoBehaviour
     /* Initialize constants used on GPU */
     void InitializeConstants()
     {
-        mass = (boxWidth * boxDepth * boxDepth)*p0/particleNumber;
+        mass = (boxWidth * boxDepth * boxHeight)*p0/particleNumber;
         float h_a = ((boxWidth + boxDepth) * 2);
         float h_b = (spwWidth + spwDepth);
         h = h_a/h_b;
@@ -383,17 +389,10 @@ public class GPURendering : MonoBehaviour
         SPHIntegration.SetFloat("damping", damping);
 
         Renderer boxRend = boxGround.gameObject.GetComponent<Renderer>();
-        float thickness = boxRend.bounds.max.y - boxRend.bounds.min.y;
         Vector3 radiusVector = new Vector3(particleRadius, particleRadius, particleRadius);
-        Vector3 thicknessVector = new Vector3(thickness / 2, thickness, thickness / 2);
+        Vector3 thicknessVector = new Vector3(boxThickness / 2, boxThickness, boxThickness / 2);
         SPHIntegration.SetVector("maxBoxBoundarys", boxRend.bounds.max - thicknessVector - radiusVector);
         SPHIntegration.SetVector("minBoxBoundarys", boxRend.bounds.min + thicknessVector + radiusVector);
-
-        /*
-        Renderer rend = boxGround.gameObject.GetComponent<Renderer>();
-        Vector3 radiusVector = new Vector3(0.5f * (particleRadius * 2), 0.5f * (particleRadius * 2), 0.5f * (particleRadius * 2));
-        SPHIntegration.SetVector("maxBoxBoundarys", rend.bounds.max - radiusVector);
-        SPHIntegration.SetVector("minBoxBoundarys", rend.bounds.min + radiusVector);*/
 
         /*leapfrog compute shader no longer exists
         leapfrogKi = leapfrogStep.FindKernel("leapfrogStep");
@@ -404,9 +403,15 @@ public class GPURendering : MonoBehaviour
         */
 
         /* Set Values in surface shader required for rendering */
+
+        // calculate reference density that would receive most saturated color
+        float refDensity = referenceNeighbors * mass * poly6 * Mathf.Pow(h2, 3);
+        Debug.Log("reference Density: " + refDensity);
+
         particleMaterial.SetBuffer("particlesBuffer", particlesBuffer);
         particleMaterial.SetBuffer("densityBuffer", densityBuffer);
         particleMaterial.SetFloat("particleRadius", particleRadius);
+        particleMaterial.SetFloat("refDensity", (float)refDensity);
 
         /* Initialize bitonic sort class */
         bitonicSort = new MergeSort.BitonicMergeSort(sortShader);
@@ -433,7 +438,7 @@ public class GPURendering : MonoBehaviour
         if (Input.GetKeyDown("0"))
         {
             Debug.Log("Executing one time step ...");
-            //ExecuteTimeStep();
+            ExecuteTimeStep();
         }
         else if (Input.GetKeyDown("1"))
         {
@@ -492,9 +497,9 @@ public class GPURendering : MonoBehaviour
             SPHDensity.Dispatch(densityKi1, threadGroups, 1, 1);
             particlesBuffer.GetData(particlesArray);
             densityBuffer.GetData(densityArray);
-            /*
+            
             PrintParticlePos("Positions\t", particlesArray);
-            PrintArray("densityArray\t", densityArray);*/
+            PrintArray("densityArray\t", densityArray);
         }
         else if (Input.GetKeyDown("6"))
         {
