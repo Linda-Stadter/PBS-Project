@@ -42,11 +42,13 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 	float3 force_total = forceBuffer[particleIdxA];
 	float3 f_press = 0;	// pressure force
 	float3 f_vis = 0;  // viscosity force
+
+	float pressureA = max((K * p0 / 7) * (pow(((densityA) / p0), 7) - 1),0);
 	/* SURFACE TENSION
 	float3 f_surface = 0;
-	 
-	
-	
+
+
+
 	*/
 
 
@@ -103,16 +105,16 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 						/* Pressure Calculation */
 						/* (1) Final Thesis (Tait equation with gamma = 7) */
-						//float pressureA = K * (pow((densityA / p0), 7) - 1);
-						//float pressureB = K * (pow((densityB / p0), 7) - 1);
+						//float pressureA = K * (pow(((densityA) / p0), 7) - 1);
+						float pressureB = max((K * p0 / 7) * (pow(((densityB) / p0), 7) - 1), 0);
 						/* (2) Wicked Engine (Ideal gas law equation) */
 						//debugging tait
-						
+
 
 						//pressureA = K * (densityA - p0);
 						//pressureB = K * (densityB - p0);
-						float pressureA = K * (densityA - p0);
-						float pressureB = K * (densityB - p0);
+						//float pressureA = K * (densityA - p0);
+						//float pressureB = K * (densityB - p0);
 
 
 						/* Pressure gradient */
@@ -138,13 +140,13 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 						// f_vis += (mass / mass) * (1.0f / densityB) * (vDiff) * Wvis * rNorm;
 
 						/*SURFACE TENSION
-						 
+
 						float3 f_cohesion;
 						float3 f_curvature;
 
-						
-						
-						
+
+
+
 						f_surface += (2*p0/(densityA+densityB))*(f_cohesion + f_curvature);
 						*/
 
@@ -159,12 +161,13 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 	f_press *= -1;
 	f_vis *= e;
-	
-	float3 f_debug = particleA.v *-0.1;
-	debugForce1[particleIdxA] = f_press;
-	debugForce2[particleIdxA] = f_vis;
 
-	//force_total = (f_press + f_vis) / densityA + g;
+	float3 f_debug = particleA.v * -0.1;
+	float testme = pow(((densityA) / p0), 7);
+	debugForce1[particleIdxA] = f_press;
+	debugForce2[particleIdxA] = float3(densityA, (pressureA-p0), max((1 * p0 / 7) * (pow(((densityA) / p0), 7) - 1), 0));
+
+	
 	force_total = (f_press + f_vis) / densityA+g;
 	forceBuffer[particleIdxA] = force_total;
 }
@@ -240,11 +243,11 @@ void calcForce2(uint3 id : SV_DispatchThreadID)
 
 						/* Pressure Calculation */
 						/* (1) Final Thesis (Tait equation with gamma = 7) */
-						//float pressureA = K * (pow((densityA / p0), 7) - 1);
-						//float pressureB = K * (pow((densityB / p0), 7) - 1);
+						float pressureA = max((K * p0 / 7) * (pow(((densityA) / p0), 7) - 1), 0);
+						float pressureB = max((K * p0 / 7) * (pow(((densityB) / p0), 7) - 1), 0);
 						/* (2) Wicked Engine (Ideal gas law equation) */
-						float pressureA = K * (densityA - p0);
-						float pressureB = K * (densityB - p0);
+						//float pressureA = K * (densityA - p0);
+						//float pressureB = K * (densityB - p0);
 
 
 						/* Pressure gradient */
@@ -276,7 +279,6 @@ void calcForce2(uint3 id : SV_DispatchThreadID)
 	f_press *= -1;
 	f_vis *= e;
 
-	//force_total = (f_press + f_vis) / densityA + g;
 	force_total = (f_press + f_vis) / densityA +g;
 
 	forceBuffer[particleIdxA] = force_total;

@@ -15,6 +15,14 @@ public class GPURendering : MonoBehaviour
     /*
      [Range(8, 8192)]
      public int particleNumber;*/
+    /*
+    [Range(-10.0f, 10.0f)]
+    public float spwPosX;
+    [Range(-10.0f, 10.0f)]
+    public float spwPosY;
+    [Range(-10.0f, 10.0f)]   
+    public float spwPosZ;
+    */
     [Range(1, 32)]
     public int spwHeight;
     [Range(1, 32)]
@@ -27,7 +35,7 @@ public class GPURendering : MonoBehaviour
     public int boxWidth;
     [Range(1, 10)]
     public int boxDepth;
-    [Range(0.00001f, 5.0f)]
+    [Range(0.0f, 5.0f)]
     public float spawnDistance;
     [Range(0.0f, 1.0f)]
     public float damping;
@@ -177,7 +185,7 @@ public class GPURendering : MonoBehaviour
     void InitializeParticles()
     {
         int length = (int)Mathf.Pow(particleNumber, 1f / 3f);
-        float rad100 = particleRadius * 0.01f;
+        float rad100 = particleRadius * 1.0f;
         float spawnWidthLength = (spwWidth - 1) * (particleRadius * 2 + spawnDistance); // add particleRadius * 2 for whole length
         float spawnDepthLength = (spwDepth - 1) * (particleRadius * 2 + spawnDistance); // add particleRadius * 2 for whole length
         float spawnHeightLength = (spwHeight - 1) * (particleRadius * 2 + spawnDistance);
@@ -209,8 +217,9 @@ public class GPURendering : MonoBehaviour
     void InitializeConstants()
     {
         mass = (boxWidth * boxDepth * boxHeight)*p0/particleNumber;
-        float h_a = ((boxWidth + boxDepth) * 2);
-        float h_b = (spwWidth + spwDepth);
+        float h_a = ((boxWidth + boxDepth+boxHeight) * 2);
+        float h_b = (spwWidth + spwDepth+spwHeight);
+        h = h_a/h_b;
         h = h_a/h_b;
 
 
