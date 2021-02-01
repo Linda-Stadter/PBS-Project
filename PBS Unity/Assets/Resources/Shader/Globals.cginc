@@ -12,6 +12,7 @@ struct FluidParticle{
 	float3 v;
 	float3 posLF;
 	float3 vLF;
+	int alive;
 };
 
 /* Used in SPHPartition, SPHDensity, and SPHForce */

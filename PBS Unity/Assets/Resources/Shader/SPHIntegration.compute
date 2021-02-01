@@ -15,6 +15,11 @@ float3 minBoxBoundarys;
 float3 maxBoxBoundarys;
 float damping;
 
+float rand(float3 co)
+{
+    return frac(sin(dot(co.xyz, float3(12.9898, 78.233, 45.5432)))) * 0.05; //* 43758.5453);
+}
+
 /* This shader performs final position update before rendering */
 [numthreads(THREADS, 1, 1)]
 void calcIntegrationLF1(uint3 id : SV_DispatchThreadID)
@@ -31,47 +36,47 @@ void calcIntegrationLF1(uint3 id : SV_DispatchThreadID)
 }
 
 
-
 [numthreads(THREADS, 1, 1)]
 void calcIntegrationLF2(uint3 id : SV_DispatchThreadID)
 {
     uint particleIdx = particlesIndexBuffer[id.x];
     FluidParticle particleA = particlesBuffer[particleIdx];
+    if (particleA.alive == 1) {
+        float3 v_old = particleA.v;
 
-    float3 v_old = particleA.v;
+        particleA.v = particleA.v + deltaTime * forceBuffer[particleIdx];
+        particleA.pos = particleA.pos + deltaTime * 0.5 * (particleA.v + v_old);
 
-    particleA.v = particleA.v + deltaTime * forceBuffer[particleIdx];
-    particleA.pos = particleA.pos + deltaTime * 0.5 * (particleA.v + v_old);
+        float randomOffset = rand(id);
 
+        /* Box collision using edges of ground */
+        if (particleA.pos.x < minBoxBoundarys.x) {
+            particleA.pos.x = minBoxBoundarys.x;
+            particleA.v.x = -particleA.v.x; //* damping;
+        }
+        else if (particleA.pos.x > maxBoxBoundarys.x) {
+            particleA.pos.x = maxBoxBoundarys.x;
+            particleA.v.x = -particleA.v.x; //* damping;
+        }
 
-    /* Box collision using edges of ground */
-    if (particleA.pos.x < minBoxBoundarys.x) {
-        particleA.pos.x = minBoxBoundarys.x;
-        particleA.v.x = -particleA.v.x * damping;
+        if (particleA.pos.y < minBoxBoundarys.y) {
+            particleA.pos.y = minBoxBoundarys.y;
+            particleA.v.y = -particleA.v.y * damping;
+        }
+        else if (particleA.pos.y > maxBoxBoundarys.z - minBoxBoundarys.z) {
+            particleA.pos.y = maxBoxBoundarys.z - minBoxBoundarys.z;
+            particleA.v.y = -particleA.v.y * damping;
+        }
+
+        if (particleA.pos.z < minBoxBoundarys.z) {
+            particleA.pos.z = minBoxBoundarys.z;
+            particleA.v.z = -particleA.v.z * damping;
+        }
+        else if (particleA.pos.z > maxBoxBoundarys.z) {
+            particleA.pos.z = maxBoxBoundarys.z;
+            particleA.v.z = -particleA.v.z * damping;
+        }
     }
-    else if (particleA.pos.x > maxBoxBoundarys.x) {
-        particleA.pos.x = maxBoxBoundarys.x;
-        particleA.v.x = -particleA.v.x * damping;
-    }
-
-    if (particleA.pos.y < minBoxBoundarys.y) {
-        particleA.pos.y = minBoxBoundarys.y;
-        particleA.v.y = -particleA.v.y * damping;
-    }
-    else if (particleA.pos.y > maxBoxBoundarys.z - minBoxBoundarys.z) {
-        particleA.pos.y = maxBoxBoundarys.z - minBoxBoundarys.z;
-        particleA.v.y = -particleA.v.y * damping;
-    }
-
-    if (particleA.pos.z < minBoxBoundarys.z) {
-        particleA.pos.z = minBoxBoundarys.z;
-        particleA.v.z = -particleA.v.z * damping;
-    }
-    else if (particleA.pos.z > maxBoxBoundarys.z) {
-        particleA.pos.z = maxBoxBoundarys.z;
-        particleA.v.z = -particleA.v.z * damping;
-    }
-
 
     particlesBuffer[particleIdx] = particleA;
 }
@@ -82,41 +87,42 @@ void calcIntegrationEULER(uint3 id : SV_DispatchThreadID)
 {
     uint particleIdx = particlesIndexBuffer[id.x];
     FluidParticle particleA = particlesBuffer[particleIdx];
+    if (particleA.alive == 1) {
+        float3 vel = deltaTime * forceBuffer[particleIdx];
 
-    float3 vel = deltaTime * forceBuffer[particleIdx];
-
-    particleA.v += vel;
-    particleA.pos += deltaTime * particleA.v;
+        particleA.v += vel;
+        particleA.pos += deltaTime * particleA.v;
 
 
-    /* Box collision using edges of ground */
-    if (particleA.pos.x < minBoxBoundarys.x) {
-        particleA.pos.x = minBoxBoundarys.x;
-        particleA.v.x = -particleA.v.x * damping;
+        /* Box collision using edges of ground */
+        if (particleA.pos.x < minBoxBoundarys.x) {
+            particleA.pos.x = minBoxBoundarys.x;
+            particleA.v.x = -particleA.v.x * damping;
+        }
+        else if (particleA.pos.x > maxBoxBoundarys.x) {
+            particleA.pos.x = maxBoxBoundarys.x;
+            particleA.v.x = -particleA.v.x * damping;
+        }
+
+        if (particleA.pos.y < minBoxBoundarys.y) {
+            particleA.pos.y = minBoxBoundarys.y;
+            particleA.v.y = -particleA.v.y * damping;
+        }
+        else if (particleA.pos.y > maxBoxBoundarys.z - minBoxBoundarys.z) {
+            particleA.pos.y = maxBoxBoundarys.z - minBoxBoundarys.z;
+            particleA.v.y = -particleA.v.y * damping;
+        }
+
+        if (particleA.pos.z < minBoxBoundarys.z) {
+            particleA.pos.z = minBoxBoundarys.z;
+            particleA.v.z = -particleA.v.z * damping;
+        }
+        else if (particleA.pos.z > maxBoxBoundarys.z) {
+            particleA.pos.z = maxBoxBoundarys.z;
+            particleA.v.z = -particleA.v.z * damping;
+        }
+
+
+        particlesBuffer[particleIdx] = particleA;
     }
-    else if (particleA.pos.x > maxBoxBoundarys.x) {
-        particleA.pos.x = maxBoxBoundarys.x;
-        particleA.v.x = -particleA.v.x * damping;
-    }
-
-    if (particleA.pos.y < minBoxBoundarys.y) {
-        particleA.pos.y = minBoxBoundarys.y;
-        particleA.v.y = -particleA.v.y * damping;
-    }
-    else if (particleA.pos.y > maxBoxBoundarys.z - minBoxBoundarys.z) {
-        particleA.pos.y = maxBoxBoundarys.z - minBoxBoundarys.z;
-        particleA.v.y = -particleA.v.y * damping;
-    }
-
-    if (particleA.pos.z < minBoxBoundarys.z) {
-        particleA.pos.z = minBoxBoundarys.z;
-        particleA.v.z = -particleA.v.z * damping;
-    }
-    else if (particleA.pos.z > maxBoxBoundarys.z) {
-        particleA.pos.z = maxBoxBoundarys.z;
-        particleA.v.z = -particleA.v.z * damping;
-    }
-
-
-    particlesBuffer[particleIdx] = particleA;
 }

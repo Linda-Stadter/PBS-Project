@@ -3,15 +3,21 @@
 #pragma kernel calcOffset
 
 RWStructuredBuffer<uint> offsetBuffer;
+RWStructuredBuffer<FluidParticle> particlesBuffer;
 
 StructuredBuffer<uint> particlesIndexBuffer;
 StructuredBuffer<float> cellIndexBuffer;
+
 
 [numthreads(THREADS,1,1)]
 void calcOffset(uint3 id : SV_DispatchThreadID)
 {
 	uint particleIdx = particlesIndexBuffer[id.x];
-	uint cellIndex = (uint)cellIndexBuffer[particleIdx];
+	FluidParticle particleA = particlesBuffer[particleIdx];
 
-	InterlockedMin(offsetBuffer[cellIndex], id.x);
+	if (particleA.alive == 1) {
+		uint cellIndex = (uint)cellIndexBuffer[particleIdx];
+
+		InterlockedMin(offsetBuffer[cellIndex], id.x);
+	}
 }

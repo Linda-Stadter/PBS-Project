@@ -8,7 +8,7 @@
     SubShader
     {
         CGPROGRAM
-        // #include "./Globals.cginc"
+        #include "./Globals.cginc"
 
 		#pragma surface ConfigureSurface Standard fullforwardshadows addshadow
         #pragma instancing_options assumeuniformscaling procedural:ConfigureProcedural
@@ -19,12 +19,6 @@
 			float3 worldPos;
 		};
 
-        struct FluidParticle{
-            float3 pos;
-            float3 v;
-            float3 posLF;
-            float3 vLF;
-        };
 
         #if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
             StructuredBuffer<FluidParticle> particlesBuffer;
@@ -61,8 +55,8 @@
         float _Smoothness;
         void ConfigureSurface (Input input, inout SurfaceOutputStandard surface) {
             #ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-                float val = (densityBuffer[unity_InstanceID]) *  1.0f / refDensity;/// 2000.0f;
-                float3 col = float3(0.0f, val, 1.0f); // use hsv to interpolate between colors
+                float sat = (densityBuffer[unity_InstanceID]) *  1.0f / refDensity;/// 2000.0f;
+                float3 col = float3(0.0f, sat, 1.0f); // use hsv to interpolate between colors
                 surface.Albedo = saturate(hsv_to_rgb(col)); // transform hsv to rgb
             #endif
             // surface.Albedo = saturate(input.worldPos * 0.5 + 0.5);
