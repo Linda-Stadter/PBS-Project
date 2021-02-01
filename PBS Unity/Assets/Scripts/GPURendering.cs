@@ -214,7 +214,7 @@ public class GPURendering : MonoBehaviour
     {
         for (int i = 0; i < particleNumber; ++i)
         {
-            cellIndexArray[i] = 340282300000000000000000000000000000000f;
+            cellIndexArray[i] = float.MaxValue;
         }
     }
 
