@@ -71,7 +71,7 @@ public class GPURendering : MonoBehaviour
     // Amount of thread groups depends on particleNumber
     private int threadGroups;
 
-    private int spawnSpeed = 30;
+    private GameObject pipe;
 
     struct FluidParticle
     {
@@ -149,7 +149,9 @@ public class GPURendering : MonoBehaviour
         particleBound = new Bounds(Vector3.zero, Vector3.one);
         boxGround = GameObject.Find("Box/Ground");
         boxGround.transform.localScale = new Vector3(boxWidth, boxThickness, boxDepth);
-           
+
+        pipe = GameObject.Find("Pipe");
+
         particleMaterial = Resources.Load<Material>("Materials/Sphere Surface");
 
         InitializeConstants();
@@ -424,17 +426,19 @@ public class GPURendering : MonoBehaviour
         bitonicSort = new MergeSort.BitonicMergeSort(sortShader);
     }
 
-    void InstantiateParticlesFromSpot(int particleId)
+    void InstantiateParticlesFromPipe(int particleId)
     {
         if (particlesArray[particleId].alive == 0)
         {   
             float randX = Random.Range(-particleRadius, particleRadius);
             float randZ = Random.Range(-particleRadius, particleRadius);
             float randY = Random.Range(-particleRadius, particleRadius);
-            particlesArray[particleId].pos = new Vector3(randX, boxHeight * 0.9f + randY, randZ);
-            particlesArray[particleId].v = new Vector3(0f, 0f, 0f);
-            particlesArray[particleId].posLF = new Vector3(randX, boxHeight * 0.9f + randY, randZ);
-            particlesArray[particleId].vLF = new Vector3(0f, 0f, 0f);
+            //particlesArray[particleId].pos = new Vector3(0.4f * boxWidth + randX, boxHeight * 0.9f + randY, randZ);
+            Vector3 pipePos = pipe.transform.position;
+            particlesArray[particleId].pos = new Vector3(pipePos.x - 0.08f + randX, pipePos.y + randY, pipePos.z + randZ);
+            particlesArray[particleId].v = new Vector3(-1.3f, 0f, 0f);
+            particlesArray[particleId].posLF = new Vector3(pipePos.x - 0.08f + randX, pipePos.y + randY, pipePos.z + randZ);
+            particlesArray[particleId].vLF = new Vector3(-1.3f, 0f, 0f);
             particlesArray[particleId].alive = 1;
             particlesIndexArray[particleId] = particleId;
             particlesAlive += 1;
@@ -442,14 +446,17 @@ public class GPURendering : MonoBehaviour
     }
 
 
+    
     /* Update is executed on every frame and invokes particle update*/
+    
+    
     void Update()
     {
         if (!spawnAsCube && particlesAlive < particleNumber)
         {
             // TODO
             particlesBuffer.GetData(particlesArray);
-            InstantiateParticlesFromSpot(particlesAlive);
+            InstantiateParticlesFromPipe(particlesAlive);
             particlesBuffer.SetData(particlesArray);
         }
 
