@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Homebrew;
+using System.Globalization;
 
 public enum IntegrationMethod { Leapfrog, ForwardEuler };
 
@@ -54,6 +55,9 @@ public class GPURendering : MonoBehaviour
     /* Kernel constants */
     private float poly6;
     private float spiky;
+    
+    [Range(0.5f, 5.0f)]
+    public float waterSpeed = 2.5f;
 
     [Foldout("Rendering Related Parameters", true)]
     [Range(0.00001f, 5.0f)]
@@ -63,15 +67,17 @@ public class GPURendering : MonoBehaviour
 
     /* Box constants */
     private float boxHeight;
-
-    private int particlesAlive = 0;
+    private GameObject pipe;
+    
 
     // Threads are fixed to 256
     private const int THREADS = 256;
     // Amount of thread groups depends on particleNumber
     private int threadGroups;
+    private int particlesAlive = 0;
 
-    private GameObject pipe;
+    
+    
 
     struct FluidParticle
     {
@@ -435,10 +441,10 @@ public class GPURendering : MonoBehaviour
             float randY = Random.Range(-particleRadius, particleRadius);
             //particlesArray[particleId].pos = new Vector3(0.4f * boxWidth + randX, boxHeight * 0.9f + randY, randZ);
             Vector3 pipePos = pipe.transform.position;
-            particlesArray[particleId].pos = new Vector3(pipePos.x - 0.08f + randX, pipePos.y + randY, pipePos.z + randZ);
-            particlesArray[particleId].v = new Vector3(-1.3f, 0f, 0f);
-            particlesArray[particleId].posLF = new Vector3(pipePos.x - 0.08f + randX, pipePos.y + randY, pipePos.z + randZ);
-            particlesArray[particleId].vLF = new Vector3(-1.3f, 0f, 0f);
+            particlesArray[particleId].pos = new Vector3(pipePos.x + 0.08f + randX, pipePos.y + randY, pipePos.z + randZ);
+            particlesArray[particleId].v = new Vector3(waterSpeed, 0f, 0f);
+            particlesArray[particleId].posLF = new Vector3(pipePos.x + 0.08f + randX, pipePos.y + randY, pipePos.z + randZ);
+            particlesArray[particleId].vLF = new Vector3(waterSpeed, 0f, 0f);
             particlesArray[particleId].alive = 1;
             particlesIndexArray[particleId] = particleId;
             particlesAlive += 1;
@@ -628,5 +634,33 @@ public class GPURendering : MonoBehaviour
             str += array[i] + "\t";
         }
         Debug.Log(name + ":\t\t" + str);
+    }
+
+    /* Interface functions */
+
+    public void ChangeParticleSpeed(float input)
+    {
+        waterSpeed = input;
+    }
+
+    public void ChangeK(string input)
+    {
+        K = float.Parse(input, CultureInfo.InvariantCulture.NumberFormat);
+        SPHDensity.SetFloat("K", K);
+        SPHForce.SetFloat("K", K);
+    }
+
+    public void ChangeP0(string input)
+    {
+        p0 = float.Parse(input, CultureInfo.InvariantCulture.NumberFormat);
+        SPHDensity.SetFloat("p0", p0);
+        SPHForce.SetFloat("p0", p0);
+    }
+
+    public void ChangeE(string input)
+    {
+        e = float.Parse(input, CultureInfo.InvariantCulture.NumberFormat);
+        SPHDensity.SetFloat("e", e);
+        SPHForce.SetFloat("e", e);
     }
 }
