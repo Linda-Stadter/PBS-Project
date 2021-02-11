@@ -4,7 +4,7 @@ using UnityEngine;
 using Homebrew;
 using System.Globalization;
 
-public enum IntegrationMethod { Leapfrog, ForwardEuler };
+//public enum IntegrationMethod { Leapfrog, ForwardEuler };
 
 public class GPURendering : MonoBehaviour
 {
@@ -32,7 +32,8 @@ public class GPURendering : MonoBehaviour
     [Range(0.0f, 1.0f)]
     public float damping;
     [Space(15)]
-    public IntegrationMethod integrationMethod;
+    public bool ForwardEuler = true;
+    //public IntegrationMethod integrationMethod;
     public float timeStep;
 
     [Foldout("SPH Related Parameters", true)]
@@ -141,22 +142,32 @@ public class GPURendering : MonoBehaviour
     // GPU bitonic sort for neigherst neighboors problem
     private MergeSort.BitonicMergeSort bitonicSort;
 
-    private int particleNumber;
+    private int particleNumber = 4096;
+
+    private void Start()
+    {
+        DontDestroyOnLoad(this);
+        gameObject.SetActive(false);
+    }
 
     /* Initialize all data structures required for SPH simulation on GPU */
-    void OnEnable()
+    public void EnableSimulation()
     {
-        boxHeight = boxDepth;
 
-        particleNumber = spwWidth * spwHeight * spwDepth;
+        pipe = GameObject.Find("Pipe");
+        Debug.Log(pipe);
+        boxGround = GameObject.Find("Box/Ground");
+        boxHeight = boxDepth;
+        Debug.Log(boxGround);
+        //particleNumber = spwWidth * spwHeight * spwDepth;
         float groups = (float)particleNumber / THREADS;
         threadGroups = Mathf.Max(1, Mathf.CeilToInt(groups));
 
         particleBound = new Bounds(Vector3.zero, Vector3.one);
-        boxGround = GameObject.Find("Box/Ground");
+        
         boxGround.transform.localScale = new Vector3(boxWidth, boxThickness, boxDepth);
 
-        pipe = GameObject.Find("Pipe");
+        
 
         particleMaterial = Resources.Load<Material>("Materials/Sphere Surface");
 
@@ -177,7 +188,7 @@ public class GPURendering : MonoBehaviour
     }
 
     /* Release GPU memory after terminating simulation */
-    void OnDisable()
+    /*void OnDisable()
     {
         particlesBuffer.Release();
         particlesBuffer.Release();
@@ -189,7 +200,7 @@ public class GPURendering : MonoBehaviour
         forceBuffer.Release();
         debugBuffer1.Release();
         debugBuffer2.Release();
-    }
+    }*/
 
 
     /* Arrange the particles in a cube form */
@@ -579,27 +590,29 @@ public class GPURendering : MonoBehaviour
         bitonicSort.Sort(particlesIndexBuffer, cellIndexBuffer, sortedCellIndexBuffer);
         offsetShader.Dispatch(offsetKi, threadGroups, 1, 1);
 
-        switch ((int)integrationMethod)
-        {
-            case 0: /* Leapfrog */
-                //Debug.Log("Leapfrog");
-                SPHDensity.Dispatch(densityKi1, threadGroups, 1, 1);
-                SPHForce.Dispatch(forceKi1, threadGroups, 1, 1);
-                SPHIntegration.Dispatch(integrationKiLF1, threadGroups, 1, 1);
 
-                SPHDensity.Dispatch(densityKi2, threadGroups, 1, 1);
-                SPHForce.Dispatch(forceKi2, threadGroups, 1, 1);
-                SPHIntegration.Dispatch(integrationKiLF2, threadGroups, 1, 1);
-                break;
-            case 1: /* Forward Euler */
-                //Debug.Log("Forward Euler");
-                SPHDensity.Dispatch(densityKi1, threadGroups, 1, 1);
-                SPHForce.Dispatch(forceKi1, threadGroups, 1, 1);
-                SPHIntegration.Dispatch(integrationKiEULER, threadGroups, 1, 1);
-                break;
-            case 3: /* Another integration method ...*/
-                break;
+        if (!ForwardEuler) { 
+            /* Leapfrog */
+
+            SPHDensity.Dispatch(densityKi1, threadGroups, 1, 1);
+            SPHForce.Dispatch(forceKi1, threadGroups, 1, 1);
+            SPHIntegration.Dispatch(integrationKiLF1, threadGroups, 1, 1);
+
+            SPHDensity.Dispatch(densityKi2, threadGroups, 1, 1);
+            SPHForce.Dispatch(forceKi2, threadGroups, 1, 1);
+            SPHIntegration.Dispatch(integrationKiLF2, threadGroups, 1, 1);
+
         }
+
+        if (ForwardEuler)
+        {
+            /* Forward Euler */
+            //Debug.Log("Forward Euler");
+            SPHDensity.Dispatch(densityKi1, threadGroups, 1, 1);
+            SPHForce.Dispatch(forceKi1, threadGroups, 1, 1);
+            SPHIntegration.Dispatch(integrationKiEULER, threadGroups, 1, 1);
+        }
+
     }
 
 
@@ -663,4 +676,30 @@ public class GPURendering : MonoBehaviour
         SPHDensity.SetFloat("e", e);
         SPHForce.SetFloat("e", e);
     }
+
+    public void ChangeDamping(string input)
+    {
+        damping = float.Parse(input, CultureInfo.InvariantCulture.NumberFormat);
+    }
+
+    public void ChangeTimeStep(string input)
+    {
+        timeStep = float.Parse(input, CultureInfo.InvariantCulture.NumberFormat);
+    }
+
+    public void ChangeParticleNumber(float input)
+    {
+        particleNumber = (int) System.Math.Pow(System.Math.Pow(2, input), 3);
+        spwWidth = (int)System.Math.Pow(2, input);
+        spwDepth = (int)System.Math.Pow(2, input);
+        spwHeight = (int)System.Math.Pow(2, input);
+        //particleRadius = (float) (0.0625 *  (4096/ particleNumber));
+
+    }
+
+    public void ChangeIntegration()
+    {
+        ForwardEuler = !ForwardEuler;
+    }
+
 }
