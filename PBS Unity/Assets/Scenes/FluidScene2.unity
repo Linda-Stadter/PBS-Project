@@ -256,22 +256,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f6769f4e8333874aa1716cc87537562, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debugMode: 1
+  debugMode: 0
   particleMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  spwHeight: 32
-  spwWidth: 32
-  spwDepth: 32
+  spwHeight: 16
+  spwWidth: 16
+  spwDepth: 16
   boxThickness: 0.02
   boxWidth: 1
   boxDepth: 1
-  spawnDistance: 0.006
+  spawnDistance: 0.035
   damping: 0.6
-  integrationMethod: 0
-  timeStep: 0.0009
-  K: 0.01
+  integrationMethod: 1
+  timeStep: 0.0005
+  K: 1
   p0: 1
-  e: 0.5
-  particleRadius: 0.006
+  e: 0.02
+  surface_coefficient: 1
+  particleRadius: 0.005
   referenceNeighbors: 24
 --- !u!1 &171629165
 GameObject:

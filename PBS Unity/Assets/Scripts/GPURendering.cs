@@ -59,10 +59,14 @@ public class GPURendering : MonoBehaviour
     public float p0;
     /* Viscosity constant */
     public float e;
+    //Surface tension constant
+    public float surface_coefficient;
 
     /* Kernel constants */
     private float poly6;
     private float spiky;
+    private float spline;
+
 
     [Foldout("Rendering Related Parameters", true)]
     [Range(0.00001f, 5.0f)]
@@ -95,6 +99,7 @@ public class GPURendering : MonoBehaviour
     private ComputeShader sortShader;
     private ComputeShader offsetShader;
     private ComputeShader SPHDensity;
+    private ComputeShader SPHNormals;
     private ComputeShader SPHForce;
     private ComputeShader SPHIntegration;
     // private ComputeShader leapfrogStep;
@@ -105,6 +110,8 @@ public class GPURendering : MonoBehaviour
     private int offsetKi;
     private int densityKi1;
     private int densityKi2;
+    private int normalsKi1;
+    private int normalsKi2;
     private int forceKi1;
     private int forceKi2;
     private int integrationKiEULER;
@@ -119,9 +126,10 @@ public class GPURendering : MonoBehaviour
     private float[] sortedCellIndexArray;
     private int[] offsetArray;
     private float[] densityArray;
+    private Vector3[] normalsArray;
     private Vector3[] forceArray;
-    private Vector3[] debugForce1;
-    private Vector3[] debugForce2;
+    private Vector3[] debug1;
+    private Vector3[] debug2;
 
     /* GPU Buffer */
     private ComputeBuffer particlesBuffer;
@@ -130,6 +138,7 @@ public class GPURendering : MonoBehaviour
     private ComputeBuffer sortedCellIndexBuffer;
     private ComputeBuffer offsetBuffer;
     private ComputeBuffer densityBuffer;
+    private ComputeBuffer normalsBuffer;
     private ComputeBuffer forceBuffer;
 
     private ComputeBuffer debugBuffer1;
@@ -175,6 +184,7 @@ public class GPURendering : MonoBehaviour
         sortedCellIndexBuffer.Release();
         offsetBuffer.Release();
         densityBuffer.Release();
+        normalsBuffer.Release();
         forceBuffer.Release();
         debugBuffer1.Release();
         debugBuffer2.Release();
@@ -185,10 +195,11 @@ public class GPURendering : MonoBehaviour
     void InitializeParticles()
     {
         int length = (int)Mathf.Pow(particleNumber, 1f / 3f);
-        float rad100 = particleRadius * 1.0f;
-        float spawnWidthLength = (spwWidth - 1) * (particleRadius * 2 + spawnDistance); // add particleRadius * 2 for whole length
-        float spawnDepthLength = (spwDepth - 1) * (particleRadius * 2 + spawnDistance); // add particleRadius * 2 for whole length
-        float spawnHeightLength = (spwHeight - 1) * (particleRadius * 2 + spawnDistance);
+        float rngRange = spawnDistance/2;
+        //rngRange = 0.0f;
+        float spawnWidthLength = (spwWidth - 1) * (/*particleRadius * 2 + */ spawnDistance); // add particleRadius * 2 for whole length
+        float spawnDepthLength = (spwDepth - 1) * (/*particleRadius * 2 +*/ spawnDistance); // add particleRadius * 2 for whole length
+        float spawnHeightLength = (spwHeight - 1) * (/*particleRadius * 2 +*/ spawnDistance);
 
         for (int i = 0; i < particleNumber; ++i)
         {
@@ -198,11 +209,16 @@ public class GPURendering : MonoBehaviour
             float y_pos = (((i / length) % length) + spawnOffset.y) * particleRadius * 2;
             float z_pos = (((i / (length * length))) + spawnOffset.z) * particleRadius * 2;
             */
-
-            float x_pos = (i % spwWidth) * (2 * particleRadius + spawnDistance) - spawnWidthLength/2 + Random.Range(-rad100, rad100);
-            float z_pos = ((i / spwWidth) % spwDepth) * (2 * particleRadius + spawnDistance) - spawnDepthLength / 2 + Random.Range(-rad100, rad100);
-            float y_pos = (i / (spwDepth * spwWidth)) * (2 * particleRadius + spawnDistance) + boxHeight/2 - spawnHeightLength / 2 + Random.Range(-rad100, rad100);
-
+            /*
+            float x_pos = (i % spwWidth) * (2 * particleRadius + spawnDistance) - spawnWidthLength/2 + Random.Range(-rngRange, rngRange);
+            float z_pos = ((i / spwWidth) % spwDepth) * (2 * particleRadius + spawnDistance) - spawnDepthLength / 2 + Random.Range(-rngRange, rngRange);
+            float y_pos = (i / (spwDepth * spwWidth)) * (2 * particleRadius + spawnDistance) + boxHeight/2 - spawnHeightLength / 2 + Random.Range(-rngRange, rngRange);
+           */
+            // new but bad?
+            float x_pos = (i % spwWidth) * (/*2 * particleRadius +*/ spawnDistance) - spawnWidthLength / 2 + Random.Range(-rngRange, rngRange);
+            float z_pos = ((i / spwWidth) % spwDepth) * (/*2 * particleRadius +*/ spawnDistance) - spawnDepthLength / 2 + Random.Range(-rngRange, rngRange);
+            float y_pos = (i / (spwDepth * spwWidth)) * (/*2 * particleRadius +*/ spawnDistance) + boxHeight / 2 - spawnHeightLength / 2 + Random.Range(-rngRange, rngRange);
+            
             particlesArray[i].pos = new Vector3(x_pos, y_pos, z_pos);
             particlesArray[i].v = new Vector3(0f, 0f, 0f);
             particlesArray[i].posLF = new Vector3(x_pos, y_pos, z_pos);
@@ -216,11 +232,16 @@ public class GPURendering : MonoBehaviour
     /* Initialize constants used on GPU */
     void InitializeConstants()
     {
-        mass = (boxWidth * boxDepth * boxHeight)*p0/particleNumber;
+        //mass = (boxWidth * boxDepth * boxHeight)*p0/particleNumber;
+        mass = spawnDistance* spawnDistance * spawnDistance * (spwDepth * spwHeight * spwWidth) * p0 / particleNumber;
+        //Calculating h with box size
         float h_a = ((boxWidth + boxDepth+boxHeight) * 2);
         float h_b = (spwWidth + spwDepth+spwHeight);
-        h = h_a/h_b;
-        h = h_a/h_b;
+        h = spawnDistance*2;
+        
+        //new but bad?
+        // Calculating h with particle spawn size (independent of particle radius)
+        //h = spawnDistance*2;
 
 
 
@@ -233,6 +254,7 @@ public class GPURendering : MonoBehaviour
 
         poly6 = 315 / (64 * Mathf.PI * Mathf.Pow(h, 9));
         spiky = -45 / (Mathf.PI * Mathf.Pow(h, 6));
+        spline = 32 /(Mathf.PI * Mathf.Pow(h, 9));
     }
 
     /* Initialize Arrays for Debugging */
@@ -243,11 +265,12 @@ public class GPURendering : MonoBehaviour
         cellIndexArray = new float[particleNumber];
         offsetArray = new int[particleNumber];
         densityArray = new float[particleNumber];
+        normalsArray = new Vector3[particleNumber];
         forceArray = new Vector3[particleNumber];
 
 
-        debugForce1 = new Vector3[particleNumber];
-        debugForce2 = new Vector3[particleNumber];
+        debug1 = new Vector3[particleNumber];
+        debug2 = new Vector3[particleNumber];
 
         sortedCellIndexArray = new float[particleNumber];
     }
@@ -270,14 +293,17 @@ public class GPURendering : MonoBehaviour
         densityBuffer = new ComputeBuffer(particleNumber, sizeof(float));
         densityBuffer.SetData(densityArray);
 
+        normalsBuffer = new ComputeBuffer(particleNumber, 3 * sizeof(float));
+        normalsBuffer.SetData(normalsArray);
+
         forceBuffer = new ComputeBuffer(particleNumber, 3 * sizeof(float));
         forceBuffer.SetData(forceArray);
 
         debugBuffer1 = new ComputeBuffer(particleNumber, 3 * sizeof(float));
-        debugBuffer1.SetData(debugForce1);
+        debugBuffer1.SetData(debug1);
 
         debugBuffer2 = new ComputeBuffer(particleNumber, 3 * sizeof(float));
-        debugBuffer2.SetData(debugForce2);
+        debugBuffer2.SetData(debug2);
 
 
         sortedCellIndexBuffer = new ComputeBuffer(particleNumber, sizeof(float));
@@ -292,9 +318,9 @@ public class GPURendering : MonoBehaviour
         sortShader = Resources.Load<ComputeShader>("Shader/BitonicMergeSort");
         offsetShader = Resources.Load<ComputeShader>("Shader/SPHOffset");
         SPHDensity = Resources.Load<ComputeShader>("Shader/SPHDensity");
+        SPHNormals = Resources.Load<ComputeShader>("Shader/SPHNormals");
         SPHForce = Resources.Load<ComputeShader>("Shader/SPHForce");
         SPHIntegration = Resources.Load<ComputeShader>("Shader/SPHIntegration");
-        //leapfrogStep = Resources.Load<ComputeShader>("Shader/LeapfrogStep");
     }
 
     /* Assign compute buffers to shaders */
@@ -345,15 +371,44 @@ public class GPURendering : MonoBehaviour
         SPHDensity.SetFloat("spiky", spiky);
         SPHDensity.SetFloat("gamma", 7.0f);
 
+        normalsKi1 = SPHNormals.FindKernel("calcNormals1");
+        SPHNormals.SetBuffer(normalsKi1, "particlesBuffer", particlesBuffer);
+        SPHNormals.SetBuffer(normalsKi1, "particlesIndexBuffer", particlesIndexBuffer);
+        SPHNormals.SetBuffer(normalsKi1, "cellIndexBuffer", sortedCellIndexBuffer);
+        SPHNormals.SetBuffer(normalsKi1, "offsetBuffer", offsetBuffer);
+
+        SPHNormals.SetBuffer(normalsKi1, "densityBuffer", densityBuffer);
+        SPHNormals.SetBuffer(normalsKi1, "normalsBuffer", normalsBuffer);
+        SPHNormals.SetBuffer(normalsKi1, "debug1", debugBuffer1);
+        SPHNormals.SetBuffer(normalsKi1, "debug2", debugBuffer2);
+        
+        normalsKi2 = SPHNormals.FindKernel("calcNormals2");
+        SPHNormals.SetBuffer(normalsKi2, "particlesBuffer", particlesBuffer);
+        SPHNormals.SetBuffer(normalsKi2, "particlesIndexBuffer", particlesIndexBuffer);
+        SPHNormals.SetBuffer(normalsKi2, "cellIndexBuffer", sortedCellIndexBuffer);
+        SPHNormals.SetBuffer(normalsKi2, "offsetBuffer", offsetBuffer);
+        SPHNormals.SetBuffer(normalsKi2, "densityBuffer", densityBuffer);
+        SPHNormals.SetBuffer(normalsKi2, "normalsBuffer", normalsBuffer);
+        
+        SPHNormals.SetFloat("h", h);
+        SPHNormals.SetFloat("h_inv", hInv);
+        SPHNormals.SetFloat("h2", h2);
+        SPHNormals.SetFloat("h3", h3);
+        SPHNormals.SetFloat("mass", mass);
+        SPHNormals.SetFloat("poly6", poly6);
+        SPHNormals.SetInt("particleCount", particleNumber);
+
+
         forceKi1 = SPHForce.FindKernel("calcForce1");
         SPHForce.SetBuffer(forceKi1, "particlesBuffer", particlesBuffer);
         SPHForce.SetBuffer(forceKi1, "particlesIndexBuffer", particlesIndexBuffer);
         SPHForce.SetBuffer(forceKi1, "cellIndexBuffer", sortedCellIndexBuffer);
         SPHForce.SetBuffer(forceKi1, "offsetBuffer", offsetBuffer);
         SPHForce.SetBuffer(forceKi1, "densityBuffer", densityBuffer);
+        SPHForce.SetBuffer(forceKi1, "normalsBuffer", normalsBuffer);
         SPHForce.SetBuffer(forceKi1, "forceBuffer", forceBuffer);
-        SPHForce.SetBuffer(forceKi1, "debugForce1", debugBuffer1);
-        SPHForce.SetBuffer(forceKi1, "debugForce2", debugBuffer2);
+        SPHForce.SetBuffer(forceKi1, "debug1", debugBuffer1);
+        SPHForce.SetBuffer(forceKi1, "debug2", debugBuffer2);
 
         forceKi2 = SPHForce.FindKernel("calcForce2");
         SPHForce.SetBuffer(forceKi2, "particlesBuffer", particlesBuffer);
@@ -361,6 +416,7 @@ public class GPURendering : MonoBehaviour
         SPHForce.SetBuffer(forceKi2, "cellIndexBuffer", sortedCellIndexBuffer);
         SPHForce.SetBuffer(forceKi2, "offsetBuffer", offsetBuffer);
         SPHForce.SetBuffer(forceKi2, "densityBuffer", densityBuffer);
+        SPHForce.SetBuffer(forceKi2, "normalsBuffer", normalsBuffer);
         SPHForce.SetBuffer(forceKi2, "forceBuffer", forceBuffer);
 
         SPHForce.SetInt("particleCount", particleNumber);
@@ -372,8 +428,10 @@ public class GPURendering : MonoBehaviour
         SPHForce.SetFloat("K", K);
         SPHForce.SetFloat("p0", p0);
         SPHForce.SetFloat("e", e);
+        SPHForce.SetFloat("surface_coefficient", surface_coefficient);
         SPHForce.SetFloat("poly6", poly6);
         SPHForce.SetFloat("spiky", spiky);
+        SPHForce.SetFloat("spline", spline);
         SPHForce.SetVector("g", new Vector3(0, -9.81f, 0));
 
 
@@ -387,12 +445,16 @@ public class GPURendering : MonoBehaviour
         SPHIntegration.SetBuffer(integrationKiLF1, "particlesBuffer", particlesBuffer);
         SPHIntegration.SetBuffer(integrationKiLF1, "particlesIndexBuffer", particlesIndexBuffer);
         SPHIntegration.SetBuffer(integrationKiLF1, "forceBuffer", forceBuffer);
+        SPHIntegration.SetBuffer(integrationKiLF1, "debug1", debugBuffer1);
+        SPHIntegration.SetBuffer(integrationKiLF1, "debug2", debugBuffer2);
 
 
         integrationKiLF2 = SPHIntegration.FindKernel("calcIntegrationLF2");
         SPHIntegration.SetBuffer(integrationKiLF2, "particlesBuffer", particlesBuffer);
         SPHIntegration.SetBuffer(integrationKiLF2, "particlesIndexBuffer", particlesIndexBuffer);
         SPHIntegration.SetBuffer(integrationKiLF2, "forceBuffer", forceBuffer);
+        SPHIntegration.SetBuffer(integrationKiLF2, "debug1", debugBuffer1);
+        SPHIntegration.SetBuffer(integrationKiLF2, "debug2", debugBuffer2);
 
         SPHIntegration.SetFloat("deltaTime", timeStep);
         SPHIntegration.SetFloat("damping", damping);
@@ -506,29 +568,53 @@ public class GPURendering : MonoBehaviour
             SPHDensity.Dispatch(densityKi1, threadGroups, 1, 1);
             particlesBuffer.GetData(particlesArray);
             densityBuffer.GetData(densityArray);
-            
+
             PrintParticlePos("Positions\t", particlesArray);
             PrintArray("densityArray\t", densityArray);
         }
         else if (Input.GetKeyDown("6"))
         {
+            Debug.Log("Executing Normals Shader ...");
+            SPHNormals.Dispatch(normalsKi1, threadGroups, 1, 1);
+            normalsBuffer.GetData(normalsArray);
+
+            debugBuffer1.GetData(debug1);
+            debugBuffer2.GetData(debug2);
+            densityBuffer.GetData(densityArray);
+
+
+            PrintArray("normalsArray\t", normalsArray);
+            PrintArray("debug1\t", debug1);
+            PrintArray("debug2\t", debug2);
+
+            PrintArray("densityArray\t", densityArray);
+
+
+        }
+        else if (Input.GetKeyDown("7"))
+        {
             Debug.Log("Executing Force Shader ...");
             SPHForce.Dispatch(forceKi1, threadGroups, 1, 1);
             forceBuffer.GetData(forceArray);
 
-            debugBuffer1.GetData(debugForce1);
+            debugBuffer1.GetData(debug1);
 
-            debugBuffer2.GetData(debugForce2);
+            debugBuffer2.GetData(debug2);
 
 
             PrintArray("forceArray\t", forceArray);
-            PrintArray("f_press\t", debugForce1);
-            PrintArray("f_visc\t", debugForce2);
+            PrintArray("debug1\t", debug1);
+            PrintArray("debug2\t", debug2);
         }
-        else if (Input.GetKeyDown("7"))
+        else if (Input.GetKeyDown("8"))
         {
             Debug.Log("Executing Integration Shader (Forward Euler!) ...");
             SPHIntegration.Dispatch(integrationKiEULER, threadGroups, 1, 1);
+            debugBuffer1.GetData(debug1);
+            debugBuffer2.GetData(debug2);
+
+            PrintArray("debug2\t", debug2);
+
         }
 
         /* Draw Meshes on GPU */
@@ -549,16 +635,19 @@ public class GPURendering : MonoBehaviour
             case 0: /* Leapfrog */
                 //Debug.Log("Leapfrog");
                 SPHDensity.Dispatch(densityKi1, threadGroups, 1, 1);
+                SPHNormals.Dispatch(normalsKi1, threadGroups, 1, 1);
                 SPHForce.Dispatch(forceKi1, threadGroups, 1, 1);
                 SPHIntegration.Dispatch(integrationKiLF1, threadGroups, 1, 1);
 
                 SPHDensity.Dispatch(densityKi2, threadGroups, 1, 1);
+                SPHNormals.Dispatch(normalsKi2, threadGroups, 1, 1);
                 SPHForce.Dispatch(forceKi2, threadGroups, 1, 1);
                 SPHIntegration.Dispatch(integrationKiLF2, threadGroups, 1, 1);
                 break;
             case 1: /* Forward Euler */
                 //Debug.Log("Forward Euler");
                 SPHDensity.Dispatch(densityKi1, threadGroups, 1, 1);
+                SPHNormals.Dispatch(normalsKi1, threadGroups, 1, 1);
                 SPHForce.Dispatch(forceKi1, threadGroups, 1, 1);
                 SPHIntegration.Dispatch(integrationKiEULER, threadGroups, 1, 1);
                 break;

@@ -5,6 +5,8 @@
 #pragma kernel calcIntegrationLF2
 #pragma kernel calcIntegrationEULER
 RWStructuredBuffer<FluidParticle> particlesBuffer;
+RWStructuredBuffer<float3> debug1;
+RWStructuredBuffer<float3> debug2;
 
 StructuredBuffer<uint> particlesIndexBuffer;
 StructuredBuffer<float3> forceBuffer;
@@ -38,10 +40,24 @@ void calcIntegrationLF2(uint3 id : SV_DispatchThreadID)
     uint particleIdx = particlesIndexBuffer[id.x];
     FluidParticle particleA = particlesBuffer[particleIdx];
 
+    debug1[particleIdx] = particleA.pos;
+
     float3 v_old = particleA.v;
 
     particleA.v = particleA.v + deltaTime * forceBuffer[particleIdx];
     particleA.pos = particleA.pos + deltaTime * 0.5 * (particleA.v + v_old);
+
+
+    const float3 diff = particleA.pos - debug1[particleIdx];
+    const float r2 = dot(diff, diff);
+    const float r = sqrt(r2);
+    
+        if (r > 0.125)
+        {
+             debug2[particleIdx] =  diff;
+
+        }
+
 
 
     /* Box collision using edges of ground */

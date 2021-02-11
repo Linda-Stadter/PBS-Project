@@ -1,0 +1,177 @@
+﻿#include "./Globals.cginc"
+#pragma kernel calcNormals1
+#pragma kernel calcNormals2
+
+
+RWStructuredBuffer<float> densityBuffer;
+RWStructuredBuffer<float3> normalsBuffer;
+RWStructuredBuffer<float3> debug1;
+RWStructuredBuffer<float3> debug2;
+
+StructuredBuffer<FluidParticle> particlesBuffer;
+StructuredBuffer<uint> particlesIndexBuffer;
+StructuredBuffer<float> cellIndexBuffer;
+StructuredBuffer<uint> offsetBuffer;
+
+uint particleCount;
+float h, h_inv, h2, h3;
+float poly6;
+float mass;
+
+
+//DOESN'T USE 1/2 POSITION AND VELOCITY
+[numthreads(THREADS, 1, 1)]
+void calcNormals1(uint3 id : SV_DispatchThreadID)
+{
+
+	uint particleIdxA = particlesIndexBuffer[id.x];
+	float densityA = densityBuffer[particleIdxA];
+
+	FluidParticle particleA = particlesBuffer[particleIdxA];
+	float3 posA = particleA.pos;
+
+	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
+	const float3 remappedPos = posA * h_inv;
+	const int3 cellIndex = floor(remappedPos);
+
+	float3 normal = 0;
+	int counter = 0;
+
+	// iterate through all [27] neighbor cells:
+	[loop]
+	for (int i = -1; i <= 1; ++i)
+	{
+		[loop]
+		for (int j = -1; j <= 1; ++j)
+		{
+			[loop]
+			for (int k = -1; k <= 1; ++k)
+			{
+				// hashed cell index is retrieved:
+				const int3 neighborIndex = cellIndex + int3(i, j, k);
+				const uint flatNeighborIndex = SPH_GridHash(neighborIndex, particleCount);
+
+				// look up the offset into particle list from neighbor cell:
+				uint neighborIterator = offsetBuffer[flatNeighborIndex];
+
+				// iterate through neighbor cell particles (if iterator offset is valid):
+				[loop]
+				while (neighborIterator != 0x7FFFFFFF && neighborIterator < particleCount)
+				{
+
+
+					uint particleIdxB = particlesIndexBuffer[neighborIterator];
+					if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)
+					{
+						// here means we stepped out of the neighbor cell list!
+						break;
+					}
+
+					// SPH Force evaluation:
+					FluidParticle particleB = particlesBuffer[particleIdxB];
+					float3 posB = particleB.pos;
+
+					const float3 diff = posA - posB;
+					const float r2 = dot(diff, diff);
+					const float r = sqrt(r2);
+
+					
+
+					if (r > 0 && r < h)
+					{
+							
+						
+						const float3 W = 3/2*poly6 * pow(h2 - r2, 2)*diff;
+						float densityB = densityBuffer[particleIdxB];
+						normal += mass/densityB*W; 
+						counter++;
+						
+
+					}
+
+					neighborIterator++;
+				}
+			}
+		}
+	}
+	
+		//		debug1[particleIdxA] = float3(0.0f, h, 1.0f);
+
+	//debug2[particleIdxA] = float3(densityA,poly6,h);
+
+	normalsBuffer[particleIdxA] = h*normal;
+}
+
+//DOES USE 1/2 POSITION AND VELOCITY
+[numthreads(THREADS, 1, 1)]
+void calcNormals2(uint3 id : SV_DispatchThreadID)
+{
+
+	uint particleIdxA = particlesIndexBuffer[id.x];
+	float densityA = densityBuffer[particleIdxA];
+
+	FluidParticle particleA = particlesBuffer[particleIdxA];
+	float3 posA = particleA.posLF;
+
+	// Grid cell is of size [SPH smoothing radius], so position is refitted into that
+	const float3 remappedPos = posA * h_inv;
+	const int3 cellIndex = floor(remappedPos);
+
+	float3 normal = 0;
+
+
+	// iterate through all [27] neighbor cells:
+	[loop]
+	for (int i = -1; i <= 1; ++i)
+	{
+		[loop]
+		for (int j = -1; j <= 1; ++j)
+		{
+			[loop]
+			for (int k = -1; k <= 1; ++k)
+			{
+				// hashed cell index is retrieved:
+				const int3 neighborIndex = cellIndex + int3(i, j, k);
+				const uint flatNeighborIndex = SPH_GridHash(neighborIndex, particleCount);
+
+				// look up the offset into particle list from neighbor cell:
+				uint neighborIterator = offsetBuffer[flatNeighborIndex];
+
+				// iterate through neighbor cell particles (if iterator offset is valid):
+				[loop]
+				while (neighborIterator != 0x7FFFFFFF && neighborIterator < particleCount)
+				{
+					uint particleIdxB = particlesIndexBuffer[neighborIterator];
+					if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)
+					{
+						// here means we stepped out of the neighbor cell list!
+						break;
+					}
+
+					// SPH Force evaluation:
+					FluidParticle particleB = particlesBuffer[particleIdxB];
+					float3 posB = particleB.posLF;
+
+					const float3 diff = posA - posB;
+					const float r2 = dot(diff, diff);
+					const float r = sqrt(r2);
+
+					if (r > 0 && r < h)
+					{
+
+
+						const float Wpress = 3 / 2 * poly6 * pow(h2 - r2, 2);
+						float densityB = densityBuffer[particleIdxB];
+						normal += mass / densityB * Wpress * diff;
+					}
+
+					neighborIterator++;
+				}
+			}
+		}
+	}
+
+
+	normalsBuffer[particleIdxA] = h*normal;
+}
+
