@@ -1,0 +1,108 @@
+\documentclass[a4paper]{paper} 
+\usepackage[ngerman]{babel}  
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{natbib}
+\renewcommand{\eqref}[1]{Eq.~(\ref{#1})}
+\newcommand{\figref}[1]{Fig.~\ref{#1}}
+\sloppy
+
+%% <---------------- fill according to your project --------------
+\newcommand{\ProjectTitle}{Titel des Projektes}
+\newcommand{\StudentNames}{Liste der Studierenden}
+%% <--------------------------------------------------------------
+
+\sectionfont{\large\sf\bfseries\color{black!70!blue}} 
+\title{Physikalisch-basierte Simulation in der Computergraphik}
+\subtitle{Schriftliche Ausarbeitung\\
+\hfill\includegraphics[height=2cm]{fau-logo-tech.pdf}
+\vspace{-2cm}}
+\author{\ProjectTitle} 
+\begin{document} 
+\twocolumn[\maketitle 
+\textbf{\StudentNames} \\
+\hrule\bigskip
+]
+
+%% <--------------------------------------------------------------
+%% <--------------------------------------------------------------
+
+\section{Einleitung} 
+Detailierte Instruktionen sind in der Englischen Vorlage zu finden.
+
+\section{Theorie}
+
+Die Suche der Nachbarpartikel stellt einen sehr aufwaendigen Schritt des SPH-Algorithmus dar. Die Nachbarpartikel eines Partikels sind die Menge der Partikel, welche sich innerhalb eines bestimmten Radius $h$ befinden und somit Einfluss auf den Partikel besitzen. Um diese effizient zu finden, teilen wir den Raum in ein uniformes Gitter auf. Eine Zelle besitzt die Groesse des Radius $h$, sodass die Nachbarpartikel nur in den anliegenden 26 Zellen und in der Zelle des Partikels gesucht werden muessen. Durch ihre Positionen im Raum werden die Partikel je einer Zelle zugewiesen. Dies erfolgt durch Spatial Hashing, damit eine endliche Anzahl an Zellen fuer einen unendlich grossen Raum ausreicht. Dann koennen die Partikel anhand ihrer zugewiesenen Zelle sortiert werden. Fuer jede Zelle wird der Abstand zu dem ersten Partikel der Zelle gespeichert. Diese Idee wurde 2008 von Nvidia vorgestellt. \ref{Nvidia}
+
+Die Dichte wird dabei wie in der Gleichung \ref{density} mithilfe eines Poly6 Smoothing Kernels $W_{ij}$ aus Gleichung \ref{poly6} berechnet.
+\begin{equation}
+\label{density}
+\rho_i = \sum_i{m_j W_{ij}}
+\end{equation}
+
+\begin{equation}
+\label{poly6}
+W_{ij} = \frac{315}{64 \pi h^9} (h^2-r^2)^3
+\end{equation}
+
+Der Druck $p_i$ wird mit der Gaskonstanten $K$ und dem Referenzdruck $\rho_0$ in Gleichung \ref{pressure} berechnet.
+
+\begin{equation}
+\label{pressure}
+p_i=K(\rho-\rho_0)
+\end{equation}
+
+Die Force $f$ aus Gleichung \ref{force} kann als Addition der drei einzelnen Forces pressure, viscosity und external berechnet werden.
+
+\begin{equation}
+\label{force}
+f = f^{pressure} + f^{viscosity} + f^{external}
+\end{equation}
+
+TODO Force
+
+\section{Implementierung}
+Das Projekt wird in der Laufzeit und Entwicklungsumgebung Unity implementiert. Dazu wird ein sogenanntes GameObject erstellt, welches ein eigens geschriebenes C\#-Skript zugewiesen wird. Dieses Skript wird verwendet, um die Simulation zu initialisieren und aufzurufen. %Dabei werden zunaechst die notwendigen Arrays, Buffer, Partikel und Shader initialisiert.
+Ein Zeitschritt wird mithilfe der Update-Funktion von Unity einmal pro Frame durchgefuehrt. Der eigentliche SPH-Algorithmus wird auf sieben Shader aufgeteilt, welche von der GPU ausgefuehrt werden. Es ist je ein Shader dafuer zustaendig, die Buffer zu initialisieren, die Partikel in Zellen einzuteilen, die Partikel anhand ihrer Zelle zu sortieren, die Dichte und im Anschluss die Force eines Partikels zu berechnen und zum Schluss den Integrationsschritt durchzufuehren.
+
+Die Positionen in x-,y- und z-Richtung werden gehasht, um daraus den Zellindex zu bestimmen. Um die Anzahl der Hash-Kollisionen moeglichst gering zu halten, werden 8-stellige Primzahlen und eine grosse Anzahl an Partikeln - und damit auch Zellen - benutzt.
+
+Fuer das Sortieren der Partikel anhand ihrer zugewiesenen Zelle wird eine fertige Implementierung des Algorithmus Bitonisches Sortieren verwendet. Dieser Sortieralgorithmus kann parallel auf der GPU ausgefuehrt werden.
+
+Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschluss der Force wird auf aehnliche Weise implementiert. Hierbei muss nur ueber die 27 moeglichen Nachbarzellen iteriert werden. Mithilfe des zuvor gespeicherten Abstands kann dann effizient auf alle Partikel einer bestimmten Nachbarzelle zugegriffen werden. Zusaetlich muss noch ueberprueft werden, ob der Abstand zu dem Partikel kleiner als der Radius $h$ ist.
+
+Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benoetigt. Der Raum, in welchem sich die Partikel bewegen koennen, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, welches die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
+Ausserdem werden zwei Oberflaechen benoetigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits waehrend der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu koennen. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benoetigte Objekte entfernt und neue benoetigte Objekte eingeblendet.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.7\linewidth]{images/interface1.png}
+    \caption{Oeberflaeche vor dem Starten der Simulation, um die entsprechenden Parameter der Simulation einzustellen.}
+    \label{fig:interface1}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.7\linewidth]{images/interface2.png}
+    \caption{Oeberflaeche waehrend der Simulation, um die Parameter des SPH-Algorithmus anzupassen.}
+    \label{fig:interface2}
+\end{figure}
+
+\section{Ergebnisse und Evaluierung}
+
+\section{Beiträge}
+
+\section{Diskussion}
+
+\section{Zusammenfassung}
+
+%% <--------------------------------------------------------------
+%% <--------------------------------------------------------------
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end {document}
