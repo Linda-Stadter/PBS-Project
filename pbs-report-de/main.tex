@@ -76,9 +76,11 @@ Die Positionen in x-,y- und z-Richtung werden gehasht, um daraus den Zellindex z
 
 Fuer das Sortieren der Partikel anhand ihrer zugewiesenen Zelle wird eine fertige Implementierung des Algorithmus Bitonisches Sortieren verwendet. Dieser Sortieralgorithmus kann parallel auf der GPU ausgefuehrt werden.
 
-Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschluss der Force wird auf aehnliche Weise implementiert. Hierbei muss ueber die 27 moeglichen Nachbarzellen iteriert werden. Mithilfe des zuvor gespeicherten Abstands kann dann effizient auf alle Partikel einer bestimmten Nachbarzelle zugegriffen werden. Zusaetzlich wird ueberprueft, ob der Abstand zwischen den Partikeln kleiner als der Radius $h$ ist.
+Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschluss der Force wird im Dichte- und im Force-Shader auf aehnliche Weise implementiert. Hierbei muss ueber die 27 moeglichen Nachbarzellen iteriert werden. Mithilfe des zuvor gespeicherten Abstands kann dann effizient auf alle Partikel einer bestimmten Nachbarzelle zugegriffen werden. Zusaetzlich wird ueberprueft, ob der Abstand zwischen den Partikeln kleiner als der Radius $h$ ist.
 
 Im Integrations-Shader wird neben der Berechnung der Position und der Geschwindigkeit auch die Kollision mit der Box behandelt.
+
+Die Partikel werden in der Update-Funktion in jedem Frame gerendert. Dazu wird eine von Unity vorgegebene Zeichen-Funktion aufgerufen, welche das gleiche Kugel-Mesh parallel auf der GPU zeichnet. Dadurch verhindern wir den unnoetigen Overhead, eigenstaendige GameObjects pro Partikel zu erstellen. In diesem Schritt werden die Partikel anhand ihrer Dichte in einen blassen bis kraeftigen Blauton gefaerbt.
 
 Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benoetigt. Der Raum, in welchem sich die Partikel bewegen koennen, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, welches die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
 Ausserdem werden zwei Oberflaechen benoetigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits waehrend der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu koennen. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benoetigte Objekte entfernt und neue Objekte eingeblendet.
@@ -100,7 +102,12 @@ Ausserdem werden zwei Oberflaechen benoetigt, um Parameter einerseits vor dem Be
 \section{Ergebnisse und Evaluierung}
 
 \section{Beiträge}
+Kirill Menke hat ueber den SPH-Algorithmus recherchiert und die Methode gefunden, wie 
+effizient auf die Nachbarpartikel zugegriffen werden kann. Er hat das Grundgeruest der Simulation in Unity aufgesetzt, sodass die einzelnen Schritte des SPH-Algorithmus auf der GPU ausgefuehrt werden koennen. Zusaetzlich hat er das Rendering der Partikel implementiert und bei der Umsetzung des SPH-Algorithmus mitgewirkt.
 
+Linda Stadter hat ebenfalls bei der Umsetzung des SPH-Algorithmus mitgewirkt. Zuesatzlich hat sie sich um das Erzeugen der Box und die Kollisionen der Kugeln mit den Seiten gekuemmert. Ausserdem hat sie die beiden Oberflaechen umgesetzt.
+
+Peter Wichert
 \section{Diskussion}
 
 \section{Zusammenfassung}
