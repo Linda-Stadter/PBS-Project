@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  25 FEB 2021 17:57
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  25 FEB 2021 19:22
 entering extended mode
 **./main.tex
 (main.tex
@@ -334,9 +334,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 29--29
 
  []
 
-
-LaTeX Warning: Reference `Nvidia' on page 1 undefined on input line 40.
-
 [1
 
 {C:/Users/linda/AppData/Local/MiKTeX/pdftex/config/pdftex.map}
@@ -354,40 +351,55 @@ File: images/interface2.png Graphic file (type png)
 Package pdftex.def Info: images/interface2.png  used on input line 97.
 (pdftex.def)             Requested size: 222.62206pt x 96.95448pt.
  (main.bbl
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `cmtt' (encoding: OT1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
 
-Package natbib Warning: Empty `thebibliography' environment on input line 8.
+Underfull \hbox (badness 10000) in paragraph at lines 9--13
+[]\OT1/cmr/m/n/10 (+20) Particle-based fluid si-mu-la-ti-on.
+ []
 
-) [2 <./images/interface1.png> <./images/interface2.png>] (main.aux)
 
-LaTeX Warning: There were undefined references.
+Underfull \hbox (badness 10000) in paragraph at lines 9--13
+\OT1/cmtt/m/n/10 http://developer.download.nvidia.com/
+ []
 
- ) 
+
+Overfull \hbox (33.43803pt too wide) in paragraph at lines 9--13
+\OT1/cmtt/m/n/10 presentations/2008/GDC/GDC08[]ParticleFluids.pdf\OT1/cmr/m/n/1
+0 (-20) .
+ []
+
+) [2 <./images/interface1.png> <./images/interface2.png>] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 5910 strings out of 479334
- 86948 string characters out of 2857084
- 457093 words of memory out of 3000000
- 23189 multiletter control sequences out of 15000+200000
- 412136 words of font info for 106 fonts, out of 3000000 for 9000
+ 5925 strings out of 479334
+ 87126 string characters out of 2857084
+ 457111 words of memory out of 3000000
+ 23196 multiletter control sequences out of 15000+200000
+ 412457 words of font info for 110 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 68i,8n,74p,936b,276s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
-cmbx10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
-fonts/cm/cmex10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/p
-ublic/amsfonts/cm/cmmi10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/font
-s/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/linda/AppData/Local/Programs/MiK
-TeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/linda/AppData/Local/Prog
-rams/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/linda/AppData/Loc
-al/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/linda/AppD
-ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/Users/l
-inda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss12.pfb><C
-:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss
-9.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts
-/cm/cmssbx10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/publ
-ic/amsfonts/cm/cmssi12.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/
-type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on main.pdf (2 pages, 277685 bytes).
+ 68i,8n,74p,918b,276s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Users
+/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb>
+<C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cm
+ex10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfo
+nts/cm/cmmi10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/pub
+lic/amsfonts/cm/cmmi7.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/t
+ype1/public/amsfonts/cm/cmr10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX
+/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/linda/AppData/Local/Programs
+/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/linda/AppData/Local/P
+rograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/Users/linda/AppDat
+a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss12.pfb><C:/Users/lin
+da/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss9.pfb><C:/U
+sers/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmssbx1
+0.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts
+/cm/cmssi12.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/publi
+c/amsfonts/cm/cmsy10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/ty
+pe1/public/amsfonts/cm/cmtt10.pfb>
+Output written on main.pdf (2 pages, 292087 bytes).
 PDF statistics:
- 72 PDF objects out of 1000 (max. 8388607)
+ 76 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 32784 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 33296 words of extra memory for PDF output out of 35830 (max. 10000000)
 

@@ -1,8 +1,14 @@
-\begin{thebibliography}{0}
+\begin{thebibliography}{1}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Nvi()]{Nvidia}
+Particle-based fluid simulation.
+\newblock \url{http://developer.download.nvidia.com/
+  presentations/2008/GDC/GDC08\_ParticleFluids.pdf}.
+\newblock Accessed: 2021-02-24.
 
 \end{thebibliography}
