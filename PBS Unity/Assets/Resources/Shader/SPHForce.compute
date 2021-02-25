@@ -79,7 +79,8 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 					// SPH Force evaluation:
 					FluidParticle particleB = particlesBuffer[particleIdxB];
-					float3 posB = particleB.pos;
+					if (particleB.alive == 1) {
+						float3 posB = particleB.pos;
 
 					const float3 diff = posA - posB;
 					const float r2 = dot(diff, diff);
@@ -212,7 +213,8 @@ void calcForce2(uint3 id : SV_DispatchThreadID)
 
 					// SPH Force evaluation:
 					FluidParticle particleB = particlesBuffer[particleIdxB];
-					float3 posB = particleB.posLF;
+					if (particleB.alive == 1) {
+						float3 posB = particleB.posLF;
 
 					const float3 diff = posA - posB;
 					const float r2 = dot(diff, diff);

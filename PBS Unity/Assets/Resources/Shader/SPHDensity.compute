@@ -24,74 +24,79 @@ float gamma;
 void calcDensity1(uint3 id : SV_DispatchThreadID)
 {
 	uint particleIdxA = particlesIndexBuffer[id.x];
-	float3 posA = particlesBuffer[particleIdxA].pos;
-	
-    // Grid cell is of size [SPH smoothing radius], so position is refitted into that
-	const float3 remappedPos = posA * h_inv;
-	const int3 cellIndex = floor(remappedPos);
+	FluidParticle particle = particlesBuffer[particleIdxA];
+	if (particle.alive == 1) {
 
-    // Compute density field:
-	float density = 0;
+		float3 posA = particlesBuffer[particleIdxA].pos;
 
-	// iterate through all [27] neighbor cells:
-	// -1 to +1 only applies for a grid cell size of 1 (grid cell size = h)
-	[loop]
-	for (int i = -1; i <= 1; ++i)
-	{
+		// Grid cell is of size [SPH smoothing radius], so position is refitted into that
+		const float3 remappedPos = posA * h_inv;
+		const int3 cellIndex = floor(remappedPos);
+
+		// Compute density field:
+		float density = 0;
+
+		// iterate through all [27] neighbor cells:
+		// -1 to +1 only applies for a grid cell size of 1 (grid cell size = h)
 		[loop]
-		for (int j = -1; j <= 1; ++j)
+		for (int i = -1; i <= 1; ++i)
 		{
 			[loop]
-			for (int k = -1; k <= 1; ++k)
+			for (int j = -1; j <= 1; ++j)
 			{
-				// hashed cell index is retrieved:
-				const int3 neighborIndex = cellIndex + int3(i, j, k);
-				const uint flatNeighborIndex = SPH_GridHash(neighborIndex, particleCount);
-
-				// look up the offset into particle list from neighbor cell:
-				uint neighborIterator = offsetBuffer[flatNeighborIndex];
-				
-				// iterate through neighbor cell particles (if iterator offset is valid):
 				[loop]
-				while (neighborIterator != 0x7FFFFFFF && neighborIterator < particleCount)
+				for (int k = -1; k <= 1; ++k)
 				{
-					
-					uint particleIdxB = particlesIndexBuffer[neighborIterator];
-					if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)
+					// hashed cell index is retrieved:
+					const int3 neighborIndex = cellIndex + int3(i, j, k);
+					const uint flatNeighborIndex = SPH_GridHash(neighborIndex, particleCount);
+
+					// look up the offset into particle list from neighbor cell:
+					uint neighborIterator = offsetBuffer[flatNeighborIndex];
+
+					// iterate through neighbor cell particles (if iterator offset is valid):
+					[loop]
+					while (neighborIterator != 0x7FFFFFFF && neighborIterator < particleCount)
 					{
-						// here means we stepped out of the neighbor cell list!
-						break;
+
+						uint particleIdxB = particlesIndexBuffer[neighborIterator];
+						if ((uint)cellIndexBuffer[neighborIterator] != flatNeighborIndex)
+						{
+							// here means we stepped out of the neighbor cell list!
+							break;
+						}
+
+						// SPH Density evaluation:
+						FluidParticle particleB = particlesBuffer[particleIdxB];
+						if (particleB.alive == 1) {
+							float3 posB = particleB.pos;
+
+							float3 diff = posA - posB;
+							float r2 = dot(diff, diff); // distance squared
+
+							if (r2 < h2)
+							{
+								float W = poly6 * pow(h2 - r2, 3);
+								density += mass * W;
+							}
+						}
+
+
+						neighborIterator++;
 					}
-					
-					// SPH Density evaluation:
-					FluidParticle particleB = particlesBuffer[particleIdxB];
-					float3 posB = particleB.pos;
-
-					float3 diff = posA - posB;
-					float r2 = dot(diff, diff); // distance squared
-
-					if (r2 < h2)
-					{
-						float W = poly6 * pow(h2 - r2, 3);
-						density += mass * W;
-					}
-					
-
-					neighborIterator++;
 				}
 			}
 		}
+
+
+
+		// Can't be lower than reference density to avoid negative pressure!
+		density = max(p0, density); // Oder: max(0, density)?
+
+		// Store the result
+		densityBuffer[particleIdxA] = density;
+
 	}
-
-
-    
-	// Can't be lower than reference density to avoid negative pressure!
-	density = max(p0, density); // Oder: max(0, density)?
-
-	// Store the result
-	densityBuffer[particleIdxA] = density;
-	
-
 }
 
 
@@ -144,17 +149,18 @@ void calcDensity2(uint3 id : SV_DispatchThreadID)
 
 					// SPH Density evaluation:
 					FluidParticle particleB = particlesBuffer[particleIdxB];
-					float3 posB = particleB.posLF;
+					if (particleB.alive == 1) {
+						float3 posB = particleB.posLF;
 
-					float3 diff = posA - posB;
-					float r2 = dot(diff, diff); // distance squared
+						float3 diff = posA - posB;
+						float r2 = dot(diff, diff); // distance squared
 
-					if (r2 < h2)
-					{
-						float W = poly6 * pow(h2 - r2, 3);
-						density += mass * W;
+						if (r2 < h2)
+						{
+							float W = poly6 * pow(h2 - r2, 3);
+							density += mass * W;
+						}
 					}
-
 
 					neighborIterator++;
 				}

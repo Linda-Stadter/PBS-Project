@@ -4,7 +4,7 @@
 QualitySettings:
   m_ObjectHideFlags: 0
   serializedVersion: 5
-  m_CurrentQuality: 4
+  m_CurrentQuality: 0
   m_QualitySettings:
   - serializedVersion: 2
     name: Very Low
@@ -163,7 +163,7 @@ QualitySettings:
     shadowCascade4Split: {x: 0.06666667, y: 0.2, z: 0.46666667}
     shadowmaskMode: 1
     skinWeights: 4
-    textureQuality: 1
+    textureQuality: 0
     anisotropicTextures: 1
     antiAliasing: 4
     softParticles: 1
@@ -228,7 +228,7 @@ QualitySettings:
     Nintendo Switch: 5
     PS4: 5
     PSP2: 2
-    Standalone: 5
+    Standalone: 0
     Tizen: 2
     WebGL: 3
     WiiU: 5
