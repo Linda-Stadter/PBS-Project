@@ -35,8 +35,9 @@
 Detailierte Instruktionen sind in der Englischen Vorlage zu finden.
 
 \section{Theorie}
+Bei der Geglaetteten Teilchen-Hydrodynamik (SPH) wird die zu simulierende Fluessigkeit durch eine endliche Anzahl an Partikeln diskretisiert. Die Partikel interagieren innerhalb eines bestimmten Radius $h$ miteinander und besitzen eigene physikalische Eigenschaften wie  Dichte, Masse oder Druck.
 
-Die Suche der Nachbarpartikel stellt einen sehr aufwaendigen Schritt des SPH-Algorithmus dar. Die Nachbarpartikel eines Partikels sind die Menge der Partikel, welche sich innerhalb eines bestimmten Radius $h$ befinden und somit Einfluss auf den Partikel besitzen. Um diese effizient zu finden, teilen wir den Raum in ein uniformes Gitter auf. Eine Zelle besitzt die Groesse des Radius $h$, sodass die Nachbarpartikel nur in den anliegenden 26 Zellen und in der Zelle des Partikels gesucht werden muessen. Durch ihre Positionen im Raum werden die Partikel je einer Zelle zugewiesen. Dies erfolgt durch Spatial Hashing, damit eine endliche Anzahl an Zellen fuer einen unendlich grossen Raum ausreicht. Dann koennen die Partikel anhand ihrer zugewiesenen Zelle sortiert werden. Fuer jede Zelle wird der Abstand zu dem ersten Partikel der Zelle gespeichert. Diese Idee wurde 2008 von Nvidia vorgestellt. \ref{Nvidia}
+Die Nachbarpartikel eines Partikels sind die Menge der Partikel, welche sich innerhalb von $h$ befinden und somit Einfluss auf den Partikel besitzen. Die Suche dieser Nachbarpartikel stellt einen sehr aufwaendigen Schritt des SPH-Algorithmus dar. Um diese effizient zu finden, teilen wir den Raum in ein uniformes Gitter auf. Eine Zelle besitzt die Groesse des Radius $h$, sodass die Nachbarpartikel nur in den anliegenden 26 Zellen und in der Zelle des Partikels gesucht werden muessen. Durch ihre Positionen im Raum werden die Partikel je einer Zelle zugewiesen. Dies erfolgt durch Spatial Hashing, damit eine endliche Anzahl an Zellen fuer einen unendlich grossen Raum ausreicht. Dann koennen die Partikel anhand ihrer zugewiesenen Zelle sortiert werden. Fuer jede Zelle wird der Abstand zu dem ersten Partikel der Zelle gespeichert. Diese Idee wurde 2008 von Nvidia vorgestellt. \ref{Nvidia}
 
 Die Dichte wird dabei wie in der Gleichung \ref{density} mithilfe eines Poly6 Smoothing Kernels $W_{ij}$ aus Gleichung \ref{poly6} berechnet.
 \begin{equation}
@@ -65,6 +66,8 @@ f = f^{pressure} + f^{viscosity} + f^{external}
 
 TODO Force
 
+Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit den Seiten der Box werden durch einfache Positionsabfragen behandelt. Diese Verhindern, dass die Partikel durch die Begrenzungen ueberschreiten. Ausserdem wird ihre Geschwindigkeit in der entsprechenden Richtung umgekehrt. Eine Daempfungsvariable wird eingefuehrt, die die Geschwindigkeit dabei abmildern kann.
+
 \section{Implementierung}
 Das Projekt wird in der Laufzeit und Entwicklungsumgebung Unity implementiert. Dazu wird ein sogenanntes GameObject erstellt, welches ein eigens geschriebenes C\#-Skript zugewiesen wird. Dieses Skript wird verwendet, um die Simulation zu initialisieren und aufzurufen. %Dabei werden zunaechst die notwendigen Arrays, Buffer, Partikel und Shader initialisiert.
 Ein Zeitschritt wird mithilfe der Update-Funktion von Unity einmal pro Frame durchgefuehrt. Der eigentliche SPH-Algorithmus wird auf sieben Shader aufgeteilt, welche von der GPU ausgefuehrt werden. Es ist je ein Shader dafuer zustaendig, die Buffer zu initialisieren, die Partikel in Zellen einzuteilen, die Partikel anhand ihrer Zelle zu sortieren, die Dichte und im Anschluss die Force eines Partikels zu berechnen und zum Schluss den Integrationsschritt durchzufuehren.
@@ -73,21 +76,23 @@ Die Positionen in x-,y- und z-Richtung werden gehasht, um daraus den Zellindex z
 
 Fuer das Sortieren der Partikel anhand ihrer zugewiesenen Zelle wird eine fertige Implementierung des Algorithmus Bitonisches Sortieren verwendet. Dieser Sortieralgorithmus kann parallel auf der GPU ausgefuehrt werden.
 
-Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschluss der Force wird auf aehnliche Weise implementiert. Hierbei muss nur ueber die 27 moeglichen Nachbarzellen iteriert werden. Mithilfe des zuvor gespeicherten Abstands kann dann effizient auf alle Partikel einer bestimmten Nachbarzelle zugegriffen werden. Zusaetlich muss noch ueberprueft werden, ob der Abstand zu dem Partikel kleiner als der Radius $h$ ist.
+Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschluss der Force wird auf aehnliche Weise implementiert. Hierbei muss ueber die 27 moeglichen Nachbarzellen iteriert werden. Mithilfe des zuvor gespeicherten Abstands kann dann effizient auf alle Partikel einer bestimmten Nachbarzelle zugegriffen werden. Zusaetzlich wird ueberprueft, ob der Abstand zwischen den Partikeln kleiner als der Radius $h$ ist.
+
+Im Integrations-Shader wird neben der Berechnung der Position und der Geschwindigkeit auch die Kollision mit der Box behandelt.
 
 Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benoetigt. Der Raum, in welchem sich die Partikel bewegen koennen, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, welches die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
-Ausserdem werden zwei Oberflaechen benoetigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits waehrend der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu koennen. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benoetigte Objekte entfernt und neue benoetigte Objekte eingeblendet.
+Ausserdem werden zwei Oberflaechen benoetigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits waehrend der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu koennen. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benoetigte Objekte entfernt und neue Objekte eingeblendet.
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.7\linewidth]{images/interface1.png}
+    \includegraphics[width=1\linewidth]{images/interface1.png}
     \caption{Oeberflaeche vor dem Starten der Simulation, um die entsprechenden Parameter der Simulation einzustellen.}
     \label{fig:interface1}
 \end{figure}
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.7\linewidth]{images/interface2.png}
+    \includegraphics[width=1\linewidth]{images/interface2.png}
     \caption{Oeberflaeche waehrend der Simulation, um die Parameter des SPH-Algorithmus anzupassen.}
     \label{fig:interface2}
 \end{figure}

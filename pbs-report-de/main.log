@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  25 FEB 2021 00:53
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  25 FEB 2021 17:07
 entering extended mode
 **./main.tex
 (main.tex
@@ -335,7 +335,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 29--29
  []
 
 
-LaTeX Warning: Reference `Nvidia' on page 1 undefined on input line 39.
+LaTeX Warning: Reference `Nvidia' on page 1 undefined on input line 40.
 
 [1
 
@@ -346,32 +346,30 @@ LaTeX Warning: Reference `Nvidia' on page 1 undefined on input line 39.
 <images/interface1.png, id=21, 330.48468pt x 200.24812pt>
 File: images/interface1.png Graphic file (type png)
 <use images/interface1.png>
-Package pdftex.def Info: images/interface1.png  used on input line 83.
-(pdftex.def)             Requested size: 155.83475pt x 94.42523pt.
+Package pdftex.def Info: images/interface1.png  used on input line 88.
+(pdftex.def)             Requested size: 222.62206pt x 134.89581pt.
 <images/interface2.png, id=23, 496.10344pt x 216.05719pt>
 File: images/interface2.png Graphic file (type png)
 <use images/interface2.png>
-Package pdftex.def Info: images/interface2.png  used on input line 90.
-(pdftex.def)             Requested size: 155.83475pt x 67.86716pt.
+Package pdftex.def Info: images/interface2.png  used on input line 95.
+(pdftex.def)             Requested size: 222.62206pt x 96.95448pt.
  (main.bbl
 
 Package natbib Warning: Empty `thebibliography' environment on input line 8.
 
-) [2
-
- <./images/interface1.png> <./images/interface2.png>] (main.aux)
+) [2 <./images/interface1.png> <./images/interface2.png>] (main.aux)
 
 LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 5898 strings out of 479334
- 86740 string characters out of 2857084
+ 5904 strings out of 479334
+ 86904 string characters out of 2857084
  457093 words of memory out of 3000000
  23189 multiletter control sequences out of 15000+200000
- 411830 words of font info for 100 fonts, out of 3000000 for 9000
+ 411983 words of font info for 103 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 68i,8n,74p,967b,272s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 68i,8n,74p,936b,268s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
 cmbx10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
 fonts/cm/cmex10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/p
@@ -387,7 +385,7 @@ inda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss12.pfb><C
 /cm/cmssbx10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/publ
 ic/amsfonts/cm/cmssi12.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/
 type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on main.pdf (2 pages, 275514 bytes).
+Output written on main.pdf (2 pages, 276574 bytes).
 PDF statistics:
  72 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
