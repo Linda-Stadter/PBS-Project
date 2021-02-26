@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{4}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -10,5 +10,23 @@ Particle-based fluid simulation.
 \newblock \url{http://developer.download.nvidia.com/
   presentations/2008/GDC/GDC08\_ParticleFluids.pdf}.
 \newblock Accessed: 2021-02-24.
+
+\bibitem[Gingold and Monaghan(1977)]{gingold1977smoothed}
+Robert~A Gingold and Joseph~J Monaghan.
+\newblock Smoothed particle hydrodynamics: theory and application to
+  non-spherical stars.
+\newblock \emph{Monthly notices of the royal astronomical society},
+  181\penalty0 (3):\penalty0 375--389, 1977.
+
+\bibitem[Lucy(1977)]{lucy1977numerical}
+Leon~B Lucy.
+\newblock A numerical approach to the testing of the fission hypothesis.
+\newblock \emph{The astronomical journal}, 82:\penalty0 1013--1024, 1977.
+
+\bibitem[M{\"u}ller et~al.(2003)M{\"u}ller, Charypar, and
+  Gross]{muller2003particle}
+Matthias M{\"u}ller, David Charypar, and Markus~H Gross.
+\newblock Particle-based fluid simulation for interactive applications.
+\newblock In \emph{Symposium on Computer animation}, pages 154--159, 2003.
 
 \end{thebibliography}
