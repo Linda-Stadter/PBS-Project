@@ -36,26 +36,26 @@
 %vll irgendwas mit blender oder so
 
 Das Projekt soll einen realistischen Wasserfluss in einer begrenzten 3D-Umgebung in Echtzeit simulieren. %TODO vll satz über nromales partikelverhalten (zittern ect) sowie box interaktion
-Als Inspiration dient das Kinderspielzeug 'Aquaplay', bei dem Kinder ueber Schleusen, Kurbeln, Pumpen oder Schranken den Wasserfluss veraendern koennen. 
+Als Inspiration dient das Kinderspielzeug 'Aquaplay', bei dem Kinder über Schleusen, Kurbeln, Pumpen oder Schranken den Wasserfluss veraendern können. 
 
 %Eine finale Simulation soll das Wasser in Bewegung in einer Art Kanal/Fluss sehen.
-Zur Visualisierung des Wassers sollen zunächst kugelförmige Objekte dienen, welche durch Screen Space Rendering oder Marching Cubes zu realistisch aussehendem Wasser erweitert werden koennten. 
+Zur Visualisierung des Wassers sollen zunächst kugelförmige Objekte dienen, welche durch Screen Space Rendering oder Marching Cubes zu realistisch aussehendem Wasser erweitert werden könnten. 
 
-Für ein ausreichend detailliertes Verhalten der Simulation werden etwa 30.000 Partikel simuliert. Als Kriterium für Echtzeitanforderungen sollen 30 Bilder pro Sekunde erreicht werden. Dies soll auf handelsueblicher Hardware wie der NVIDIA RTX 2070 moeglich sein, ohne die Anzahl der Partikel zu verringern. 
+Für ein ausreichend detailliertes Verhalten der Simulation werden etwa 30.000 Partikel simuliert. Als Kriterium für Echtzeitanforderungen sollen 30 Bilder pro Sekunde erreicht werden. Dies soll auf handelsüblicher Hardware wie der NVIDIA RTX 2070 möglich sein, ohne die Anzahl der Partikel zu verringern. 
 
 \section{Theorie}
 %hier muesste eigentlich auch etwas hin, aber kein plan... 
 \subsection{Stand der Forschung}
-Die Methode der Geglaetteten Teilchen-Hydrodynamik (SPH) wurde erstmalig von Gingold und Monaghan \citep{gingold1977smoothed} und Lucy \citep{lucy1977numerical} dargestellt. Dabei wurde sie verwendet, um astrophysikalische Probleme wie die Dynamiken von Sternen darzustellen.
+Die Methode der Geglaetteten Teilchen-Hydrodynamik (SPH) wurde erstmalig von Gingold und Monaghan \citep{gingold1977smoothed} und Lucy \citep{lucy1977numerical} vorgestellt. Dabei wurde sie verwendet, um astrophysikalische Probleme wie die Dynamiken von Sternen darzustellen.
 
-Mueller et al. \citep{muller2003particle} wandte SPH zuerst fuer Computergrafik Simulationen in Echtzeit an. Es wurde eine Methode gefunden, die schnell genug war, bis zu 5.000 Partikel in interaktiven Systemen darzustellen.
+Müller et al. \citep{muller2003particle} wandte SPH zuerst für Computergrafik Simulationen in Echtzeit an. Es wurde eine Methode gefunden, die schnell genug war, bis zu 5.000 Partikel in interaktiven Systemen abzubilden.
 
 
 \subsection{SPH}
 
-Bei SPH wird die zu simulierende Fluessigkeit durch eine endliche Anzahl an Partikeln diskretisiert. Die Partikel interagieren innerhalb eines bestimmten Radius $h$ miteinander und besitzen eigene physikalische Eigenschaften wie  Dichte, Masse oder Druck.
+Bei SPH wird die zu simulierende Flüssigkeit durch eine endliche Anzahl an Partikeln diskretisiert. Die Partikel interagieren innerhalb eines bestimmten Radius $h$ miteinander und besitzen eigene physikalische Eigenschaften wie  Dichte, Masse oder Druck.
 
-Die Nachbarpartikel eines Partikels sind die Menge der Partikel, welche sich innerhalb von $h$ befinden und somit Einfluss auf den Partikel besitzen. Die Suche dieser Nachbarpartikel stellt einen sehr aufwaendigen Schritt des SPH-Algorithmus dar. Um diese effizient zu finden, teilen wir den Raum in ein uniformes Gitter auf. Eine Zelle besitzt die Groesse des Radius $h$, sodass die Nachbarpartikel nur in den anliegenden 26 Zellen und in der Zelle des Partikels gesucht werden muessen. Durch ihre Positionen im Raum werden die Partikel je einer Zelle zugewiesen. Dies erfolgt durch Spatial Hashing, damit eine endliche Anzahl an Zellen fuer einen unendlich grossen Raum ausreicht. Dann koennen die Partikel anhand ihrer zugewiesenen Zelle sortiert werden. Fuer jede Zelle wird der Abstand zu dem ersten Partikel der Zelle gespeichert. Diese Idee wurde 2008 von Nvidia vorgestellt. \citep{Nvidia}
+Die Nachbarpartikel eines Partikels sind die Menge der Partikel, welche sich innerhalb von $h$ befinden und somit Einfluss auf den Partikel besitzen. Die Suche dieser Nachbarpartikel stellt einen sehr aufwaendigen Schritt des SPH-Algorithmus dar. Um diese effizient zu finden, teilen wir den Raum in ein uniformes Gitter auf. Eine Zelle besitzt die Grösse des Radius $h$, sodass die Nachbarpartikel nur in den anliegenden 26 Zellen und in der Zelle des Partikels gesucht werden müssen. Durch ihre Positionen im Raum werden die Partikel je einer Zelle zugewiesen. Dies erfolgt durch Spatial Hashing, damit eine endliche Anzahl an Zellen für einen unendlich grossen Raum ausreicht. Dann können die Partikel anhand ihrer zugewiesenen Zelle sortiert werden. Für jede Zelle wird der Abstand zu dem ersten Partikel der Zelle gespeichert. Diese Idee wurde 2008 von Nvidia vorgestellt. \citep{Nvidia}
 \begin{equation}
 \label{force}
 \vec{f} = \vec{f}^{pressure} + \vec{f}^{viscosity} + \vec{f}^{external}
@@ -140,16 +140,16 @@ W_{poly6}(\vec{r},h) = \frac{315}{64 \pi h^9}
 
 
 \paragraph{Oberflächenspannung}
-Um akkurates Wasserverhalten in Wasserspritzern und an Grenzen zu Luft zu erzeugen wird zusätzlich die molekulare Attraktion und Repulsion zwischen Wassermolekülen modelliert.
+Um ein überzeugendes Verhalten bei Wasserspritzern und an der Wasseroberflaeche zu erzeugen wird zusätzlich die molekulare Attraktion und Repulsion zwischen Wassermolekülen modelliert.
 
-Eine neue Kraft für Oberflächenspannung wird wie folgt in die bisherige Kraftberechnung eingefügt:
+Eine neü Kraft für Oberflächenspannung wird wie folgt in die bisherige Kraftberechnung eingefügt:
 \begin{equation}
 \label{force_with_surface}
 \vec{f} = \vec{f}^{pressure} + \vec{f}^{viscosity} + \vec{f}^{external} + \vec{f}^{surface}
 \end{equation}
 
 
-Das molekulare Verhalten wird durch \eqref{cohesion} ausgedrückt. $\gamma$ sei hier ein von uns wählbarer Koeffizient.
+Das molekulare Verhalten wird durch \eqref{cohesion} ausgedrückt. $\gamma$ sei hier ein von uns wählbarer Köffizient.
 
 Die Spline-Funktion aus \eqref{spline} sorgt ab einem gewählten Radius $h$ für die zunächst anziehende Wirkung, sowie den ansteigenden abstoßenden Effekt, sollten zwei Partikel zu nahe beieinander sein.
 
@@ -174,7 +174,7 @@ C(r) = \frac{32}{64 \pi h^9}
 Um zu verhindern, dass beim Formen eines Tropfens durch Oberflächenspannung, die Ausgangsposition der betroffenen Partikel maßgeblich die finale Form beeinflusst, fügen wir eine weitere Kraft aus \eqref{curvature} hinzu.
 Diese sorgt dafür, dass Partikel-Mengen unabhängig von Ausgangsposition versuchen eine Kugelform einzunehmen und dadurch die Oberfläche ihres Tropfens minimieren.
 
-Zunächst wird für jedes Partikel ein Normal-Vektor wie in \eqref{normal} berechnet. Hier sollen sich Partikel an der Oberfläche von denen innerhalb eines Wasserkörpers dadurch unterscheiden, dass letztere einen Normal-Vektor von $\sim \vec{0}$ besitzen. Hier würde das Benutzen ein geglättetes Feld optimale Ergebnisse erreichen.
+Zunächst wird für jedes Partikel ein Normal-Vektor wie in \eqref{normal} berechnet. Hier sollen sich Partikel an der Oberfläche von denen innerhalb eines Wasserkörpers dadurch unterscheiden, dass letztere einen Normal-Vektor von $\sim \vec{0}$ besitzen. Hier würde das Benutzen eines geglättetes Feldes optimale Ergebnisse erreichen. (?)
 
 \begin{equation}
 \label{normal}
@@ -186,7 +186,7 @@ Zunächst wird für jedes Partikel ein Normal-Vektor wie in \eqref{normal} berec
 \vec{f}_{i\leftarrow j}^{\text{curvature}} = -\gamma m_{i}(\vec{n}_i - \vec{n}_j)
 \end{equation}
 
-Um den Zusammenhalt von wenigen Partikel an den von Gruppen mit mehreren Anzugleichen, wird in \eqref{surface_tension} des Weiteren ein Korrekturfaktor beim Zusammensetzen Oberflächenspannung eingeführt.
+Um den Zusammenhalt von wenigen Partikeln an den von grösseren Gruppen anzugleichen, wird in \eqref{surface_tension} ein Korrekturfaktor beim Zusammensetzen (?) der Oberflächenspannung eingeführt.
 
 \begin{equation}
 	\label{surface_tension}
@@ -196,36 +196,36 @@ Um den Zusammenhalt von wenigen Partikel an den von Gruppen mit mehreren Anzugle
 
 \subsection{Integration}
 
-Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit den Seiten der Box werden durch einfache Positionsabfragen behandelt. Diese verhindern, dass die Partikel die Begrenzungen ueberschreiten. Ausserdem werden die Geschwindigkeiten der entsprechenden Richtungen umgekehrt. Eine Daempfungsvariable wird eingefuehrt, die die Geschwindigkeit dabei zusaetzlich abmildern kann.
+Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit den Seiten der Box werden durch einfache Positionsabfragen behandelt. Diese verhindern, dass die Partikel die Begrenzungen überschreiten. Ausserdem werden die Geschwindigkeiten der entsprechenden Richtungen umgekehrt. Eine Dämpfungsvariable wird eingeführt, die die Geschwindigkeit dabei zusätzlich abmildern kann.
 
 \section{Implementierung}
-Das Projekt wird in der Laufzeit und Entwicklungsumgebung Unity implementiert. Dazu wird ein sogenanntes GameObject erstellt, welches ein eigens geschriebenes C\#-Skript zugewiesen wird. Dieses Skript wird verwendet, um die Simulation zu initialisieren und aufzurufen. %Dabei werden zunaechst die notwendigen Arrays, Buffer, Partikel und Shader initialisiert.
-Ein Zeitschritt wird mithilfe der Update-Funktion von Unity einmal pro Frame durchgefuehrt. Der eigentliche SPH-Algorithmus wird auf sieben Shader aufgeteilt, welche von der GPU ausgefuehrt werden. Es ist je ein Shader dafuer zustaendig, die Buffer zu initialisieren, die Partikel in Zellen einzuteilen, die Partikel anhand ihrer Zelle zu sortieren, die Dichte und im Anschluss die Force eines Partikels zu berechnen und zum Schluss den Integrationsschritt durchzufuehren.
+Das Projekt wird in der Laufzeit und Entwicklungsumgebung Unity implementiert. Dazu wird ein sogenanntes GameObject erstellt, welches ein eigens geschriebenes C\#-Skript zugewiesen wird. Dieses Skript wird verwendet, um die Simulation zu initialisieren und aufzurufen. %Dabei werden zunächst die notwendigen Arrays, Buffer, Partikel und Shader initialisiert.
+Ein Zeitschritt wird mithilfe der Update-Funktion von Unity einmal pro Frame durchgeführt. Der eigentliche SPH-Algorithmus wird auf sieben Shader aufgeteilt, welche von der GPU ausgeführt werden. Es ist je ein Shader dafür zuständig, die Buffer zu initialisieren, die Partikel in Zellen einzuteilen, die Partikel anhand ihrer Zelle zu sortieren, die Dichte und im Anschluss die Force eines Partikels zu berechnen und zum Schluss den Integrationsschritt durchzuführen.
 
-Die Positionen in x-,y- und z-Richtung werden gehasht, um daraus den Zellindex zu bestimmen. Um die Anzahl der Hash-Kollisionen moeglichst gering zu halten, werden 8-stellige Primzahlen und eine grosse Anzahl an Partikeln - und damit auch Zellen - benutzt.
+Die Positionen in x-,y- und z-Richtung werden gehasht, um daraus den Zellindex zu bestimmen. Um die Anzahl der Hash-Kollisionen möglichst gering zu halten, werden 8-stellige Primzahlen und eine grosse Anzahl an Partikeln - und damit auch Zellen - benutzt.
 
-Fuer das Sortieren der Partikel anhand ihrer zugewiesenen Zelle wird eine fertige Implementierung des Algorithmus Bitonisches Sortieren verwendet. Dieser Sortieralgorithmus kann parallel auf der GPU ausgefuehrt werden.
+Für das Sortieren der Partikel anhand ihrer zugewiesenen Zelle wird eine fertige Implementierung des Algorithmus Bitonisches Sortieren verwendet. Dieser Sortieralgorithmus kann parallel auf der GPU ausgeführt werden.
 
-Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschluss der Force wird im Dichte- und im Force-Shader auf aehnliche Weise implementiert. Hierbei muss ueber die 27 moeglichen Nachbarzellen iteriert werden. Mithilfe des zuvor gespeicherten Abstands kann dann effizient auf alle Partikel einer bestimmten Nachbarzelle zugegriffen werden. Zusaetzlich wird ueberprueft, ob der Abstand zwischen den Partikeln kleiner als der Radius $h$ ist.
+Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschluss der Force wird im Dichte- und im Force-Shader auf ähnliche Weise implementiert. Hierbei muss über die 27 möglichen Nachbarzellen iteriert werden. Mithilfe des zuvor gespeicherten Abstands kann dann effizient auf alle Partikel einer bestimmten Nachbarzelle zugegriffen werden. Zusätzlich wird überprüft, ob der Abstand zwischen den Partikeln kleiner als der Radius $h$ ist.
 
 Im Integrations-Shader wird neben der Berechnung der Position und der Geschwindigkeit auch die Kollision mit der Box behandelt.
 
-Die Partikel werden in der Update-Funktion in jedem Frame gerendert. Dazu wird eine von Unity vorgegebene Zeichen-Funktion aufgerufen, welche das gleiche Kugel-Mesh parallel auf der GPU zeichnet. Dadurch verhindern wir den unnoetigen Overhead, eigenstaendige GameObjects pro Partikel zu erstellen. In diesem Schritt werden die Partikel anhand ihrer Dichte in einen blassen bis kraeftigen Blauton gefaerbt.
+Die Partikel werden in der Update-Funktion in jedem Frame gerendert. Dazu wird eine von Unity vorgegebene Zeichen-Funktion aufgerufen, welche das gleiche Kugel-Mesh parallel auf der GPU zeichnet. Dadurch verhindern wir den unnötigen Overhead, eigenständige GameObjects pro Partikel zu erstellen. In diesem Schritt werden die Partikel anhand ihrer Dichte in einen blassen bis kräftigen Blauton gefärbt.
 
-Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benoetigt. Der Raum, in welchem sich die Partikel bewegen koennen, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, welches die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
-Ausserdem werden zwei Nutzeroberflaechen benoetigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits waehrend der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu koennen. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benoetigte Objekte entfernt und neue Objekte eingeblendet.
+Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benötigt. Der Raum, in welchem sich die Partikel bewegen können, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, welches die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
+Ausserdem werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits während der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu können. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benötigte Objekte entfernt und neue Objekte eingeblendet.
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=1\linewidth]{images/interface1.png}
-    \caption{Oeberflaeche vor dem Starten der Simulation, um die entsprechenden Parameter der Simulation einzustellen.}
+    \caption{öberfläche vor dem Starten der Simulation, um die entsprechenden Parameter der Simulation einzustellen.}
     \label{fig:interface1}
 \end{figure}
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=1\linewidth]{images/interface2.png}
-    \caption{Oeberflaeche waehrend der Simulation, um die Parameter des SPH-Algorithmus anzupassen.}
+    \caption{öberfläche während der Simulation, um die Parameter des SPH-Algorithmus anzupassen.}
     \label{fig:interface2}
 \end{figure}
 
@@ -237,18 +237,18 @@ Bild von Explosion
 + ein paar simulations zahlen
 
 \section{Beiträge}
-Kirill Menke hat ueber den SPH-Algorithmus recherchiert und die Methode gefunden, wie 
-effizient auf die Nachbarpartikel zugegriffen werden kann. Er hat das Grundgeruest der Simulation in Unity aufgesetzt, sodass die einzelnen Schritte des SPH-Algorithmus auf der GPU ausgefuehrt werden koennen. Zusaetzlich hat er das Rendering der Partikel implementiert , bei der Umsetzung des SPH-Algorithmus mitgewirkt und einen Modus zum vereinfachten Debuggen eingefuehrt. Ausserdem hat er die Milestonepraesentation erstellt und vorgetragen. 
+Kirill Menke hat über den SPH-Algorithmus recherchiert und die Methode gefunden, wie 
+effizient auf die Nachbarpartikel zugegriffen werden kann. Er hat das Grundgerüst der Simulation in Unity aufgesetzt, sodass die einzelnen Schritte des SPH-Algorithmus auf der GPU ausgeführt werden können. Zusätzlich hat er das Rendering der Partikel implementiert , bei der Umsetzung des SPH-Algorithmus mitgewirkt und einen Modus zum vereinfachten Debuggen eingeführt. Ausserdem hat er die Milestonepräsentation erstellt und vorgetragen. 
 
-Linda Stadter hat ebenfalls bei der Umsetzung des SPH-Algorithmus mitgewirkt. Zuesatzlich hat sie sich um das Erzeugen der Box und die Kollisionen der Kugeln mit den Seiten gekuemmert. Zusaetzlich hat sie die beiden Nutzeroberflaechen umgesetzt, die Farbcodierung der Partikel eingefuehrt und ein kontinuierliches Erzeugen der Partikel umgesetzt. Ausserdem hat sie die Porjektplanpraesentation erstellt und vorgetragen, bei der Milestonepraesentation mitgewirkt und den finalen Bericht geschrieben.
+Linda Stadter hat ebenfalls bei der Umsetzung des SPH-Algorithmus mitgewirkt. Zusätzlich hat sie sich um das Erzeugen der Box und die Kollisionen der Kugeln mit den Seiten gekümmert. Zusätzlich hat sie die beiden Nutzeroberflächen umgesetzt, die Farbcodierung der Partikel eingeführt und ein kontinuierliches Erzeugen der Partikel umgesetzt. Ausserdem hat sie die Porjektplanpräsentation erstellt und vorgetragen, bei der Milestonepräsentation mitgewirkt und den finalen Bericht geschrieben.
 
-Peter Wichert hat ueber die Leapfrog Integration und Oberflaechenspannung recherchiert und diese implementiert. Zusaetzlich hat er eine automatische Berechnung der Parameter eingefuehrt und den Debug-Modus ergaenzt. Ausserdem hat er die Milestone Praesentation erstellt und vorgetragen und den finalen Bericht geschrieben.
+Peter Wichert hat über die Leapfrog Integration und Oberflächenspannung recherchiert und diese implementiert. Zusätzlich hat er eine automatische Berechnung der Parameter eingeführt und den Debug-Modus ergänzt. Ausserdem hat er die Milestone Präsentation erstellt und vorgetragen und den finalen Bericht geschrieben.
 
 
 
 \section{Diskussion}
-Durch das Verwendung von Spatial Hashing und der Sortierung nach Zellen laesst sich die Laufzeit der aufwaendigen Suche der Nachbarpartikel von $O(n^2)$ auf $O(n)$ reduzieren.
-In Kombination mit der parallelen Ausfuehrung des SPH-Algorithmus auf der GPU lassen sich grosse Anzahlen an Partikeln in Echtzeit simulieren.
+Durch das Verwendung von Spatial Hashing und der Sortierung nach Zellen lässt sich die Laufzeit der aufwändigen Suche der Nachbarpartikel von $O(n^2)$ auf $O(n)$ reduzieren.
+In Kombination mit der parallelen Ausführung des SPH-Algorithmus auf der GPU lassen sich grosse Anzahlen an Partikeln in Echtzeit simulieren.
 
 Merge Sort kann nur 2-er Potenzen von Partikel.
 Echtzeitperformance würde etwas schlechter werden mit dem Extra Render Schritten.
@@ -258,7 +258,7 @@ Echtzeitperformance würde vermutlich ein stück schlechter werden mit Festkörp
 Hash-Collisions lassen sich leider nicht vermeiden und fallen bei einer sehr geringen Anzahl an Partikeln auf. Daher werden diese geringen Partikelanzahlen von der Simulation ausgeschlossen.
 \section{Zusammenfassung}
 
-Das Projekt hat letztendlich die meisten gesetzten, sowie einige optionale, Ziele erreicht. Ein realistisches Wasserverhalten durch SPH mit zusätzlicher Oberflächenspannung wurde erfolgreich umgesetzt. Die zunächst optionale GPU Implementierung und Spatial Hashing sorgten dafür, dass die gewünschte Menge an Partikeln mit stabiler Frameanzahl simuliert werden konnten. Abstriche mussten allerdings in Sachen Visualisierung gemacht werden, da in dem Projekt der Fokus hauptsaechlich auf die physikalische Simulation gelegt wurde. Weitere Zusaetze wie die Interaktion mit Objekten und die Komplexität des Wasserstroms wurden aus zeitlichen Gruenden nicht implementiert, eigenen sich aber gut, um sie im Rahmen eines weiteren Projekts umzusetzen.
+Das Projekt hat letztendlich die meisten gesetzten, sowie einige optionale, Ziele erreicht. Ein realistisches Wasserverhalten durch SPH mit zusätzlicher Oberflächenspannung wurde erfolgreich umgesetzt. Die zunächst optionale GPU Implementierung und Spatial Hashing sorgten dafür, dass die gewünschte Menge an Partikeln mit stabiler Frameanzahl simuliert werden konnten. Abstriche mussten allerdings in Sachen Visualisierung gemacht werden, da in dem Projekt der Fokus hauptsächlich auf die physikalische Simulation gelegt wurde. Weitere Zusätze wie die Interaktion mit Objekten und die Komplexität des Wasserstroms wurden aus zeitlichen Gründen nicht implementiert, eigenen sich aber gut, um sie im Rahmen eines weiteren Projekts umzusetzen.
 
 
 %% <--------------------------------------------------------------

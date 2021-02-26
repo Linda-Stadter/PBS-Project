@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  26 FEB 2021 19:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  26 FEB 2021 20:34
 entering extended mode
 **./main.tex
 (main.tex
@@ -335,17 +335,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 29--29
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 48--49
+Underfull \hbox (badness 10000) in paragraph at lines 49--50
 \OT1/cmr/m/n/10 (+20) Die Me-tho-de der Ge-glaet-te-ten Teilchen-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 48--49
+Underfull \hbox (badness 10000) in paragraph at lines 49--50
 \OT1/cmr/m/n/10 (+20) Hydrodynamik (SPH) wur-de erst-ma-lig von
  []
 
 
-Overfull \hbox (12.99423pt too wide) detected at line 105
+Overfull \hbox (12.99423pt too wide) detected at line 106
 \OML/cmm/m/it/10 W[]\OT1/cmr/m/n/10 ([]\OML/cmm/m/it/10 ; h\OT1/cmr/m/n/10 ) = 
 [] []
  []
@@ -356,7 +356,7 @@ Overfull \hbox (12.99423pt too wide) detected at line 105
 
 
  <./fau-logo-tech.pdf>]
-Overfull \hbox (8.23749pt too wide) detected at line 125
+Overfull \hbox (8.23749pt too wide) detected at line 126
 \OMS/cmsy/m/n/10 5\OML/cmm/m/it/10 W[]\OT1/cmr/m/n/10 ([]\OML/cmm/m/it/10 ; h\O
 T1/cmr/m/n/10 ) = \OMS/cmsy/m/n/10  []\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 h[] \OM
 S/cmsy/m/n/10   \OML/cmm/m/it/10 r[]\OT1/cmr/m/n/10 )[] []
@@ -366,12 +366,12 @@ S/cmsy/m/n/10   \OML/cmm/m/it/10 r[]\OT1/cmr/m/n/10 )[] []
 <images/interface1.png, id=27, 330.48468pt x 200.24812pt>
 File: images/interface1.png Graphic file (type png)
 <use images/interface1.png>
-Package pdftex.def Info: images/interface1.png  used on input line 219.
+Package pdftex.def Info: images/interface1.png  used on input line 220.
 (pdftex.def)             Requested size: 222.62206pt x 134.89581pt.
 <images/interface2.png, id=29, 496.10344pt x 216.05719pt>
 File: images/interface2.png Graphic file (type png)
 <use images/interface2.png>
-Package pdftex.def Info: images/interface2.png  used on input line 226.
+Package pdftex.def Info: images/interface2.png  used on input line 227.
 (pdftex.def)             Requested size: 222.62206pt x 96.95448pt.
  [3 <./images/interface1.png> <./images/interface2.png>] (main.bbl
 Package microtype Info: Loading generic protrusion settings for font family
@@ -398,11 +398,11 @@ Overfull \hbox (33.43803pt too wide) in paragraph at lines 9--13
 
 ] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 5969 strings out of 479334
- 87779 string characters out of 2857084
+ 5967 strings out of 479334
+ 87773 string characters out of 2857084
  466375 words of memory out of 3000000
  23223 multiletter control sequences out of 15000+200000
- 413745 words of font info for 120 fonts, out of 3000000 for 9000
+ 413700 words of font info for 119 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  68i,9n,74p,919b,278s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/
@@ -423,7 +423,7 @@ iKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/linda/AppData/Local/P
 rograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/linda/AppData
 /Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/lind
 a/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on main.pdf (4 pages, 339059 bytes).
+Output written on main.pdf (4 pages, 340534 bytes).
 PDF statistics:
  90 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
