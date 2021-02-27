@@ -1,4 +1,4 @@
-\begin{thebibliography}{4}
+\begin{thebibliography}{5}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -23,10 +23,20 @@ Leon~B Lucy.
 \newblock A numerical approach to the testing of the fission hypothesis.
 \newblock \emph{The astronomical journal}, 82:\penalty0 1013--1024, 1977.
 
-\bibitem[M{\"u}ller et~al.(2003)M{\"u}ller, Charypar, and
+\bibitem[M{\"u}ller et~al.(2003{\natexlab{a}})M{\"u}ller, Charypar, and
   Gross]{muller2003particle}
 Matthias M{\"u}ller, David Charypar, and Markus~H Gross.
 \newblock Particle-based fluid simulation for interactive applications.
-\newblock In \emph{Symposium on Computer animation}, pages 154--159, 2003.
+\newblock In \emph{Symposium on Computer animation}, pages 154--159,
+  2003{\natexlab{a}}.
+
+\bibitem[M{\"u}ller et~al.(2003{\natexlab{b}})M{\"u}ller, Pomeranets, and
+  Gross]{muller2003optimized}
+Matthias Teschner Bruno Heidelberger~Matthias M{\"u}ller, Danat Pomeranets, and
+  Markus Gross.
+\newblock Optimized spatial hashing for collision detection of deformable
+  objects.
+\newblock \emph{Vision, Modeling, and Visualization 2003: Proceedings, November
+  19-21, 2003, M{\"u}nchen, Germany}, page~47, 2003{\natexlab{b}}.
 
 \end{thebibliography}

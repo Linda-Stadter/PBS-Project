@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  26 FEB 2021 20:34
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  27 FEB 2021 16:30
 entering extended mode
 **./main.tex
 (main.tex
@@ -225,28 +225,62 @@ Package: natbib 2010/09/13 8.31b (PWD, AO)
 LaTeX Info: Redefining \cite on input line 694.
 \c@NAT@ctr=\count278
 )
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/mathtools\mathtools.sty
+Package: mathtools 2020/03/24 v1.24 mathematical typesetting tools
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/latex-tools\calc.sty
+Package: calc 2017/05/25 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count279
+\calc@Bcount=\count280
+\calc@Adimen=\dimen173
+\calc@Bdimen=\dimen174
+\calc@Askip=\skip57
+\calc@Bskip=\skip58
+LaTeX Info: Redefining \setlength on input line 80.
+LaTeX Info: Redefining \addtolength on input line 81.
+\calc@Ccount=\count281
+\calc@Cskip=\skip59
+)
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/mathtools\mhsetup.sty
+Package: mhsetup 2017/03/31 v1.3 programming setup (MH)
+)
+LaTeX Info: Thecontrolsequence`\('isalreadyrobust on input line 130.
+LaTeX Info: Thecontrolsequence`\)'isalreadyrobust on input line 130.
+LaTeX Info: Thecontrolsequence`\['isalreadyrobust on input line 130.
+LaTeX Info: Thecontrolsequence`\]'isalreadyrobust on input line 130.
+\g_MT_multlinerow_int=\count282
+\l_MT_multwidth_dim=\dimen175
+\origjot=\skip60
+\l_MT_shortvdotswithinadjustabove_dim=\dimen176
+\l_MT_shortvdotswithinadjustbelow_dim=\dimen177
+\l_MT_above_intertext_sep=\dimen178
+\l_MT_below_intertext_sep=\dimen179
+\l_MT_above_shortintertext_sep=\dimen180
+\l_MT_below_shortintertext_sep=\dimen181
+\xmathstrut@box=\box49
+\xmathstrut@dim=\dimen182
+)
 (C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
 tex.def
 File: l3backend-pdftex.def 2021-02-18 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count279
-\l__pdf_internal_box=\box49
+\l__color_backend_stack_int=\count283
+\l__pdf_internal_box=\box50
 ) (main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -286,16 +320,16 @@ LaTeX Font Info:    ... okay on input line 25.
 (C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
 ii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count280
-\scratchdimen=\dimen173
-\scratchbox=\box50
-\nofMPsegments=\count281
-\nofMParguments=\count282
+\scratchcounter=\count284
+\scratchdimen=\dimen183
+\scratchbox=\box51
+\nofMPsegments=\count285
+\nofMParguments=\count286
 \everyMPshowfont=\toks23
-\MPscratchCnt=\count283
-\MPscratchDim=\dimen174
-\MPnumerator=\count284
-\makeMPintoPDFobject=\count285
+\MPscratchCnt=\count287
+\MPscratchDim=\dimen184
+\MPnumerator=\count288
+\makeMPintoPDFobject=\count289
 \everyMPtoPDFconversion=\toks24
 )
 (C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
@@ -304,14 +338,14 @@ Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 85.
 )
-LaTeX Info: Redefining \microtypecontext on input line 25.
+LaTeX Info: Redefining \microtypecontext on input line 27.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: Automatic font expansion enabled (level 2),
 (microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
 Package microtype Info: Using default expansion set `alltext-nott'.
-LaTeX Info: Redefining \showhyphens on input line 25.
+LaTeX Info: Redefining \showhyphens on input line 27.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: No adjustment of interword spacing.
 Package microtype Info: No adjustment of character kerning.
@@ -327,27 +361,16 @@ Package microtype Info: Loading generic protrusion settings for font family
 <fau-logo-tech.pdf, id=1, 252.0602pt x 68.28691pt>
 File: fau-logo-tech.pdf Graphic file (type pdf)
 <use fau-logo-tech.pdf>
-Package pdftex.def Info: fau-logo-tech.pdf  used on input line 29.
+Package pdftex.def Info: fau-logo-tech.pdf  used on input line 31.
 (pdftex.def)             Requested size: 210.0522pt x 56.9055pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 29--29
+Underfull \hbox (badness 10000) in paragraph at lines 31--31
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 49--50
-\OT1/cmr/m/n/10 (+20) Die Me-tho-de der Ge-glaet-te-ten Teilchen-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 49--50
-\OT1/cmr/m/n/10 (+20) Hydrodynamik (SPH) wur-de erst-ma-lig von
- []
-
-
-Overfull \hbox (12.99423pt too wide) detected at line 106
-\OML/cmm/m/it/10 W[]\OT1/cmr/m/n/10 ([]\OML/cmm/m/it/10 ; h\OT1/cmr/m/n/10 ) = 
-[] []
+Underfull \hbox (badness 1389) in paragraph at lines 48--49
+[]\OT1/cmr/m/n/10 (+20) Als Ent-wick-lungs-um-ge-bung dient die Spiel-
  []
 
 [1
@@ -356,22 +379,22 @@ Overfull \hbox (12.99423pt too wide) detected at line 106
 
 
  <./fau-logo-tech.pdf>]
-Overfull \hbox (8.23749pt too wide) detected at line 126
+Overfull \hbox (8.23749pt too wide) detected at line 144
 \OMS/cmsy/m/n/10 5\OML/cmm/m/it/10 W[]\OT1/cmr/m/n/10 ([]\OML/cmm/m/it/10 ; h\O
 T1/cmr/m/n/10 ) = \OMS/cmsy/m/n/10  []\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 h[] \OM
 S/cmsy/m/n/10   \OML/cmm/m/it/10 r[]\OT1/cmr/m/n/10 )[] []
  []
 
 [2]
-<images/interface1.png, id=27, 330.48468pt x 200.24812pt>
+<images/interface1.png, id=28, 330.48468pt x 200.24812pt>
 File: images/interface1.png Graphic file (type png)
 <use images/interface1.png>
-Package pdftex.def Info: images/interface1.png  used on input line 220.
+Package pdftex.def Info: images/interface1.png  used on input line 238.
 (pdftex.def)             Requested size: 222.62206pt x 134.89581pt.
-<images/interface2.png, id=29, 496.10344pt x 216.05719pt>
+<images/interface2.png, id=30, 496.10344pt x 216.05719pt>
 File: images/interface2.png Graphic file (type png)
 <use images/interface2.png>
-Package pdftex.def Info: images/interface2.png  used on input line 227.
+Package pdftex.def Info: images/interface2.png  used on input line 245.
 (pdftex.def)             Requested size: 222.62206pt x 96.95448pt.
  [3 <./images/interface1.png> <./images/interface2.png>] (main.bbl
 Package microtype Info: Loading generic protrusion settings for font family
@@ -394,38 +417,38 @@ Overfull \hbox (33.43803pt too wide) in paragraph at lines 9--13
 0 (-20) .
  []
 
-) [4
-
-] (main.aux) ) 
+) [4] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 5967 strings out of 479334
- 87773 string characters out of 2857084
- 466375 words of memory out of 3000000
- 23223 multiletter control sequences out of 15000+200000
- 413700 words of font info for 119 fonts, out of 3000000 for 9000
+ 6584 strings out of 479334
+ 98748 string characters out of 2857084
+ 482925 words of memory out of 3000000
+ 23809 multiletter control sequences out of 15000+200000
+ 416558 words of font info for 133 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 68i,9n,74p,919b,278s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/
-amsfonts/cm/cmbx10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type
-1/public/amsfonts/cm/cmex10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/f
-onts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/linda/AppData/Local/Programs
-/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/linda/AppData/Local/
-Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/linda/AppDat
-a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/linda
-/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/User
-s/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss10.pfb
-><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/c
-mss12.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsf
-onts/cm/cmss9.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/pub
-lic/amsfonts/cm/cmssbx10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/font
-s/type1/public/amsfonts/cm/cmssi12.pfb><C:/Users/linda/AppData/Local/Programs/M
-iKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/linda/AppData/Local/P
-rograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/linda/AppData
-/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/lind
-a/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on main.pdf (4 pages, 340534 bytes).
+ 68i,9n,74p,772b,278s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/pub
+lic/amsfonts/cm/cmbx10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/
+type1/public/amsfonts/cm/cmex10.pfb><C:/Users/linda/AppData/Local/Programs/MiKT
+eX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/linda/AppData/Local/Prog
+rams/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/linda/AppData/Lo
+cal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/linda/
+AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/User
+s/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><
+C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr
+9.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts
+/cm/cmss10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public
+/amsfonts/cm/cmss12.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/typ
+e1/public/amsfonts/cm/cmss9.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/f
+onts/type1/public/amsfonts/cm/cmssbx10.pfb><C:/Users/linda/AppData/Local/Progra
+ms/MiKTeX/fonts/type1/public/amsfonts/cm/cmssi12.pfb><C:/Users/linda/AppData/Lo
+cal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/linda/A
+ppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users
+/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+<C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cm
+tt10.pfb>
+Output written on main.pdf (4 pages, 356384 bytes).
 PDF statistics:
- 90 PDF objects out of 1000 (max. 8388607)
+ 94 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 37392 words of extra memory for PDF output out of 42996 (max. 10000000)
+ 41488 words of extra memory for PDF output out of 42996 (max. 10000000)
 
