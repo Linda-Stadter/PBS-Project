@@ -8,6 +8,8 @@
 \usepackage{amsmath}
 \usepackage{natbib}
 \usepackage{mathtools}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \renewcommand{\eqref}[1]{Eq.~(\ref{#1})}
 \newcommand{\figref}[1]{Fig.~\ref{#1}}
 \sloppy
@@ -30,6 +32,7 @@
 \hrule\bigskip
 ]
 
+%neuneuneu
 %% <--------------------------------------------------------------
 %% <--------------------------------------------------------------
 
@@ -44,6 +47,7 @@ Als Inspiration dient das Kinderspielzeug 'Aquaplay', bei dem Kinder über Schle
 Zur Visualisierung des Wassers sollen zunächst kugelförmige Objekte dienen, welche durch Screen Space Rendering oder Marching Cubes zu realistisch aussehendem Wasser erweitert werden könnten. 
 
 Für ein ausreichend detailliertes Verhalten der Simulation werden etwa 30.000 Partikel simuliert. Als Kriterium für Echtzeitanforderungen sollen 30 Bilder pro Sekunde erreicht werden. Dies soll auf handelsüblicher Hardware wie der NVIDIA RTX 2070 möglich sein, ohne die Anzahl der Partikel zu verringern. 
+%TODO habt ihr eine 2070? ich habe eine 1070
 
 Als Entwicklungsumgebung dient die Spiel-Engine Unity, welche hauptsaechlich fuer das Rendering eingesetzt werden soll. Echtzeit-Interaktionen lassen sich mit dieser Laufzeitumgebung einfach umsetzen, was einen weiteren Vorteil darstellt. Ausserdem bietet Unity eine uebersichtliche Nutzeroberflaeche.
 
@@ -98,17 +102,17 @@ p_i = k((\frac{\rho}{\rho_{0}})^{\gamma}-1)
 
 \begin{equation}
 \label{force_pressure}
-\vec{f}^{\text{pressure}}_{i} = - \sum_{j}m_{j}(\frac{p_{i}}{\rho_{i}^2} +\frac{p_{j}}{\rho_{j}^2})\bigtriangledown W(\vec{r}_{i}-\vec{r}_{j},h)
+\vec{f}^{pressure}_{i} = - \sum_{j}m_{j}(\frac{p_{i}}{\rho_{i}^2} +\frac{p_{j}}{\rho_{j}^2})\bigtriangledown W(\vec{r}_{i}-\vec{r}_{j},h)
 \end{equation}
 
 \begin{equation}
 \label{force_external}
-\vec{f}^{\text{external}}_{i} = \vec{g}
+\vec{f}^{external}_{i} = \vec{g}
 \end{equation}
 
 \begin{equation}
 \label{force_viscosity}
-\vec{f}^{\text{viscosity}}_{i} = \mu \sum_{j}m_{j}\frac{\vec{v}_{i} - \vec{v}_{j}}{\rho_{j}}\bigtriangledown^2 W(\vec{r}_{i}-\vec{r}_{j},h)
+\vec{f}^{viscosity}_{i} = \mu \sum_{j}m_{j}\frac{\vec{v}_{i} - \vec{v}_{j}}{\rho_{j}}\bigtriangledown^2 W(\vec{r}_{i}-\vec{r}_{j},h)
 \end{equation}
 
 \paragraph{Smoothing Kernels}
@@ -158,7 +162,7 @@ W_{poly6}(\vec{r},h) = \frac{315}{64 \pi h^9}
 
 
 \paragraph{Oberflächenspannung}
-Um ein überzeugendes Verhalten bei Wasserspritzern und an der Wasseroberflaeche zu erzeugen wird zusätzlich die molekulare Attraktion und Repulsion zwischen Wassermolekülen modelliert.
+Um ein überzeugendes Verhalten bei Wasserspritzern und an der Wasseroberflaeche zu erzeugen wird zusätzlich die molekulare Attraktion und Repulsion zwischen Wassermolekülen modelliert. Das gewählte Modell folgt der Arbeit von \citep{SurfaceTension}.
 
 Eine neue Kraft für Oberflächenspannung wird wie folgt in die bisherige Kraftberechnung eingefügt:
 \begin{equation}
@@ -214,7 +218,27 @@ Um den Zusammenhalt von wenigen Partikeln an den von grösseren Gruppen anzuglei
 
 \subsection{Integration}
 
-Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit den Seiten der Box werden durch einfache Positionsabfragen behandelt. Diese verhindern, dass die Partikel die Begrenzungen überschreiten. Ausserdem werden die Geschwindigkeiten der entsprechenden Richtungen umgekehrt. Eine Dämpfungsvariable wird eingeführt, die die Geschwindigkeit dabei zusätzlich abmildern kann.
+
+Für die Implementation von Leapfrog wir eine von \citep{Leapfrog} vorgestellte Variation benutzt.
+
+\begin{equation}
+\label{leapfrog_v_i+1/2}
+v_{i+1/2} = v_{i}+\frac{\Delta t}{2}a_{i}
+\end{equation}
+\begin{equation}
+\label{leapfrog_r_i+1/2}
+r_{i+1/2} = r_{i}+\frac{\Delta t}{2}v_{i}
+\end{equation}
+\begin{equation}
+\label{leapfrog_v_i+1}
+v_{i+1} = v_{i} + \Delta a_{i+1/2}
+\end{equation}
+\begin{equation}
+\label{leapfrog_r_i+1}
+r_{i+1} = r_{i} + \frac{\Delta t}{2} (v_{i} + v_{i+1})
+\end{equation}
+
+Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit den Seiten der Box werden durch einfache Positionsabfragen behandelt. Diese verhindern, dass die Partikel die Begrenzungen überschreiten. Ausserdem werden die Geschwindigkeiten der entsprechenden Richtungen umgekehrt, um die Partikel von der Box abprallen zu lassen. Eine Dämpfungsvariable wird eingeführt, die die Geschwindigkeit dabei zusätzlich abmildern kann.
 
 \section{Implementierung}
 Das Projekt wird in der Laufzeit und Entwicklungsumgebung Unity implementiert. Dazu wird ein sogenanntes GameObject erstellt, welches ein eigens geschriebenes C\#-Skript zugewiesen wird. Dieses Skript wird verwendet, um die Simulation zu initialisieren und aufzurufen. %Dabei werden zunächst die notwendigen Arrays, Buffer, Partikel und Shader initialisiert.
@@ -233,6 +257,35 @@ Die Partikel werden in der Update-Funktion in jedem Frame gerendert. Dazu wird e
 Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benötigt. Der Raum, in welchem sich die Partikel bewegen können, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, welches die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
 Ausserdem werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits während der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu können. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benötigte Objekte entfernt und neue Objekte eingeblendet.
 
+
+\begin{algorithm}
+	\caption{C\# Skript}\label{skript}
+	\begin{algorithmic}[1]
+		\State Berechne Parameter
+		\State Initialisiere Partikel
+		\State Initialisiere Buffer 
+		\State Initialisiere Shader
+		\While {true} \Comment{Unitys Update Schleife}
+	
+		\For {Zeitschritt $i+1/2$ und $i+1$}	
+		\State Initialization Shader
+		\State \Comment{Kurze Beschreibung zum Shader}
+		\State Partition Shader
+		\State Sort Shader
+		\State Offset Shader
+		\State Density Shader
+		\State Normals Shader
+		\State \hskip1.0em Oder eine Auflistung der Formeln
+		\State Force Shader
+		\State \hskip1.0em \ref{force_pressure}, \ref{force_with_surface}
+		\State Integration Shader \Comment{\ref{leapfrog_r_i+1}, \ref{leapfrog_v_i+1}}
+		\EndFor
+		\EndWhile
+	
+	\end{algorithmic}
+\end{algorithm}
+
+
 \begin{figure}[t]
     \centering
     \includegraphics[width=1\linewidth]{images/interface1.png}
@@ -248,11 +301,37 @@ Ausserdem werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vor 
 \end{figure}
 
 \section{Ergebnisse und Evaluierung}
-Bild von Test mit Boxspawn
-Bild von Explosion
-2 Bilder von Finalem mit Rohr (1 leer 1 voll)
+Peter PC:\\
+AMD Ryzen 7 3700X \\
+32GB RAM\\
+NVIDIA GeForce GTX 1070\\
 
-+ ein paar simulations zahlen
+Benötigte Daten:\\
+Euler Stabilitätsgrenze\\
+Leapfrog Stabilitätsgrenze\\
+(vll noch je einmal mit/ohne Tait)\\
+
+32768 Partikel, Leapfrog, Timestep X -> FPS\\
+4096 Partikel, Leapfrog, Timestep X -> FPS\\
+32768 Partikel, Euler, Timestep X -> FPS\\
+4096 Partikel, Euler, Timestep X -> FPS\\
+(vll noch mit/ohne Tait und Box/Rohr Test)\\
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=1\linewidth]{images/Unstable.png}
+	\caption{Testsimulation wird instabil.}
+	\label{fig:unstable}
+\end{figure}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=1\linewidth]{images/Pipe_End.png}
+	\caption{Finale Simulation mit $\sim$ 32.000 Partikeln.}
+	\label{fig:final_simulation}
+\end{figure}
+
+
+
 
 \section{Beiträge}
 Kirill Menke hat über den SPH-Algorithmus recherchiert und die Methode gefunden, wie 
@@ -265,18 +344,19 @@ Peter Wichert hat über die Leapfrog Integration und Oberflächenspannung recher
 
 
 \section{Diskussion}
-Durch die Verwendung von Spatial Hashing und der Sortierung nach Zellen lässt sich die Laufzeit der aufwändigen Suche der Nachbarpartikel von $O(n^2)$ auf $O(n)$ reduzieren.
-In Kombination mit der parallelen Ausführung des SPH-Algorithmus auf der GPU lassen sich grosse Anzahlen an Partikeln in Echtzeit simulieren.
-
-Merge Sort kann nur 2-er Potenzen von Partikel.
-Echtzeitperformance würde etwas schlechter werden mit dem Extra Render Schritten.
-Echtzeitperformance würde vermutlich ein stück schlechter werden mit Festkörper Interaktion. 
-
-
+Durch das Verwendung von Spatial Hashing und der Sortierung nach Zellen laesst sich die Laufzeit der aufwaendigen Suche der Nachbarpartikel von $O(n^2)$ auf $O(n)$ reduzieren.
+In Kombination mit der parallelen Ausfuehrung des SPH-Algorithmus auf der GPU lassen sich grosse Anzahlen an Partikeln in Echtzeit simulieren.
 Hash-Collisions lassen sich leider nicht vermeiden und fallen bei einer sehr geringen Anzahl an Partikeln auf. Daher werden diese geringen Partikelanzahlen von der Simulation ausgeschlossen.
+Da in unserem Modell die Geschwindigkeit $v$ abhängig ist von der Beschleunigung $a$ müssen wir für die Leapfrog Integration zwei Berechnungen der Kräfte ausführen. Der dadurch entstehende zusätzliche Rechenaufwand wird jedoch durch die erhöhte Stabilität und dadurch größere Zeitschritte übertroffen. 
+Ungewiss ist ob zukünftige Erweiterungen in Sachen Visualisierung des Wassers und Interaktion mit Festkörpern die aktuelle Echtzeit-Performance signifikant negativ beeinflussen würden.
+Allgemein zeigt die Simulation realistisches Wasserverhalten auf und kurzfristig könnte nur das Verhalten der Oberflächenspannung durch Glätten des Feldes für die Normalen Berechnung etwas verbessert werden.
+
 \section{Zusammenfassung}
 
-Das Projekt hat letztendlich die meisten gesetzten, sowie einige optionale, Ziele erreicht. Ein realistisches Wasserverhalten durch SPH mit zusätzlicher Oberflächenspannung wurde erfolgreich umgesetzt. Die zunächst optionale GPU Implementierung und Spatial Hashing sorgten dafür, dass die gewünschte Menge an Partikeln mit stabiler Frameanzahl simuliert werden konnten. Abstriche mussten allerdings in Sachen Visualisierung gemacht werden, da in dem Projekt der Fokus hauptsächlich auf die physikalische Simulation gelegt wurde. Weitere Zusätze wie die Interaktion mit Objekten und die Komplexität des Wasserstroms wurden aus zeitlichen Gründen nicht implementiert, eigenen sich aber gut, um sie im Rahmen eines weiteren Projekts umzusetzen.
+Das Projekt hat letztendlich die meisten gesetzten, sowie einige optionale, Ziele erreicht. Ein realistisches Wasserverhalten durch SPH mit zusätzlicher Oberflaechenspannung wurde erfolgreich umgesetzt. Die zunächst optionale GPU Implementierung und Spatial Hashing sorgten dafür, dass die gewünschte Menge an Partikeln mit stabiler Frameanzahl simuliert werden konnten. Abstriche mussten allerdings in Sachen Visualisierung gemacht werden, da in dem Projekt der Fokus hauptsächlich auf die physikalische Simulation gelegt wurde. Weitere Zusätze wie die Interaktion mit Objekten und die Komplexität des Wasserstroms wurden aus zeitlichen Gründen nicht implementiert, eigenen sich aber gut, um sie im Rahmen eines weiteren Projekts umzusetzen.
+\iffalse
+Die anfänglich genannten technischen Herausforderungen GPU Programmierung und Unity Interaktion sind im finalen Produkt fest integriert. Als hinderlich stellten sich im Verlauf des Projekts vor allem die Wahl passender Parameter sowie das Debuggen von GPU Code heraus.
+\fi
 
 
 %% <--------------------------------------------------------------

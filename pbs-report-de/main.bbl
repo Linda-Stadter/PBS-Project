@@ -1,4 +1,4 @@
-\begin{thebibliography}{5}
+\begin{thebibliography}{7}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -10,6 +10,17 @@ Particle-based fluid simulation.
 \newblock \url{http://developer.download.nvidia.com/
   presentations/2008/GDC/GDC08\_ParticleFluids.pdf}.
 \newblock Accessed: 2021-02-24.
+
+\bibitem[Akinci et~al.(2013)Akinci, Akinci, and Teschner]{SurfaceTension}
+Nadir Akinci, Gizem Akinci, and Matthias Teschner.
+\newblock Versatile surface tension and adhesion for sph fluids.
+\newblock \emph{ACM Transactions on Graphics}, 10 2013.
+\newblock \doi{10.1145/2508363.2508395}.
+
+\bibitem[Cossins(2010)]{Leapfrog}
+Peter Cossins.
+\newblock Smoothed particle hydrodynamics.
+\newblock pages 38--40, 07 2010.
 
 \bibitem[Gingold and Monaghan(1977)]{gingold1977smoothed}
 Robert~A Gingold and Joseph~J Monaghan.
