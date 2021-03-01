@@ -53,7 +53,7 @@ Als Entwicklungsumgebung dient die Spiel-Engine Unity, welche hauptsaechlich fue
 
 \section{Theorie}
 Unsere Echtzeit Wassersimulation basiert hauptsaechlich auf der Methode der Geglaetteten Teilchen-Hydrodynamik (SPH), welche durch durch eine verbesserte Suche der Nachbarpartikel beschleunigt werden soll. Zur numerischen Integration wird sowohl das Leapfrog-Verfahren als auch das explizierte Euler-Verfahren eingesetzt.
-\subsection{Stand der Forschung}
+\subsection{Wissenschaftlicher Hintergrund}
 Die Methode von SPH wurde erstmalig von Gingold und Monaghan \citep{gingold1977smoothed} und Lucy \citep{lucy1977numerical} vorgestellt. Urspruenglicherweise wurde sie dabei verwendet, um astrophysikalische Probleme wie die Dynamiken von Sternen darzustellen.
 
 Müller et al. \citep{muller2003particle} wandte zuerst SPH für Computergrafik Simulationen in Echtzeit an. Es wurde eine Methode gefunden, die schnell genug war, bis zu 5.000 Partikel in interaktiven Systemen abzubilden.
@@ -161,10 +161,10 @@ W_{poly6}(\vec{r},h) = \frac{315}{64 \pi h^9}
 \end{equation}
 
 
-\paragraph{Oberflächenspannung}
+\subsection{Oberflächenspannung}
 Um ein überzeugendes Verhalten bei Wasserspritzern und an der Wasseroberflaeche zu erzeugen wird zusätzlich die molekulare Attraktion und Repulsion zwischen Wassermolekülen modelliert. Das gewählte Modell folgt der Arbeit von \citep{SurfaceTension}.
 
-Eine neue Kraft für Oberflächenspannung wird wie folgt in die bisherige Kraftberechnung eingefügt:
+Eine neue Kraft für Oberflächenspannung wird wie folgt in die bisherige Kraftberechnung aus \eqref{force} eingefügt:
 \begin{equation}
 \label{force_with_surface}
 \vec{f} = \vec{f}^{pressure} + \vec{f}^{viscosity} + \vec{f}^{external} + \vec{f}^{surface}
@@ -173,24 +173,27 @@ Eine neue Kraft für Oberflächenspannung wird wie folgt in die bisherige Kraftb
 
 Das molekulare Verhalten wird durch \eqref{cohesion} ausgedrückt. $\gamma$ sei hier ein von uns wählbarer Koeffizient.
 
-Die Spline-Funktion aus \eqref{spline} sorgt ab einem gewählten Radius $h$ für die zunächst anziehende Wirkung, sowie den ansteigenden abstoßenden Effekt, sollten zwei Partikel zu nahe beieinander sein.
+\begin{equation}
+\label{cohesion}
+\vec{f}_{i\leftarrow j}^{\text{cohesion}} = \gamma m_{i} m_{j} C(|\vec{x}_i - \vec{x}_j|)\frac{\vec{x}_i - \vec{x}_j}{|\vec{x}_i - \vec{x}_j|}
+\end{equation}
+
+Die Spline-Funktion aus \eqref{spline} sorgt ab dem Radius $h$ für eine zunächst anziehende Wirkung, sowie einen ansteigenden abstoßenden Effekt, sollten zwei Partikel zu nahe beieinander sein.
 
 \begin{equation}
 \label{spline}
 C(r) = \frac{32}{64 \pi h^9}
 \begin{cases}
-(h-r)^3r^3,  &\text{falls }  2r > h \land r \leq h\\
-2(h-r)^3r^3, &\text{falls } r  0 \land 2r \leq h\\
-0,&\text{sonst}  
+(h-r)^3r^3,   \\ \text{falls }  2r > h \land r \leq h\\
+
+\\ 
+2(h-r)^3r^3 - \frac{h^6}{64}, \\ \text{falls } r > 0 \land 2r \leq h\\
+\\
+0, \\ \text{sonst}  
 \end{cases}
 \end{equation}
 
 
-
-\begin{equation}
-\label{cohesion}
-\vec{f}_{i\leftarrow j}^{\text{cohesion}} = \gamma m_{i} m_{j} C(|\vec{x}_i - \vec{x}_j|)\frac{\vec{x}_i - \vec{x}_j}{|\vec{x}_i - \vec{x}_j|}
-\end{equation}
 
 
 Um zu verhindern, dass beim Formen eines Tropfens durch Oberflächenspannung, die Ausgangsposition der betroffenen Partikel maßgeblich die finale Form beeinflusst, fügen wir eine weitere Kraft aus \eqref{curvature} hinzu.
@@ -219,7 +222,7 @@ Um den Zusammenhalt von wenigen Partikeln an den von grösseren Gruppen anzuglei
 \subsection{Integration}
 
 
-Für die Implementation von Leapfrog wir eine von \citep{Leapfrog} vorgestellte Variation benutzt.
+Für die Leapfrog-Integration wird die Variante aus \eqref{leapfrog_v_i+1/2}, \eqref{leapfrog_r_i+1/2}, \eqref{leapfrog_v_i+1} und \eqref{leapfrog_r_i+1} benutzt, welche von Cossions vorgestellt wurde. \citep{Leapfrog}
 
 \begin{equation}
 \label{leapfrog_v_i+1/2}
@@ -254,6 +257,20 @@ Im Integrations-Shader wird neben der Berechnung der Position und der Geschwindi
 
 Die Partikel werden in der Update-Funktion in jedem Frame gerendert. Dazu wird eine von Unity vorgegebene Zeichen-Funktion aufgerufen, welche das gleiche Kugel-Mesh parallel auf der GPU zeichnet. Dadurch verhindern wir den unnötigen Overhead, eigenständige GameObjects pro Partikel zu erstellen. In diesem Schritt werden die Partikel anhand ihrer Dichte in einen blassen bis kräftigen Blauton gefärbt.
 
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=1\linewidth]{images/interface1.png}
+	\caption{Oberfläche vor dem Start, um die entsprechenden Parameter der Simulation einzustellen.}
+	\label{fig:interface1}
+\end{figure}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=1\linewidth]{images/interface2.png}
+	\caption{Oberfläche während der Simulation, um die Parameter des SPH-Algorithmus anzupassen.}
+	\label{fig:interface2}
+\end{figure}
+
 Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benötigt. Der Raum, in welchem sich die Partikel bewegen können, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, welches die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
 Ausserdem werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits während der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu können. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benötigte Objekte entfernt und neue Objekte eingeblendet.
 
@@ -286,25 +303,17 @@ Ausserdem werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vor 
 \end{algorithm}
 
 
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=1\linewidth]{images/interface1.png}
-    \caption{Oberfläche vor dem Start, um die entsprechenden Parameter der Simulation einzustellen.}
-    \label{fig:interface1}
-\end{figure}
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=1\linewidth]{images/interface2.png}
-    \caption{Oberfläche während der Simulation, um die Parameter des SPH-Algorithmus anzupassen.}
-    \label{fig:interface2}
-\end{figure}
 
 \section{Ergebnisse und Evaluierung}
-Peter PC:\\
+
+Um die Stabilität und Performance zu Testen wurden mehrere Iterationen der Simulation mit variierendem Zeitschritt und gleichen Parametern ausgeführt und für ca. 30 Minuten laufen gelassen. Getestet wurden Simulationen sowohl mit kontinuierliche Partikel-Erzeugung durch das Rohr, als auch mit Beginn aller Partikel in Boxform. Simulationen, die Leapfrog Integration benutzen, mit einem Zeitschritt $\leq 0.006$ Sekunden blieben dabei stabil. Eine  Simulation mit $\Delta t = 0.005$, dem konstanten Partikelerscheinen, 32.768 Partikeln und angegebenen Parametern beginnt mit $\sim$400 Frames pro Sekunde. Im Verlauf der Simulation sinken mit steigender Partikelzahl die FPS, bleiben aber immer über 60. Sobald der Spawnvorgang abgeschlossen ist, also keine neuen Partikel mehr hinzukommen und das Wasser zur Ruhe kommt, pendelt sich die Simulation bei $\sim$140 FPS ein. 
+
+
+
+\paragraph{Test Hardware}\mbox{}\\
 AMD Ryzen 7 3700X \\
-32GB RAM\\
 NVIDIA GeForce GTX 1070\\
+32GB RAM\\
 
 Benötigte Daten:\\
 Euler Stabilitätsgrenze\\
@@ -326,7 +335,7 @@ Leapfrog Stabilitätsgrenze\\
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=1\linewidth]{images/Pipe_End.png}
-	\caption{Finale Simulation mit $\sim$ 32.000 Partikeln.}
+	\caption{Simulation mit 32.768 Partikeln und $\geq$ 60 FPS.}
 	\label{fig:final_simulation}
 \end{figure}
 
@@ -344,12 +353,17 @@ Peter Wichert hat über die Leapfrog Integration und Oberflächenspannung recher
 
 
 \section{Diskussion}
-Durch das Verwendung von Spatial Hashing und der Sortierung nach Zellen laesst sich die Laufzeit der aufwaendigen Suche der Nachbarpartikel von $O(n^2)$ auf $O(n)$ reduzieren.
-In Kombination mit der parallelen Ausfuehrung des SPH-Algorithmus auf der GPU lassen sich grosse Anzahlen an Partikeln in Echtzeit simulieren.
-Hash-Collisions lassen sich leider nicht vermeiden und fallen bei einer sehr geringen Anzahl an Partikeln auf. Daher werden diese geringen Partikelanzahlen von der Simulation ausgeschlossen.
-Da in unserem Modell die Geschwindigkeit $v$ abhängig ist von der Beschleunigung $a$ müssen wir für die Leapfrog Integration zwei Berechnungen der Kräfte ausführen. Der dadurch entstehende zusätzliche Rechenaufwand wird jedoch durch die erhöhte Stabilität und dadurch größere Zeitschritte übertroffen. 
-Ungewiss ist ob zukünftige Erweiterungen in Sachen Visualisierung des Wassers und Interaktion mit Festkörpern die aktuelle Echtzeit-Performance signifikant negativ beeinflussen würden.
-Allgemein zeigt die Simulation realistisches Wasserverhalten auf und kurzfristig könnte nur das Verhalten der Oberflächenspannung durch Glätten des Feldes für die Normalen Berechnung etwas verbessert werden.
+Da in unserem Modell die Geschwindigkeit $v$ abhängig von der Beschleunigung $a$ ist, müssen wir für die Leapfrog Integration zwei Berechnungen der Kräfte ausführen. Dieser zusätzliche Rechenaufwand wird jedoch fuer eine erhöhte Stabilität und dadurch größere Zeitschritte in Kauf genommen. 
+
+
+Hash-Collisions bei der Nachbarsuche lassen sich leider nicht vermeiden und fallen bei einer sehr geringen Anzahl an Partikeln auf. Daher werden diese geringen Partikelanzahlen von der Simulation ausgeschlossen. 
+
+Das Verhalten der Oberflächenspannung koennte durch Glätten des Feldes für die Normalen Berechnung noch verbessert werden.
+Ausserdem ist ungewiss, ob zukünftige Erweiterungen wie eine realistischere Visualisierung des Wassers und Interaktionen mit Festkörpern die aktuelle Echtzeit-Performance signifikant negativ beeinflussen.
+
+
+Durch die Verwendung von Spatial Hashing und der Sortierung nach Zellen laesst sich die Laufzeit der aufwaendigen Suche der Nachbarpartikel von $O(n^2)$ auf $O(n)$ reduzieren.
+In Kombination mit der parallelen Ausfuehrung des SPH-Algorithmus auf der GPU lassen sich erfolgreich grosse Anzahlen an Partikeln realistisch in Echtzeit simulieren.
 
 \section{Zusammenfassung}
 

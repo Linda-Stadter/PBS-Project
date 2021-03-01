@@ -1,130 +1,113 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7140 64-bit) (preloaded format=pdflatex 2019.9.12)  1 MAR 2021 03:07
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  1 MAR 2021 18:09
 entering extended mode
 **./main.tex
 (main.tex
-LaTeX2e <2018-12-01>
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/paper\paper.cls"
+LaTeX2e <2020-10-01> patch level 4
+L3 programming layer <2021-02-18> xparse <2020-03-03>
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/paper\paper.cls
 Document Class: paper 2008/05/30 1.0l LaTeX document class (wm).
-\hours=\count80
-\minutes=\count81
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/base\size10.clo"
-File: size10.clo 2018/09/03 v1.4i Standard LaTeX file (size option)
+\hours=\count179
+\minutes=\count180
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/base\size10.clo
+File: size10.clo 2020/04/10 v1.4m Standard LaTeX file (size option)
 )
-\beforetitlespace=\skip41
-\c@part=\count82
-\c@section=\count83
-\c@subsection=\count84
-\c@subsubsection=\count85
-\c@paragraph=\count86
-\c@subparagraph=\count87
-\exampleindent=\skip42
-\c@figure=\count88
-\c@table=\count89
-\abovecaptionskip=\skip43
-\belowcaptionskip=\skip44
-\bibindent=\dimen102
-) ("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/babel\babel.st
-y"
-Package: babel 2019/07/19 3.33 The Babel package
+\beforetitlespace=\skip47
+\c@part=\count181
+\c@section=\count182
+\c@subsection=\count183
+\c@subsubsection=\count184
+\c@paragraph=\count185
+\c@subparagraph=\count186
+\exampleindent=\skip48
+\c@figure=\count187
+\c@table=\count188
+\abovecaptionskip=\skip49
+\belowcaptionskip=\skip50
+\bibindent=\dimen138
+)
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/generic/babel\babel.sty
+Package: babel 2021/01/26 3.53 The Babel package
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/babel\switch.def
-"
-File: switch.def 2019/07/19 3.33 Babel switching mechanism
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/generic/babel\babel.def
+File: babel.def 2021/01/26 3.53 Babel common definitions
+\babel@savecnt=\count189
+\U@D=\dimen139
+\l@babelnohyphens=\language79
+
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/generic/babel\txtbabel.def)
+\bbl@readstream=\read2
 )
+\bbl@dirlevel=\count190
+
 *************************************
 * Local config file bblopts.cfg used
 *
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/arabi\bblopts.cfg"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/arabi\bblopts.cfg
 File: bblopts.cfg 2005/09/08 v0.1 add Arabic and Farsi to "declared" options of
  babel
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/babel-german\ngerm
-an.ldf"
-Language: ngerman 2018/12/08 v2.11 German support for babel (post-1996 orthogra
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/babel-german\ngerman.ld
+f
+Language: ngerman 2020/07/21 v2.12 German support for babel (post-1996 orthogra
 phy)
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/babel-german\ngerm
-anb.ldf"
-Language: ngermanb 2018/12/08 v2.11 German support for babel (post-1996 orthogr
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/babel-german\ngermanb.l
+df
+Language: ngermanb 2020/07/21 v2.12 German support for babel (post-1996 orthogr
 aphy)
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/babel\babel.def"
-File: babel.def 2019/07/19 3.33 Babel common definitions
-\babel@savecnt=\count90
-\U@D=\dimen103
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/babel\txtbabel.d
-ef")
-\bbl@dirlevel=\count91
-)
 Package babel Info: Making " an active character on input line 121.
 )))
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/geometry\geometry.
-sty"
-Package: geometry 2018/04/16 v5.8 Page Geometry
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
+Package: geometry 2020/01/02 v5.9 Page Geometry
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/graphics\keyval.st
-y"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty
 Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
-\KV@toks@=\toks14
+\KV@toks@=\toks15
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/oberdiek\ifpdf.s
-ty"
-Package: ifpdf 2018/09/07 v3.3 Provides the ifpdf switch
-)
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/oberdiek\ifvtex.
-sty"
-Package: ifvtex 2016/05/16 v1.6 Detect VTeX and its facilities (HO)
-Package ifvtex Info: VTeX not detected.
-)
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/ifxetex\ifxetex.
-sty"
-Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
-)
-\Gm@cnth=\count92
-\Gm@cntv=\count93
-\c@Gm@tempcnt=\count94
-\Gm@bindingoffset=\dimen104
-\Gm@wd@mp=\dimen105
-\Gm@odd@mp=\dimen106
-\Gm@even@mp=\dimen107
-\Gm@layoutwidth=\dimen108
-\Gm@layoutheight=\dimen109
-\Gm@layouthoffset=\dimen110
-\Gm@layoutvoffset=\dimen111
-\Gm@dimlist=\toks15
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/geometry\geometry.
-cfg"))
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/graphics\graphicx.
-sty"
-Package: graphicx 2017/06/01 v1.1a Enhanced LaTeX Graphics (DPC,SPQR)
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
+Package: iftex 2020/03/06 v1.0d TeX engine tests
+))
+\Gm@cnth=\count191
+\Gm@cntv=\count192
+\c@Gm@tempcnt=\count193
+\Gm@bindingoffset=\dimen140
+\Gm@wd@mp=\dimen141
+\Gm@odd@mp=\dimen142
+\Gm@even@mp=\dimen143
+\Gm@layoutwidth=\dimen144
+\Gm@layoutheight=\dimen145
+\Gm@layouthoffset=\dimen146
+\Gm@layoutvoffset=\dimen147
+\Gm@dimlist=\toks16
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/graphics\graphics.
-sty"
-Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+Package: graphicx 2020/09/09 v1.2b Enhanced LaTeX Graphics (DPC,SPQR)
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/graphics\trig.sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+Package: graphics 2020/08/30 v1.4c Standard LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
 Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/graphics-cfg\graph
-ics.cfg"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.c
+fg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
-Package graphics Info: Driver file: pdftex.def on input line 99.
+Package graphics Info: Driver file: pdftex.def on input line 105.
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/graphics-def\pdfte
-x.def"
-File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
+File: pdftex.def 2020/10/05 v1.2a Graphics/color driver for pdftex
 ))
-\Gin@req@height=\dimen112
-\Gin@req@width=\dimen113
-)
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/xcolor\xcolor.sty"
+\Gin@req@height=\dimen148
+\Gin@req@width=\dimen149
+) (C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
 Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/graphics-cfg\color
-.cfg"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package xcolor Info: Driver file: pdftex.def on input line 225.
@@ -137,209 +120,202 @@ Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
 Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
+) (C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
+Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
+\heavyrulewidth=\dimen150
+\lightrulewidth=\dimen151
+\cmidrulewidth=\dimen152
+\belowrulesep=\dimen153
+\belowbottomsep=\dimen154
+\aboverulesep=\dimen155
+\abovetopsep=\dimen156
+\cmidrulesep=\dimen157
+\cmidrulekern=\dimen158
+\defaultaddspace=\dimen159
+\@cmidla=\count194
+\@cmidlb=\count195
+\@aboverulesep=\dimen160
+\@belowrulesep=\dimen161
+\@thisruleclass=\count196
+\@lastruleclass=\count197
+\@thisrulewidth=\dimen162
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/booktabs\booktabs.
-sty"
-Package: booktabs 2005/04/14 v1.61803 publication quality tables
-\heavyrulewidth=\dimen114
-\lightrulewidth=\dimen115
-\cmidrulewidth=\dimen116
-\belowrulesep=\dimen117
-\belowbottomsep=\dimen118
-\aboverulesep=\dimen119
-\abovetopsep=\dimen120
-\cmidrulesep=\dimen121
-\cmidrulekern=\dimen122
-\defaultaddspace=\dimen123
-\@cmidla=\count95
-\@cmidlb=\count96
-\@aboverulesep=\dimen124
-\@belowrulesep=\dimen125
-\@thisruleclass=\count97
-\@lastruleclass=\count98
-\@thisrulewidth=\dimen126
-)
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/microtype\microtyp
-e.sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype.sty
 Package: microtype 2020/12/07 v2.8 Micro-typographical refinements (RS)
-\MT@toks=\toks16
-\MT@count=\count99
+\MT@toks=\toks17
+\MT@count=\count198
 LaTeX Info: Redefining \textls on input line 788.
-\MT@outer@kern=\dimen127
+\MT@outer@kern=\dimen163
 LaTeX Info: Redefining \textmicrotypecontext on input line 1358.
-\MT@listname@count=\count100
+\MT@listname@count=\count199
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/microtype\microtyp
-e-pdftex.def"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype-pdf
+tex.def
 File: microtype-pdftex.def 2020/12/07 v2.8 Definitions specific to pdftex (RS)
 LaTeX Info: Redefining \lsstyle on input line 915.
 LaTeX Info: Redefining \lslig on input line 915.
-\MT@outer@space=\skip45
+\MT@outer@space=\skip51
 )
 Package microtype Info: Loading configuration file microtype.cfg.
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/microtype\microtyp
-e.cfg"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype.cfg
 File: microtype.cfg 2020/12/07 v2.8 microtype main configuration file (RS)
-))
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/amsmath\amsmath.st
-y"
-Package: amsmath 2018/12/01 v2.17b AMS math features
-\@mathmargin=\skip46
+)) (C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+Package: amsmath 2020/09/23 v2.17i AMS math features
+\@mathmargin=\skip52
 
 For additional information on amsmath, use the `?' option.
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/amsmath\amstext.st
-y"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
 Package: amstext 2000/06/29 v2.01 AMS text
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/amsmath\amsgen.sty
-"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
-\@emptytoks=\toks17
-\ex@=\dimen128
+\@emptytoks=\toks18
+\ex@=\dimen164
 ))
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/amsmath\amsbsy.sty
-"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
-\pmbraise@=\dimen129
+\pmbraise@=\dimen165
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/amsmath\amsopn.sty
-"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
 Package: amsopn 2016/03/08 v2.02 operator names
 )
-\inf@bad=\count101
-LaTeX Info: Redefining \frac on input line 223.
-\uproot@=\count102
-\leftroot@=\count103
-LaTeX Info: Redefining \overline on input line 385.
-\classnum@=\count104
-\DOTSCASE@=\count105
-LaTeX Info: Redefining \ldots on input line 482.
-LaTeX Info: Redefining \dots on input line 485.
-LaTeX Info: Redefining \cdots on input line 606.
-\Mathstrutbox@=\box27
-\strutbox@=\box28
-\big@size=\dimen130
-LaTeX Font Info:    Redeclaring font encoding OML on input line 729.
-LaTeX Font Info:    Redeclaring font encoding OMS on input line 730.
-\macc@depth=\count106
-\c@MaxMatrixCols=\count107
-\dotsspace@=\muskip10
-\c@parentequation=\count108
-\dspbrk@lvl=\count109
-\tag@help=\toks18
-\row@=\count110
-\column@=\count111
-\maxfields@=\count112
-\andhelp@=\toks19
-\eqnshift@=\dimen131
-\alignsep@=\dimen132
-\tagshift@=\dimen133
-\tagwidth@=\dimen134
-\totwidth@=\dimen135
-\lineht@=\dimen136
-\@envbody=\toks20
-\multlinegap=\skip47
-\multlinetaggap=\skip48
-\mathdisplay@stack=\toks21
-LaTeX Info: Redefining \[ on input line 2844.
-LaTeX Info: Redefining \] on input line 2845.
+\inf@bad=\count266
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count267
+\leftroot@=\count268
+LaTeX Info: Redefining \overline on input line 399.
+\classnum@=\count269
+\DOTSCASE@=\count270
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box47
+\strutbox@=\box48
+\big@size=\dimen166
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count271
+\c@MaxMatrixCols=\count272
+\dotsspace@=\muskip16
+\c@parentequation=\count273
+\dspbrk@lvl=\count274
+\tag@help=\toks19
+\row@=\count275
+\column@=\count276
+\maxfields@=\count277
+\andhelp@=\toks20
+\eqnshift@=\dimen167
+\alignsep@=\dimen168
+\tagshift@=\dimen169
+\tagwidth@=\dimen170
+\totwidth@=\dimen171
+\lineht@=\dimen172
+\@envbody=\toks21
+\multlinegap=\skip53
+\multlinetaggap=\skip54
+\mathdisplay@stack=\toks22
+LaTeX Info: Redefining \[ on input line 2923.
+LaTeX Info: Redefining \] on input line 2924.
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/natbib\natbib.sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/natbib\natbib.sty
 Package: natbib 2010/09/13 8.31b (PWD, AO)
-\bibhang=\skip49
-\bibsep=\skip50
+\bibhang=\skip55
+\bibsep=\skip56
 LaTeX Info: Redefining \cite on input line 694.
-\c@NAT@ctr=\count113
+\c@NAT@ctr=\count278
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/mathtools\mathtool
-s.sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/mathtools\mathtools.sty
 Package: mathtools 2020/03/24 v1.24 mathematical typesetting tools
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/tools\calc.sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/latex-tools\calc.sty
 Package: calc 2017/05/25 v4.3 Infix arithmetic (KKT,FJ)
-\calc@Acount=\count114
-\calc@Bcount=\count115
-\calc@Adimen=\dimen137
-\calc@Bdimen=\dimen138
-\calc@Askip=\skip51
-\calc@Bskip=\skip52
+\calc@Acount=\count279
+\calc@Bcount=\count280
+\calc@Adimen=\dimen173
+\calc@Bdimen=\dimen174
+\calc@Askip=\skip57
+\calc@Bskip=\skip58
 LaTeX Info: Redefining \setlength on input line 80.
 LaTeX Info: Redefining \addtolength on input line 81.
-\calc@Ccount=\count116
-\calc@Cskip=\skip53
+\calc@Ccount=\count281
+\calc@Cskip=\skip59
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/mathtools\mhsetup.
-sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/mathtools\mhsetup.sty
 Package: mhsetup 2017/03/31 v1.3 programming setup (MH)
 )
 LaTeX Info: Thecontrolsequence`\('isalreadyrobust on input line 130.
 LaTeX Info: Thecontrolsequence`\)'isalreadyrobust on input line 130.
 LaTeX Info: Thecontrolsequence`\['isalreadyrobust on input line 130.
 LaTeX Info: Thecontrolsequence`\]'isalreadyrobust on input line 130.
-\g_MT_multlinerow_int=\count117
-\l_MT_multwidth_dim=\dimen139
-\origjot=\skip54
-\l_MT_shortvdotswithinadjustabove_dim=\dimen140
-\l_MT_shortvdotswithinadjustbelow_dim=\dimen141
-\l_MT_above_intertext_sep=\dimen142
-\l_MT_below_intertext_sep=\dimen143
-\l_MT_above_shortintertext_sep=\dimen144
-\l_MT_below_shortintertext_sep=\dimen145
-\xmathstrut@box=\box29
-\xmathstrut@dim=\dimen146
+\g_MT_multlinerow_int=\count282
+\l_MT_multwidth_dim=\dimen175
+\origjot=\skip60
+\l_MT_shortvdotswithinadjustabove_dim=\dimen176
+\l_MT_shortvdotswithinadjustbelow_dim=\dimen177
+\l_MT_above_intertext_sep=\dimen178
+\l_MT_below_intertext_sep=\dimen179
+\l_MT_above_shortintertext_sep=\dimen180
+\l_MT_below_shortintertext_sep=\dimen181
+\xmathstrut@box=\box49
+\xmathstrut@dim=\dimen182
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/algorithms\algorit
-hm.sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/algorithms\algorithm.st
+y
 Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
 nment
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/float\float.sty"
+ (C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count118
-\float@exts=\toks22
-\float@box=\box30
-\@float@everytoks=\toks23
-\@floatcapt=\box31
+\c@float@type=\count283
+\float@exts=\toks23
+\float@box=\box50
+\@float@everytoks=\toks24
+\@floatcapt=\box51
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/base\ifthen.sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty
 Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
 )
-\@float@every@algorithm=\toks24
-\c@algorithm=\count119
+\@float@every@algorithm=\toks25
+\c@algorithm=\count284
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/algorithmicx\algps
-eudocode.sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/algorithmicx\algpseudoc
+ode.sty
 Package: algpseudocode 
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/algorithmicx\algor
-ithmicx.sty"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/algorithmicx\algorithmi
+cx.sty
 Package: algorithmicx 2005/04/27 v1.2 Algorithmicx
 
 Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
-\c@ALG@line=\count120
-\c@ALG@rem=\count121
-\c@ALG@nested=\count122
-\ALG@tlm=\skip55
-\ALG@thistlm=\skip56
-\c@ALG@Lnr=\count123
-\c@ALG@blocknr=\count124
-\c@ALG@storecount=\count125
-\c@ALG@tmpcounter=\count126
-\ALG@tmplength=\skip57
+\c@ALG@line=\count285
+\c@ALG@rem=\count286
+\c@ALG@nested=\count287
+\ALG@tlm=\skip61
+\ALG@thistlm=\skip62
+\c@ALG@Lnr=\count288
+\c@ALG@blocknr=\count289
+\c@ALG@storecount=\count290
+\c@ALG@tmpcounter=\count291
+\ALG@tmplength=\skip63
 )
 Document Style - pseudocode environments for use with the `algorithmicx' style
+)
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
+tex.def
+File: l3backend-pdftex.def 2021-02-18 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count292
+\l__pdf_internal_box=\box52
 ) (main.aux)
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 29.
 LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 29.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 29.
 LaTeX Font Info:    ... okay on input line 29.
 LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 29.
 LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 29.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 29.
 LaTeX Font Info:    ... okay on input line 29.
 LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 29.
 LaTeX Font Info:    ... okay on input line 29.
@@ -381,73 +357,26 @@ LaTeX Font Info:    ... okay on input line 29.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/context/base/mkii\supp-p
-df.mkii"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
+ii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count127
-\scratchdimen=\dimen147
-\scratchbox=\box32
-\nofMPsegments=\count128
-\nofMParguments=\count129
-\everyMPshowfont=\toks25
-\MPscratchCnt=\count130
-\MPscratchDim=\dimen148
-\MPnumerator=\count131
-\makeMPintoPDFobject=\count132
-\everyMPtoPDFconversion=\toks26
+\scratchcounter=\count293
+\scratchdimen=\dimen183
+\scratchbox=\box53
+\nofMPsegments=\count294
+\nofMParguments=\count295
+\everyMPshowfont=\toks26
+\MPscratchCnt=\count296
+\MPscratchDim=\dimen184
+\MPnumerator=\count297
+\makeMPintoPDFobject=\count298
+\everyMPtoPDFconversion=\toks27
 )
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/oberdiek\epstopdf-
-base.sty"
-Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/oberdiek\infware
-rr.sty"
-Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
-)
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/oberdiek\grfext.st
-y"
-Package: grfext 2016/05/16 v1.2 Manage graphics extensions (HO)
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/oberdiek\kvdefin
-ekeys.sty"
-Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/oberdiek\ltxcmds
-.sty"
-Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
-)))
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/oberdiek\kvoptions
-.sty"
-Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/oberdiek\kvsetke
-ys.sty"
-Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/oberdiek\etexcmd
-s.sty"
-Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
-
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/oberdiek\ifluate
-x.sty"
-Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
-Package ifluatex Info: LuaTeX not detected.
-))))
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/generic/oberdiek\pdftexc
-mds.sty"
-Package: pdftexcmds 2019/07/25 v0.30 Utility functions of pdfTeX for LuaTeX (HO
-)
-Package pdftexcmds Info: LuaTeX not detected.
-Package pdftexcmds Info: \pdf@primitive is available.
-Package pdftexcmds Info: \pdf@ifprimitive is available.
-Package pdftexcmds Info: \pdfdraftmode found.
-)
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
+ase.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
-38.
-Package grfext Info: Graphics extension search list:
-(grfext)             [.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPE
-G,.JBIG2,.JB2,.eps]
-(grfext)             \AppendGraphicsExtensions on input line 456.
+85.
 )
 LaTeX Info: Redefining \microtypecontext on input line 29.
 Package microtype Info: Generating PDF output.
@@ -456,12 +385,12 @@ Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: Automatic font expansion enabled (level 2),
 (microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
 Package microtype Info: Using default expansion set `alltext-nott'.
+LaTeX Info: Redefining \showhyphens on input line 29.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: No adjustment of interword spacing.
 Package microtype Info: No adjustment of character kerning.
 
-("C:\Users\Peter\AppData\Local\Programs\MiKTeX 2.9\tex/latex/microtype\mt-cmr.c
-fg"
+(C:\Users\linda\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-cmr.cfg
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
@@ -486,7 +415,7 @@ Underfull \hbox (badness 1389) in paragraph at lines 52--53
 
 [1
 
-{C:/Users/Peter/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
+{C:/Users/linda/AppData/Local/MiKTeX/pdftex/config/pdftex.map}
 
 
  <./fau-logo-tech.pdf>]
@@ -497,43 +426,48 @@ S/cmsy/m/n/10   \OML/cmm/m/it/10 r[]\OT1/cmr/m/n/10 )[] []
  []
 
 [2]
-<images/interface1.png, id=28, 330.48468pt x 200.24812pt>
+<images/interface1.png, id=29, 330.48468pt x 200.24812pt>
 File: images/interface1.png Graphic file (type png)
 <use images/interface1.png>
-Package pdftex.def Info: images/interface1.png  used on input line 291.
+Package pdftex.def Info: images/interface1.png  used on input line 262.
 (pdftex.def)             Requested size: 222.62206pt x 134.89581pt.
-<images/interface2.png, id=30, 496.10344pt x 216.05719pt>
+<images/interface2.png, id=31, 496.10344pt x 216.05719pt>
 File: images/interface2.png Graphic file (type png)
 <use images/interface2.png>
-Package pdftex.def Info: images/interface2.png  used on input line 298.
+Package pdftex.def Info: images/interface2.png  used on input line 269.
 (pdftex.def)             Requested size: 222.62206pt x 96.95448pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 304--308
-
- []
-
-[3]
-Underfull \hbox (badness 10000) in paragraph at lines 309--313
+ [3 <./images/interface1.png> <./images/interface2.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 313--317
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 314--319
+Underfull \hbox (badness 10000) in paragraph at lines 318--322
 
  []
 
-<images/Unstable.png, id=35, 797.22844pt x 466.74374pt>
+
+Underfull \hbox (badness 10000) in paragraph at lines 323--328
+
+ []
+
+<images/Unstable.png, id=38, 797.22844pt x 466.74374pt>
 File: images/Unstable.png Graphic file (type png)
 <use images/Unstable.png>
-Package pdftex.def Info: images/Unstable.png  used on input line 322.
+Package pdftex.def Info: images/Unstable.png  used on input line 331.
 (pdftex.def)             Requested size: 222.62206pt x 130.33125pt.
-<images/Pipe_End.png, id=36, 794.97pt x 638.385pt>
+<images/Pipe_End.png, id=39, 794.97pt x 638.385pt>
 File: images/Pipe_End.png Graphic file (type png)
 <use images/Pipe_End.png>
-Package pdftex.def Info: images/Pipe_End.png  used on input line 328.
+Package pdftex.def Info: images/Pipe_End.png  used on input line 337.
 (pdftex.def)             Requested size: 222.62206pt x 178.76605pt.
-[4 <./images/interface1.png> <./images/interface2.png> <./images/Unstable.png> 
-<./images/Pipe_End.png>] (main.bbl
+[4 <./images/Unstable.png> <./images/Pipe_End.png>]
+Underfull \hbox (badness 1275) in paragraph at lines 356--357
+\OT1/cmr/m/n/10 (+20) Da in un-se-rem Mo-dell die Ge-schwin-dig-keit $\OML/cmm/
+m/it/10 v$
+ []
+
+(main.bbl
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `cmtt' (encoding: OT1).
 (microtype)             For optimal results, create family-specific settings.
@@ -556,38 +490,38 @@ Overfull \hbox (33.43803pt too wide) in paragraph at lines 9--13
 
 ) [5] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 7201 strings out of 492895
- 107524 string characters out of 3123735
- 246823 words of memory out of 3000000
- 10830 multiletter control sequences out of 15000+200000
- 17326 words of font info for 125 fonts, out of 3000000 for 9000
+ 7248 strings out of 479334
+ 108643 string characters out of 2857084
+ 493081 words of memory out of 3000000
+ 24446 multiletter control sequences out of 15000+200000
+ 417059 words of font info for 137 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,9n,39p,772b,327s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Users/Peter/AppData/Local/Programs/MiKTeX 2.9/fonts/type1
-/public/amsfonts/cm/cmbx10.pfb><C:/Users/Peter/AppData/Local/Programs/MiKTeX 2.
-9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/Peter/AppData/Local/Progr
-ams/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/Peter/AppDat
-a/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/
-Peter/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmib10.
-pfb><C:/Users/Peter/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfon
-ts/cm/cmr10.pfb><C:/Users/Peter/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/p
-ublic/amsfonts/cm/cmr7.pfb><C:/Users/Peter/AppData/Local/Programs/MiKTeX 2.9/fo
-nts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/Peter/AppData/Local/Programs/Mi
-KTeX 2.9/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/Peter/AppData/Local/
-Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/Users/Peter/A
-ppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmss12.pfb><C:/
-Users/Peter/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cm
-ss9.pfb><C:/Users/Peter/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/am
-sfonts/cm/cmssbx10.pfb><C:/Users/Peter/AppData/Local/Programs/MiKTeX 2.9/fonts/
-type1/public/amsfonts/cm/cmssi12.pfb><C:/Users/Peter/AppData/Local/Programs/MiK
-TeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Peter/AppData/Local
-/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/Peter/A
-ppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/
-Users/Peter/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cm
-tt10.pfb>
-Output written on main.pdf (5 pages, 1786056 bytes).
+ 68i,9n,74p,896b,328s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/pub
+lic/amsfonts/cm/cmbx10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/
+type1/public/amsfonts/cm/cmex10.pfb><C:/Users/linda/AppData/Local/Programs/MiKT
+eX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/linda/AppData/Local/Prog
+rams/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/linda/AppData/Lo
+cal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/linda/
+AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/User
+s/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><
+C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr
+7.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts
+/cm/cmr8.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
+msfonts/cm/cmr9.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/p
+ublic/amsfonts/cm/cmss10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/cm/cmss12.pfb><C:/Users/linda/AppData/Local/Programs/Mi
+KTeX/fonts/type1/public/amsfonts/cm/cmss9.pfb><C:/Users/linda/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmssbx10.pfb><C:/Users/linda/AppDat
+a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmssi12.pfb><C:/Users/li
+nda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:
+/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7
+.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
+cm/cmti10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/
+amsfonts/cm/cmtt10.pfb>
+Output written on main.pdf (5 pages, 1795961 bytes).
 PDF statistics:
- 103 PDF objects out of 1000 (max. 8388607)
+ 107 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  43546 words of extra memory for PDF output out of 51595 (max. 10000000)
 

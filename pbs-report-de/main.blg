@@ -1,9 +1,54 @@
-This is BibTeX, Version 0.99dThe top-level auxiliary file: main.aux
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+Reallocating 'name_of_file' (item size: 1) to 9 items.
 The style file: plainnat.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
 Database file #1: references.bib
 Warning--entry type for "Nvidia" isn't style-file defined
 --line 1 of file references.bib
 Warning--to sort, need author or key in Nvidia
 Warning--empty year in Nvidia
 Warning--empty journal in Leapfrog
+You've used 7 entries,
+            2773 wiz_defined-function locations,
+            637 strings with 6060 characters,
+and the built_in function-call counts, 3117 in all, are:
+= -- 289
+> -- 131
+< -- 6
++ -- 47
+- -- 39
+* -- 232
+:= -- 446
+add.period$ -- 22
+call.type$ -- 7
+change.case$ -- 34
+chr.to.int$ -- 6
+cite$ -- 18
+duplicate$ -- 161
+empty$ -- 280
+format.name$ -- 47
+if$ -- 675
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 6
+newline$ -- 44
+num.names$ -- 24
+pop$ -- 82
+preamble$ -- 1
+purify$ -- 27
+quote$ -- 0
+skip$ -- 119
+stack$ -- 0
+substring$ -- 131
+swap$ -- 32
+text.length$ -- 3
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 77
+warning$ -- 3
+while$ -- 29
+width$ -- 0
+write$ -- 96
 (There were 4 warnings)
