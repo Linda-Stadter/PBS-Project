@@ -44,29 +44,27 @@ Das Projekt soll einen realistischen Wasserfluss in einer begrenzten 3D-Umgebung
 Als Inspiration dient das Kinderspielzeug 'Aquaplay', bei dem Kinder über Schleusen, Kurbeln, Pumpen oder Schranken den Wasserfluss verändern können. 
 
 %Eine finale Simulation soll das Wasser in Bewegung in einer Art Kanal/Fluss sehen.
-Zur Visualisierung des Wassers sollen zunächst kugelförmige Objekte dienen, welche durch Screen Space Rendering oder Marching Cubes zu realistisch aussehendem Wasser erweitert werden könnten. 
+Zur Visualisierung des Wassers sollen zunächst kugelförmige Objekte dienen, welche durch Screen Space Rendering oder Marching Cubes zu realistisch aussehendem Wasser erweitert werden könnten. Für ein ausreichend detailliertes Verhalten der Simulation werden etwa 30.000 Partikel simuliert. Als Kriterium für Echtzeitanforderungen sollen 30 Bilder pro Sekunde erreicht werden. Dies soll auf handelsüblicher Hardware wie der NVIDIA GTX 1070 möglich sein, ohne die Anzahl der Partikel zu verringern.
 
-Für ein ausreichend detailliertes Verhalten der Simulation werden etwa 30.000 Partikel simuliert. Als Kriterium für Echtzeitanforderungen sollen 30 Bilder pro Sekunde erreicht werden. Dies soll auf handelsüblicher Hardware wie der NVIDIA GTX 1070 möglich sein, ohne die Anzahl der Partikel zu verringern.
-
-Als Entwicklungsumgebung dient die Spiel-Engine Unity, welche hauptsaechlich fuer das Rendering eingesetzt werden soll. Echtzeit-Interaktionen lassen sich mit dieser Laufzeitumgebung einfach umsetzen, was einen weiteren Vorteil darstellt. Ausserdem bietet Unity eine uebersichtliche Nutzeroberflaeche.
+Als Entwicklungsumgebung dient die Spiel-Engine Unity, welche hauptsächlich für das Rendering eingesetzt werden soll. Echtzeit-Interaktionen lassen sich mit dieser Laufzeitumgebung einfach umsetzen, was neben des Renderings einen weiteren Vorteil darstellt. Außerdem bietet Unity eine übersichtliche Nutzeroberfläche.
 
 \section{Theorie}
-Unsere Echtzeit Wassersimulation basiert hauptsaechlich auf der Methode der Geglaetteten Teilchen-Hydrodynamik (SPH), welche durch durch eine verbesserte Suche der Nachbarpartikel beschleunigt werden soll. Zur numerischen Integration wird sowohl das Leapfrog-Verfahren als auch das explizierte Euler-Verfahren eingesetzt.
+Unsere Echtzeit Wassersimulation basiert hauptsächlich auf der Methode der Geglätteten Teilchen-Hydrodynamik (SPH), welche durch durch eine verbesserte Suche der Nachbarpartikel beschleunigt werden soll. Zur numerischen Integration wird sowohl das Leapfrog-Verfahren als auch das explizierte Euler-Verfahren eingesetzt.
 \subsection{Wissenschaftlicher Hintergrund}
-Die Methode von SPH wurde erstmalig von Gingold und Monaghan \citep{gingold1977smoothed} und Lucy \citep{lucy1977numerical} vorgestellt. Urspruenglicherweise wurde sie dabei verwendet, um astrophysikalische Probleme wie die Dynamiken von Sternen darzustellen.
+Die Methode von SPH wurde erstmalig von Gingold und Monaghan \citep{gingold1977smoothed} und Lucy \citep{lucy1977numerical} vorgestellt. Ursprünglicherweise wurde sie dabei verwendet, um astrophysikalische Probleme wie die Dynamiken von Sternen darzustellen.
 
 Müller et al. \citep{muller2003particle} wandte zuerst SPH für Computergrafik Simulationen in Echtzeit an. Es wurde eine Methode gefunden, die schnell genug war, bis zu 5.000 Partikel in interaktiven Systemen abzubilden.
 
 
 \subsection{SPH}
-In Smooth Particle Hydrodynamic (SPH) werden Eigenschaften von kontinuierlichen Flüssigkeitsmengen approximiert indem man eine diskretisierte Repräsentation durch Partikel für die Navier–Stokes Gleichungen benutzt. 
+In Smooth Particle Hydrodynamic werden Eigenschaften von kontinuierlichen Flüssigkeitsmengen approximiert, indem man eine diskretisierte Repräsentation durch Partikel für die Navier–Stokes Gleichungen benutzt. 
 %Bei SPH wird die zu simulierende Flüssigkeit durch eine endliche Anzahl an Partikeln diskretisiert. 
 Die Partikel interagieren innerhalb eines bestimmten Radius $h$ miteinander und besitzen eigene physikalische Eigenschaften wie  Dichte, Masse oder Druck.
 
 
 
 \paragraph{Smoothing Kernels}
-Um die diskreten Werte der Partikel zur Berechnung verschiedener kontinuierlicher Felder zu glätten werden Kernelfunktionen \eqref{poly6}, \eqref{gradient_poly6}, \eqref{spiky} und \eqref{spline} verwendet (bzw. der Gradient einer Kernelfunktion für den Gradienten eines Feldes). Diese Fuktionen sind normalisiert und gewichten symmetrisch den Einfluss von Partikel aufeinander abhängig von ihrer Distanz zueinander. Ein Partikel wird nur von anderen innerhalb eines bestimmten Radius $h$ beeinflusst.
+Um die diskreten Werte der Partikel zur Berechnung verschiedener kontinuierlicher Felder zu glätten werden die Kernelfunktionen aus \eqref{poly6}, \eqref{gradient_poly6}, \eqref{spiky} und \eqref{spline} verwendet. Für den Gradienten eines Feldes wird entsprechend der Gradient einer Kernelfunktion benutzt. Diese Fuktionen sind normalisiert und gewichten symmetrisch den Einfluss von Partikel aufeinander abhängig von ihrer Distanz zueinander. Ein Partikel wird nur von anderen innerhalb des Radius $h$ beeinflusst.
 
 \begin{equation}
 \label{poly6}
@@ -113,8 +111,8 @@ W_{poly6}(\vec{r},h) = \frac{315}{64 \pi h^9}
 
 
 \paragraph{Dichte und Druck}
-Mit dem für SPH typischen Smoothing Kernel \eqref{poly6} wird die Dichte an den Partikeln interpoliert \eqref{density}.
-Für die Berechnung des Drucks wird anstatt der, aus der idealen Gaszustandsgleichung abgeleiteten, Formel \eqref{pressure} nach Müller et al. \citep{muller2003particle}, welche abhängig von ihrem Parameter $k$ für zu hohe Kompressibilität oder Federverhalten zwischen Partikel sorgt, wird die Tait-Gleichung \eqref{pressure_tait} genutzt. Hier sei $p0$ die Restdichte.
+Mit dem für SPH typischen Smoothing Kernel aus \eqref{poly6} wird die Dichte aus  \eqref{density} an den Partikeln interpoliert.
+Die aus der idealen Gaszustandsgleichung abgeleiteten Formel aus \eqref{pressure} mit $p_0$ als Restdichte nach Müller et al. \citep{muller2003particle} sorgt abhängig von ihrem Parameter $k$ für zu hohe Kompressibilität oder Federverhalten zwischen Partikeln.
 
 \begin{equation}
 \label{density}
@@ -126,6 +124,8 @@ Für die Berechnung des Drucks wird anstatt der, aus der idealen Gaszustandsglei
 p_i=k(\rho-\rho_0)
 \end{equation}
 
+Daher wird stattdessen die Tait-Gleichung aus \eqref{pressure_tait} genutzt.
+
 \begin{equation}
 \label{pressure_tait}
 p_i = k((\frac{\rho}{\rho_{0}})^{7}-1)
@@ -133,9 +133,9 @@ p_i = k((\frac{\rho}{\rho_{0}})^{7}-1)
 
 
 \paragraph{Kräfte}
-Für jeden Partikel kann jetzt die auf ihn wirkende Kraft bestimmt werden \eqref{force}.
-\eqref{force_pressure} ist eine leicht veränderte Version der normalen interpolierten Kraft für Druck, die sich symmetrisch zwischen Partikeln verhält.
-$\mu$ wird eingeführt um die Viskosität der Flüssigkeit zu kontrollieren.
+Für jeden Partikel kann nun die auf ihn wirkende Kraft bestimmt werden. Die Kraft setzt sich dabei wie in \eqref{force} mit den entsprechenden Formeln \eqref{force_pressure}, \eqref{force_viscosity}, \eqref{force_external} zusammen.
+Dabei ist \eqref{force_pressure} eine leicht veränderte Version der normalen interpolierten Kraft für Druck, die sich symmetrisch zwischen Partikeln verhält.
+Die Variable $\mu$ wird eingeführt um die Viskosität der Flüssigkeit zu kontrollieren.
 
 \begin{equation}
 \label{force}
@@ -160,9 +160,10 @@ $\mu$ wird eingeführt um die Viskosität der Flüssigkeit zu kontrollieren.
 
 
 \subsection{Oberflächenspannung}
-Um ein überzeugendes Verhalten bei Wasserspritzern und an der Wasseroberflaeche zu erzeugen wird zusätzlich die molekulare Attraktion und Repulsion zwischen Wassermolekülen modelliert. Das gewählte Modell folgt der Arbeit von \citep{SurfaceTension}.
+Um ein überzeugendes Verhalten bei Wasserspritzern und an der Wasseroberfläche zu erzeugen, wird zusätzlich die molekulare Attraktion und Repulsion zwischen Wassermolekülen modelliert. Das gewählte Modell folgt der Arbeit von Akinci et al.\citep{SurfaceTension}.
 
-Eine neue Kraft für Oberflächenspannung wird wie folgt in die bisherige Kraftberechnung aus \eqref{force} eingefügt:
+Eine neue Kraft für Oberflächenspannung wird wie in \eqref{force_with_surface} in die bisherige Kraftberechnung aus \eqref{force} eingefügt.
+
 \begin{equation}
 \label{force_with_surface}
 \vec{f} = \vec{f}^{pressure} + \vec{f}^{viscosity} + \vec{f}^{external} + \vec{f}^{surface}
@@ -197,6 +198,10 @@ C(r) = \frac{32}{64 \pi h^9}
 Um zu verhindern, dass beim Formen eines Tropfens durch Oberflächenspannung, die Ausgangsposition der betroffenen Partikel maßgeblich die finale Form beeinflusst, fügen wir eine weitere Kraft aus \eqref{curvature} hinzu.
 Diese sorgt dafür, dass Partikel-Mengen unabhängig von Ausgangsposition versuchen eine Kugelform einzunehmen und dadurch die Oberfläche ihres Tropfens minimieren.
 
+\begin{equation}
+\label{curvature}
+\vec{f}_{i\leftarrow j}^{\text{curvature}} = -\gamma m_{i}(\vec{n}_i - \vec{n}_j)
+\end{equation}
 
 Zunächst wird für jedes Partikel ein Normal-Vektor wie in \eqref{normal} berechnet. Hier sollen sich Partikel an der Oberfläche von denen innerhalb eines Wasserkörpers dadurch unterscheiden, dass letztere einen Normal-Vektor von $\sim \vec{0}$ besitzen. Hier würde das Benutzen eines geglätteten Feldes optimale Ergebnisse erreichen.
 
@@ -205,12 +210,8 @@ Zunächst wird für jedes Partikel ein Normal-Vektor wie in \eqref{normal} berec
 \vec{n}_{i} = h\sum_{j}\frac{m_{j}}{\rho_{j}}\bigtriangledown W (\vec{r}_{i}-\vec{r}_{j},h)
 \end{equation}
 
-\begin{equation}
-\label{curvature}
-\vec{f}_{i\leftarrow j}^{\text{curvature}} = -\gamma m_{i}(\vec{n}_i - \vec{n}_j)
-\end{equation}
 
-Um den Zusammenhalt von wenigen Partikeln an den von grösseren Gruppen anzugleichen, wird in \eqref{surface_tension} außerdem ein Korrekturfaktor eingeführt.
+Um den Zusammenhalt von wenigen Partikeln an den von größeren Gruppen anzugleichen, wird in \eqref{surface_tension} außerdem ein Korrekturfaktor eingeführt.
 
 \begin{equation}
 	\label{surface_tension}
@@ -221,9 +222,11 @@ Um den Zusammenhalt von wenigen Partikeln an den von grösseren Gruppen anzuglei
 
 \subsection{Integration}
 
-Die Kraft jedes Partikels wird verwendet um dessen Beschleunigung via $F=ma \Leftrightarrow  a = F/m$ zu ermitteln. Diese wird benutzt um Position und Geschwindigkeit für den nächsten Zeitschritt zu erhalten.
-Um Genauigkeit der Integration und damit Stabilität zu erhöhen wird explizite Euler durch Leapfrog Integration ersetzt, die standardmäßig abwechselnd Geschwindigkeiten $v$ und Positionen $r$ an verschiedenen Zeitpunkten berechnet. Die Größe des Fehlers wird so von $\mathcal{O}(n)$ auf $\mathcal{O}(n^2)$ reduziert. Die energie-erhaltende Eigenschaft der Integration für das System trägt ebenfalls zur Stabilität bei.  
-Für die Implementation von Leapfrog wir eine von Cossins \citep{Leapfrog} vorgestellte Variation benutzt. Die Variante berechnet an einem halben Zeitschritt \ref{leapfrog_r_i+1/2} und \ref{leapfrog_v_i+1/2}, welche benutzt werden um Kräfte und dadurch Beschleunigung $a_{i+1/2}$, für Formeln \ref{leapfrog_r_i+1} und \ref{leapfrog_v_i+1} im nächsten ganzen Zeitschritt, zu erhalten.
+Die Kraft jedes Partikels wird verwendet, um dessen Beschleunigung via $F=ma \Leftrightarrow  a = F/m$ zu ermitteln. Die Beschleunigung wird anschließend benutzt, um Position und Geschwindigkeit für den nächsten Zeitschritt zu erhalten.
+Die Genauigkeit der Integration und damit Stabilität verbessern wir, indem wir explizite Euler durch Leapfrog Integration ersetzen. 
+\paragraph{Leapfrog Integration}
+Die Leapfrog Integration berechnet standardmäßig abwechselnd Geschwindigkeiten $v$ und Positionen $r$ an verschiedenen Zeitpunkten. Die Größe des Fehlers wird so von $\mathcal{O}(n)$ auf $\mathcal{O}(n^2)$ reduziert. Die energie-erhaltende Eigenschaft der Integration für das System trägt ebenfalls zur Stabilität bei.  
+Für die Implementation von Leapfrog wird eine von Cossins \citep{Leapfrog} vorgestellte Variation benutzt. Die Variante berechnet an einem halben Zeitschritt die Formeln \eqref{leapfrog_v_i+1/2} und \eqref{leapfrog_r_i+1/2}. Diese werden benutzt, um die Beschleunigung $a_{i+1/2}$ für \eqref{leapfrog_v_i+1} und \eqref{leapfrog_r_i+1} im nächsten ganzen Zeitschritt zu erhalten.
 
 
 %Für die Leapfrog-Integration wird die Variante aus \eqref{leapfrog_v_i+1/2}, \eqref{leapfrog_r_i+1/2}, \eqref{leapfrog_v_i+1} und \eqref{leapfrog_r_i+1} benutzt, welche von Cossions vorgestellt wurde. \citep{Leapfrog}
@@ -245,22 +248,21 @@ v_{i+1} = v_{i} + \Delta a_{i+1/2}
 r_{i+1} = r_{i} + \frac{\Delta t}{2} (v_{i} + v_{i+1})
 \end{equation}
 
-\paragraph{Boxkollision} Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit den Seiten der Box werden durch einfache Positionsabfragen behandelt. Diese verhindern, dass die Partikel die Begrenzungen überschreiten. Ausserdem werden die Geschwindigkeiten der entsprechenden Richtungen umgekehrt, um die Partikel von der Box abprallen zu lassen. Eine Dämpfungsvariable wird eingeführt, die die Geschwindigkeit dabei zusätzlich abmildern kann.
+\paragraph{Boxkollision} Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit den Seiten der Box werden durch einfache Positionsabfragen behandelt. Diese verhindern, dass die Partikel die Begrenzungen überschreiten. Außerdem werden die Geschwindigkeiten der entsprechenden Richtungen umgekehrt, um die Partikel von der Box abprallen zu lassen. Eine Dämpfungsvariable wird eingeführt, die die Geschwindigkeit dabei zusätzlich abmildern kann.
 
 \subsection{Effiziente Nachbarsuche}
 
-Die Nachbarpartikel eines Partikels sind die Menge der Partikel, welche sich innerhalb von $h$ befinden und somit Einfluss auf den Partikel besitzen. Die Suche dieser Nachbarpartikel stellt einen sehr aufwaendigen Schritt des SPH-Algorithmus dar. Um diese effizient zu finden, teilen wir den Raum in ein uniformes Gitter auf. Eine Zelle besitzt die Grösse des Radius $h$, sodass die Nachbarpartikel nur in den anliegenden 26 Zellen und in der Zelle des Partikels gesucht werden müssen. Durch ihre Positionen im Raum werden die Partikel je einer Zelle zugewiesen. Dies erfolgt zunaechst durch eine Diskretisierung jeder Partikelposition $(x,y,z)$ in \eqref{discretize_position}. 
+Die Nachbarpartikel eines Partikels sind die Menge der Partikel, welche sich innerhalb von $h$ befinden und somit Einfluss auf den Partikel besitzen. Die Suche dieser Nachbarpartikel stellt einen sehr aufwändigen Schritt des SPH-Algorithmus dar. Um diese effizient zu finden, teilen wir den Raum in ein uniformes Gitter auf. Eine Zelle besitzt die Größe des Radius $h$, sodass die Nachbarpartikel nur in den anliegenden 26 Zellen und in der Zelle des Partikels gesucht werden müssen. Durch ihre Positionen im Raum werden die Partikel je einer Zelle zugewiesen. Dies erfolgt zunächst durch eine Diskretisierung jeder Partikelposition $(x,y,z)$ in \eqref{discretize_position}. 
 \begin{equation}
 \label{discretize_position}
 (i, j, k) = (\floor*{\frac{x}{h}}, \floor*{\frac{y}{h}}, \floor*{\frac{z}{h}})
 \end{equation}
-Anschliessend kann der diskretisierte Zellenwert in Kombination mit der Hash-Funktion aus \eqref{hash_function} eingesetzt werden. Diese bildet eine 3D-Position eines Partikels auf einen flachen 1D-Wert ab.
-
+Anschließend kann der diskretisierte Zellenwert in Kombination mit der Hash-Funktion aus \eqref{hash_function} eingesetzt werden. Diese bildet eine 3D-Position eines Partikels auf einen flachen 1D-Wert ab.
 \begin{equation}
 \label{hash_function}
 hash(i,j,k) = (i\ p_1 \ \boldsymbol{xor} \ j\ p_2\ \boldsymbol{xor}\ k\ p_3)\ \boldsymbol{mod}\ n
 \end{equation}
-Die Variable $n$ stellt die Anzahl der Zellen beziehungsweise der Partikel dar und $p_1$, $p_2$ und $p_3$ sind große Primzahlen. Dies wird Spatial Hashing genannt und wird eingesetzt, damit eine endliche Anzahl an Zellen für einen unendlich grossen Raum ausreicht. \citep{muller2003optimized}
+Die Variable $n$ stellt die Anzahl der Zellen beziehungsweise der Partikel dar und $p_1$, $p_2$ und $p_3$ sind große Primzahlen. Dies wird Spatial Hashing genannt und wird eingesetzt, damit eine endliche Anzahl an Zellen für einen unendlich großen Raum ausreicht. \citep{muller2003optimized}
 
 Dann können die Partikel anhand ihrer zugewiesenen Zelle sortiert werden. Für jede Zelle wird der Abstand zu dem ersten Partikel der Zelle gespeichert. Diese Idee wurde 2008 von Nvidia vorgestellt. \citep{Nvidia}
 
@@ -282,17 +284,18 @@ Ein Zeitschritt wird mithilfe der Update-Funktion von Unity einmal pro Frame dur
 		\State \textbf{Initialization Shader}
 		\State \hskip1.0em \textcolor{gray}{Intialisiere Buffer}
 		\State \textbf{Partition Shader}
-		\State \hskip1.0em \textcolor{gray}{Weise jedem Partikel Zellindex zu}
+		\State \hskip1.0em \textcolor{gray}{Weise jedem Partikel den Zellindex wie
+			 in \ref{discretize_position} und \ref{hash_function} zu}
 		\State \textbf{Bitonic Sort}
-		\State \hskip1.0em \textcolor{gray}{Sortiere nach Zellen}
+		\State \hskip1.0em \textcolor{gray}{Sortiere nach Zellindex}
 		\State \textbf{Offset Shader}
-		\State \hskip1.0em \textcolor{gray}{Abstand zu erstem Partikel jeder Zelle}
+		\State \hskip1.0em \textcolor{gray}{Speichere Abstand zu dem erstem Partikel jeder Zelle}
 		\State \textbf{Density Shader}
-		\State \hskip1.0em \textcolor{gray}{Berechne mit Formel \ref{density}}
+		\State \hskip1.0em \textcolor{gray}{Berechne mit \ref{density}}
 		\State \textbf{Normals Shader}
-		\State \hskip1.0em \textcolor{gray}{Berechne mit Formel \ref{normal}}
+		\State \hskip1.0em \textcolor{gray}{Berechne mit \ref{normal}}
 		\State \textbf{Force Shader}
-		\State \hskip1.0em \textcolor{gray}{Berechne mit \ref{pressure_tait}, \ref{force_pressure}, \ref{force_external}, \ref{force_viscosity},  \ref{force_with_surface}, \ref{spline}, \ref{cohesion}, \ref{curvature}, \ref{surface_tension}}
+		\State \hskip1.0em \textcolor{gray}{Berechne mit \ref{pressure_tait}, \ref{force_pressure}, \ref{force_viscosity}, \ref{force_external},  \ref{force_with_surface}, \ref{cohesion}, \ref{spline}, \ref{curvature}, \ref{surface_tension}}
 		\State \textbf{Integration Shader}
 		\State \hskip1.0em \textcolor{gray}{Berechne mit \ref{leapfrog_v_i+1/2}, \ref{leapfrog_r_i+1/2} oder \ref{leapfrog_v_i+1}, \ref{leapfrog_r_i+1}}
 		\EndFor
@@ -302,13 +305,13 @@ Ein Zeitschritt wird mithilfe der Update-Funktion von Unity einmal pro Frame dur
 \end{algorithm}
 
 
-Die Positionen in x-,y- und z-Richtung eines Partikels werden diskretisiert und anschliessend gehasht, um daraus den flachen Zellindex zu bestimmen. Um die Anzahl der Hash-Kollisionen möglichst gering zu halten, werden die 8-stellige Primzahlen $73856093$, $19349663$ und $83492791$ eingesetzt und eine grosse Anzahl an Partikeln - und damit auch Zellen - benutzt.
+Die Positionen in x-,y- und z-Richtung eines Partikels werden diskretisiert und anschliessend gehasht, um daraus den flachen Zellindex zu bestimmen. Um die Anzahl der Hash-Kollisionen möglichst gering zu halten, werden die 8-stellige Primzahlen $73856093$, $19349663$ und $83492791$ eingesetzt und eine große Anzahl an Partikeln - und damit auch Zellen - benutzt.
 
 Für das Sortieren der Partikel anhand ihrer zugewiesenen Zelle wird eine fertige Implementierung des Algorithmus Bitonisches Sortieren verwendet. Dieser Sortieralgorithmus kann parallel auf der GPU ausgeführt werden.
 
-Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschluss der Force wird im Dichte- und im Force-Shader auf ähnliche Weise implementiert. Hierbei muss über die 27 möglichen Nachbarzellen iteriert werden. Mithilfe des zuvor gespeicherten Abstands kann dann effizient auf alle Partikel einer bestimmten Nachbarzelle zugegriffen werden. Zusätzlich wird überprüft, ob der Abstand zwischen den Partikeln kleiner als der Radius $h$ ist.
+Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschluss der Kraft wird im Dichte- und im Force-Shader auf ähnliche Weise implementiert. Hierbei muss über 27 Zellen iteriert werden, welche Nachbarpartikel enthalten können. Mithilfe des zuvor gespeicherten Abstands kann dann effizient auf alle Partikel einer bestimmten Nachbarzelle zugegriffen werden. Zusätzlich wird überprüft, ob der Abstand zwischen den Partikeln kleiner als der Radius $h$ ist.
 
-Im Integrations-Shader wird neben der Berechnung der Position und der Geschwindigkeit auch die Kollision mit der Box behandelt.
+Im Integration-Shader wird neben der Berechnung der Position und der Geschwindigkeit auch die Kollision mit der Box behandelt.
 
 
 \begin{figure}[t]
@@ -329,14 +332,16 @@ Im Integrations-Shader wird neben der Berechnung der Position und der Geschwindi
 
 Die Partikel werden in der Update-Funktion in jedem Frame gerendert. Dazu wird eine von Unity vorgegebene Zeichen-Funktion aufgerufen, welche das gleiche Kugel-Mesh parallel auf der GPU zeichnet. Dadurch verhindern wir den unnötigen Overhead, eigenständige GameObjects pro Partikel zu erstellen. In diesem Schritt werden die Partikel anhand ihrer Dichte in einen blassen bis kräftigen Blauton gefärbt.
 
-Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benötigt. Der Raum, in welchem sich die Partikel bewegen können, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, welches die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
-Ausserdem werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits während der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu können. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benötigte Objekte entfernt und neue Objekte eingeblendet.
+Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benötigt. Der Raum, in welchem sich die Partikel bewegen können, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, das die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
+Außerdem werden zwei Varianten implementiert, wie die Partikel spawnen können. Zum einen können alle Partikel auf einmal in quadratischen Form erzeugt werden. Zum anderen lassen sich die Partikel auch Frame für Frame aus einer Röhre erschaffen, um einen Wasserstrahl zu imitieren.
+
+Zusätzlich werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits während der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu können. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benötigte Objekte entfernt und neue Objekte eingeblendet.
 
 
 \section{Ergebnisse und Evaluierung}
 
 
-Um die Stabilität und Performance zu Testen wurden mehrere Iterationen der Simulation mit variierendem Zeitschritt und gleichen Parametern ausgeführt und für ca. 30 Minuten laufen gelassen. Getestet wurden Simulationen sowohl mit kontinuierliche Partikel-Erzeugung durch das Rohr, als auch mit Beginn aller Partikel in Boxform. Simulationen, die Leapfrog Integration benutzen, mit einem Zeitschritt $\leq 0.006$ Sekunden blieben dabei stabil.
+Um die Stabilität und Performance zu Testen wurden mehrere Iterationen der Simulation mit variierendem Zeitschritt und gleichen Parametern ausgeführt und für ca. 30 Minuten laufen gelassen. Getestet wurden Simulationen sowohl mit kontinuierlicher Partikel-Erzeugung durch das Rohr, als auch mit Beginn aller Partikel in Boxform. Simulationen, die Leapfrog Integration benutzen, mit einem Zeitschritt $\leq 0.006$ Sekunden blieben dabei stabil.
 
 \begin{figure}[t]
 	\centering
