@@ -14,13 +14,14 @@ Particle-based fluid simulation.
 \bibitem[Akinci et~al.(2013)Akinci, Akinci, and Teschner]{SurfaceTension}
 Nadir Akinci, Gizem Akinci, and Matthias Teschner.
 \newblock Versatile surface tension and adhesion for sph fluids.
-\newblock \emph{ACM Transactions on Graphics}, 10 2013.
+\newblock \emph{ACM Transactions on Graphics}, 32\penalty0 (6):\penalty0 1--8,
+  10 2013.
 \newblock \doi{10.1145/2508363.2508395}.
 
 \bibitem[Cossins(2010)]{Leapfrog}
-Peter Cossins.
+Peter~J Cossins.
 \newblock Smoothed particle hydrodynamics.
-\newblock pages 38--40, 07 2010.
+\newblock \emph{arXiv preprint arXiv:1007.1245}, pages 38--40, 07 2010.
 
 \bibitem[Gingold and Monaghan(1977)]{gingold1977smoothed}
 Robert~A Gingold and Joseph~J Monaghan.

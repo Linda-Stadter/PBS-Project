@@ -245,7 +245,40 @@ Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit
 
 \section{Implementierung}
 Das Projekt wird in der Laufzeit und Entwicklungsumgebung Unity implementiert. Dazu wird ein sogenanntes GameObject erstellt, welches ein eigens geschriebenes C\#-Skript zugewiesen wird. Dieses Skript wird verwendet, um die Simulation zu initialisieren und aufzurufen. %Dabei werden zunächst die notwendigen Arrays, Buffer, Partikel und Shader initialisiert.
-Ein Zeitschritt wird mithilfe der Update-Funktion von Unity einmal pro Frame durchgeführt. Der eigentliche SPH-Algorithmus wird auf sieben Shader aufgeteilt, welche von der GPU ausgeführt werden. Es ist je ein Shader dafür zuständig, die Buffer zu initialisieren, die Partikel in Zellen einzuteilen, die Partikel anhand ihrer Zelle zu sortieren, die Dichte und im Anschluss die Force eines Partikels zu berechnen und zum Schluss den Integrationsschritt durchzuführen.
+Ein Zeitschritt wird mithilfe der Update-Funktion von Unity einmal pro Frame durchgeführt. Der eigentliche SPH-Algorithmus wird auf sieben Shader aufgeteilt, welche von der GPU ausgeführt werden. Es ist je ein Shader dafür zuständig, die Buffer zu initialisieren, die Partikel in Zellen einzuteilen, die Partikel anhand ihrer Zelle zu sortieren, die Dichte und im Anschluss die Force eines Partikels zu berechnen und zum Schluss den Integrationsschritt durchzuführen. Der Ablauf dieses Skripts ist in Pseudocode im Algorithmus \ref{skript} gezeigt.
+
+\begin{algorithm}
+	\caption{C\# Skript}\label{skript}
+	\begin{algorithmic}[1]
+		\State Berechne Parameter
+		\State Initialisiere Partikel
+		\State Initialisiere Buffer 
+		\State Initialisiere Shader
+		\While {true} \Comment{Unitys Update Schleife}
+	
+		\For {Zeitschritt $i+1/2$ und $i+1$}	
+		\State \textbf{Initialization Shader}
+		\State \hskip1.0em \textcolor{gray}{Intialisiere Buffer}
+		\State \textbf{Partition Shader}
+		\State \hskip1.0em \textcolor{gray}{Weise jedem Partikel Zellindex zu}
+		\State \textbf{Bitonic Sort}
+		\State \hskip1.0em \textcolor{gray}{Sortiere nach Zellen}
+		\State \textbf{Offset Shader}
+		\State \hskip1.0em \textcolor{gray}{Abstand zu erstem Partikel jeder Zelle}
+		\State \textbf{Density Shader}
+		\State \hskip1.0em \textcolor{gray}{Berechne Dichte mit Formel...}
+		\State \textbf{Normals Shader}
+		\State \hskip1.0em \textcolor{gray}{Oder eine Auflistung der Formeln}
+		\State \textbf{Force Shader}
+		\State \hskip1.0em \textcolor{gray}{Berechne Kraft mit \ref{force_pressure}, \ref{force_with_surface}}
+		\State \textbf{Integration Shader}
+		\State \hskip1.0em \textcolor{gray}{Leapfrog-/Euler-Integration mit \ref{leapfrog_r_i+1}, \ref{leapfrog_v_i+1}}
+		\EndFor
+		\EndWhile
+	
+	\end{algorithmic}
+\end{algorithm}
+
 
 Die Positionen in x-,y- und z-Richtung eines Partikels werden diskretisiert und anschliessend gehasht, um daraus den flachen Zellindex zu bestimmen. Um die Anzahl der Hash-Kollisionen möglichst gering zu halten, werden die 8-stellige Primzahlen $73856093$, $19349663$ und $83492791$ eingesetzt und eine grosse Anzahl an Partikeln - und damit auch Zellen - benutzt.
 
@@ -255,7 +288,6 @@ Das Einbeziehen der Nachbarpartikel bei der Berechnung der Dichte und im Anschlu
 
 Im Integrations-Shader wird neben der Berechnung der Position und der Geschwindigkeit auch die Kollision mit der Box behandelt.
 
-Die Partikel werden in der Update-Funktion in jedem Frame gerendert. Dazu wird eine von Unity vorgegebene Zeichen-Funktion aufgerufen, welche das gleiche Kugel-Mesh parallel auf der GPU zeichnet. Dadurch verhindern wir den unnötigen Overhead, eigenständige GameObjects pro Partikel zu erstellen. In diesem Schritt werden die Partikel anhand ihrer Dichte in einen blassen bis kräftigen Blauton gefärbt.
 
 \begin{figure}[t]
 	\centering
@@ -271,37 +303,12 @@ Die Partikel werden in der Update-Funktion in jedem Frame gerendert. Dazu wird e
 	\label{fig:interface2}
 \end{figure}
 
+
+
+Die Partikel werden in der Update-Funktion in jedem Frame gerendert. Dazu wird eine von Unity vorgegebene Zeichen-Funktion aufgerufen, welche das gleiche Kugel-Mesh parallel auf der GPU zeichnet. Dadurch verhindern wir den unnötigen Overhead, eigenständige GameObjects pro Partikel zu erstellen. In diesem Schritt werden die Partikel anhand ihrer Dichte in einen blassen bis kräftigen Blauton gefärbt.
+
 Neben dem GameObject, welches die Simulation behandelt, werden auch weitere Objekte benötigt. Der Raum, in welchem sich die Partikel bewegen können, wird durch eine Box begrenzt, welche zur Laufzeit erzeugt wird. Die Box wird dabei durch ein eigenes Skript kontrolliert, welches die Positionen der Seitenplatten anhand einer vorgegebenen Bodenplatte berechnet.
 Ausserdem werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vor dem Beginn der Simulation wie in Bild \ref{fig:interface1} und andererseits während der laufenden Simulation wie in Bild \ref{fig:interface2} einstellen und anpassen zu können. Dazu werden fertige UI-Elemente von Unity verwendet. Beim Starten der Simulation findet ein Szenenwechsel statt. Dadurch werden nicht mehr benötigte Objekte entfernt und neue Objekte eingeblendet.
-
-
-\begin{algorithm}
-	\caption{C\# Skript}\label{skript}
-	\begin{algorithmic}[1]
-		\State Berechne Parameter
-		\State Initialisiere Partikel
-		\State Initialisiere Buffer 
-		\State Initialisiere Shader
-		\While {true} \Comment{Unitys Update Schleife}
-	
-		\For {Zeitschritt $i+1/2$ und $i+1$}	
-		\State Initialization Shader
-		\State \Comment{Kurze Beschreibung zum Shader}
-		\State Partition Shader
-		\State Sort Shader
-		\State Offset Shader
-		\State Density Shader
-		\State Normals Shader
-		\State \hskip1.0em Oder eine Auflistung der Formeln
-		\State Force Shader
-		\State \hskip1.0em \ref{force_pressure}, \ref{force_with_surface}
-		\State Integration Shader \Comment{\ref{leapfrog_r_i+1}, \ref{leapfrog_v_i+1}}
-		\EndFor
-		\EndWhile
-	
-	\end{algorithmic}
-\end{algorithm}
-
 
 
 \section{Ergebnisse und Evaluierung}

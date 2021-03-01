@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  1 MAR 2021 18:09
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  1 MAR 2021 18:48
 entering extended mode
 **./main.tex
 (main.tex
@@ -429,40 +429,41 @@ S/cmsy/m/n/10   \OML/cmm/m/it/10 r[]\OT1/cmr/m/n/10 )[] []
 <images/interface1.png, id=29, 330.48468pt x 200.24812pt>
 File: images/interface1.png Graphic file (type png)
 <use images/interface1.png>
-Package pdftex.def Info: images/interface1.png  used on input line 262.
+Package pdftex.def Info: images/interface1.png  used on input line 294.
 (pdftex.def)             Requested size: 222.62206pt x 134.89581pt.
 <images/interface2.png, id=31, 496.10344pt x 216.05719pt>
 File: images/interface2.png Graphic file (type png)
 <use images/interface2.png>
-Package pdftex.def Info: images/interface2.png  used on input line 269.
+Package pdftex.def Info: images/interface2.png  used on input line 301.
 (pdftex.def)             Requested size: 222.62206pt x 96.95448pt.
- [3 <./images/interface1.png> <./images/interface2.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 313--317
+ [3]
+Underfull \hbox (badness 10000) in paragraph at lines 320--324
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 318--322
+Underfull \hbox (badness 10000) in paragraph at lines 325--329
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 323--328
+Underfull \hbox (badness 10000) in paragraph at lines 330--335
 
  []
 
-<images/Unstable.png, id=38, 797.22844pt x 466.74374pt>
+<images/Unstable.png, id=36, 797.22844pt x 466.74374pt>
 File: images/Unstable.png Graphic file (type png)
 <use images/Unstable.png>
-Package pdftex.def Info: images/Unstable.png  used on input line 331.
+Package pdftex.def Info: images/Unstable.png  used on input line 338.
 (pdftex.def)             Requested size: 222.62206pt x 130.33125pt.
-<images/Pipe_End.png, id=39, 794.97pt x 638.385pt>
+<images/Pipe_End.png, id=37, 794.97pt x 638.385pt>
 File: images/Pipe_End.png Graphic file (type png)
 <use images/Pipe_End.png>
-Package pdftex.def Info: images/Pipe_End.png  used on input line 337.
+Package pdftex.def Info: images/Pipe_End.png  used on input line 344.
 (pdftex.def)             Requested size: 222.62206pt x 178.76605pt.
-[4 <./images/Unstable.png> <./images/Pipe_End.png>]
-Underfull \hbox (badness 1275) in paragraph at lines 356--357
+[4 <./images/interface1.png> <./images/interface2.png> <./images/Unstable.png> 
+<./images/Pipe_End.png>]
+Underfull \hbox (badness 1275) in paragraph at lines 363--364
 \OT1/cmr/m/n/10 (+20) Da in un-se-rem Mo-dell die Ge-schwin-dig-keit $\OML/cmm/
 m/it/10 v$
  []
@@ -491,10 +492,10 @@ Overfull \hbox (33.43803pt too wide) in paragraph at lines 9--13
 ) [5] (main.aux) ) 
 Here is how much of TeX's memory you used:
  7248 strings out of 479334
- 108643 string characters out of 2857084
+ 108641 string characters out of 2857084
  493081 words of memory out of 3000000
  24446 multiletter control sequences out of 15000+200000
- 417059 words of font info for 137 fonts, out of 3000000 for 9000
+ 417002 words of font info for 137 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  68i,9n,74p,896b,328s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/pub
@@ -519,7 +520,7 @@ nda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:
 .pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
 cm/cmti10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/
 amsfonts/cm/cmtt10.pfb>
-Output written on main.pdf (5 pages, 1795961 bytes).
+Output written on main.pdf (5 pages, 1799629 bytes).
 PDF statistics:
  107 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
