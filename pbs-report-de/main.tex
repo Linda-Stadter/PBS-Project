@@ -46,8 +46,7 @@ Als Inspiration dient das Kinderspielzeug 'Aquaplay', bei dem Kinder über Schle
 %Eine finale Simulation soll das Wasser in Bewegung in einer Art Kanal/Fluss sehen.
 Zur Visualisierung des Wassers sollen zunächst kugelförmige Objekte dienen, welche durch Screen Space Rendering oder Marching Cubes zu realistisch aussehendem Wasser erweitert werden könnten. 
 
-Für ein ausreichend detailliertes Verhalten der Simulation werden etwa 30.000 Partikel simuliert. Als Kriterium für Echtzeitanforderungen sollen 30 Bilder pro Sekunde erreicht werden. Dies soll auf handelsüblicher Hardware wie der NVIDIA RTX 2070 möglich sein, ohne die Anzahl der Partikel zu verringern. 
-%TODO habt ihr eine 2070? ich habe eine 1070
+Für ein ausreichend detailliertes Verhalten der Simulation werden etwa 30.000 Partikel simuliert. Als Kriterium für Echtzeitanforderungen sollen 30 Bilder pro Sekunde erreicht werden. Dies soll auf handelsüblicher Hardware wie der NVIDIA GTX 1070 möglich sein, ohne die Anzahl der Partikel zu verringern.
 
 Als Entwicklungsumgebung dient die Spiel-Engine Unity, welche hauptsaechlich fuer das Rendering eingesetzt werden soll. Echtzeit-Interaktionen lassen sich mit dieser Laufzeitumgebung einfach umsetzen, was einen weiteren Vorteil darstellt. Ausserdem bietet Unity eine uebersichtliche Nutzeroberflaeche.
 
@@ -59,63 +58,15 @@ Die Methode von SPH wurde erstmalig von Gingold und Monaghan \citep{gingold1977s
 Müller et al. \citep{muller2003particle} wandte zuerst SPH für Computergrafik Simulationen in Echtzeit an. Es wurde eine Methode gefunden, die schnell genug war, bis zu 5.000 Partikel in interaktiven Systemen abzubilden.
 
 
-\subsection{SPH mit effizienter Nachbarsuche}
-
-Bei SPH wird die zu simulierende Flüssigkeit durch eine endliche Anzahl an Partikeln diskretisiert. Die Partikel interagieren innerhalb eines bestimmten Radius $h$ miteinander und besitzen eigene physikalische Eigenschaften wie  Dichte, Masse oder Druck.
-
-Die Nachbarpartikel eines Partikels sind die Menge der Partikel, welche sich innerhalb von $h$ befinden und somit Einfluss auf den Partikel besitzen. Die Suche dieser Nachbarpartikel stellt einen sehr aufwaendigen Schritt des SPH-Algorithmus dar. Um diese effizient zu finden, teilen wir den Raum in ein uniformes Gitter auf. Eine Zelle besitzt die Grösse des Radius $h$, sodass die Nachbarpartikel nur in den anliegenden 26 Zellen und in der Zelle des Partikels gesucht werden müssen. Durch ihre Positionen im Raum werden die Partikel je einer Zelle zugewiesen. Dies erfolgt zunaechst durch eine Diskretisierung jeder Partikelposition $(x,y,z)$ in \eqref{discretize_position}. 
-\begin{equation}
-\label{discretize_position}
-(i, j, k) = (\floor*{\frac{x}{h}}, \floor*{\frac{y}{h}}, \floor*{\frac{z}{h}})
-\end{equation}
-Anschliessend kann der diskretisierte Zellenwert in Kombination mit der Hash-Funktion aus \eqref{hash_function} eingesetzt werden. Diese bildet eine 3D-Position eines Partikels auf einen flachen 1D-Wert ab.
-
-\begin{equation}
-\label{hash_function}
-hash(i,j,k) = (i\ p_1 \ \boldsymbol{xor} \ j\ p_2\ \boldsymbol{xor}\ k\ p_3)\ \boldsymbol{mod}\ n
-\end{equation}
-Die Variable $n$ stellt die Anzahl der Zellen beziehungsweise der Partikel dar und $p_1$, $p_2$ und $p_3$ sind große Primzahlen. Dies wird Spatial Hashing genannt und wird eingesetzt, damit eine endliche Anzahl an Zellen für einen unendlich grossen Raum ausreicht. \citep{muller2003optimized}
-
-Dann können die Partikel anhand ihrer zugewiesenen Zelle sortiert werden. Für jede Zelle wird der Abstand zu dem ersten Partikel der Zelle gespeichert. Diese Idee wurde 2008 von Nvidia vorgestellt. \citep{Nvidia}
-\begin{equation}
-\label{force}
-\vec{f} = \vec{f}^{pressure} + \vec{f}^{viscosity} + \vec{f}^{external}
-\end{equation}
+\subsection{SPH}
+In Smooth Particle Hydrodynamic (SPH) werden Eigenschaften von kontinuierlichen Flüssigkeitsmengen approximiert indem man eine diskretisierte Repräsentation durch Partikel für die Navier–Stokes Gleichungen benutzt. 
+%Bei SPH wird die zu simulierende Flüssigkeit durch eine endliche Anzahl an Partikeln diskretisiert. 
+Die Partikel interagieren innerhalb eines bestimmten Radius $h$ miteinander und besitzen eigene physikalische Eigenschaften wie  Dichte, Masse oder Druck.
 
 
-\begin{equation}
-\label{density}
-\rho_i = \sum_i{m_j W_{ij}}
-\end{equation}
-
-
-
-\begin{equation}
-\label{pressure}
-p_i=K(\rho-\rho_0)
-\end{equation}
-
-\begin{equation}
-\label{pressure_tait}
-p_i = k((\frac{\rho}{\rho_{0}})^{\gamma}-1)
-\end{equation}
-
-\begin{equation}
-\label{force_pressure}
-\vec{f}^{pressure}_{i} = - \sum_{j}m_{j}(\frac{p_{i}}{\rho_{i}^2} +\frac{p_{j}}{\rho_{j}^2})\bigtriangledown W(\vec{r}_{i}-\vec{r}_{j},h)
-\end{equation}
-
-\begin{equation}
-\label{force_external}
-\vec{f}^{external}_{i} = \vec{g}
-\end{equation}
-
-\begin{equation}
-\label{force_viscosity}
-\vec{f}^{viscosity}_{i} = \mu \sum_{j}m_{j}\frac{\vec{v}_{i} - \vec{v}_{j}}{\rho_{j}}\bigtriangledown^2 W(\vec{r}_{i}-\vec{r}_{j},h)
-\end{equation}
 
 \paragraph{Smoothing Kernels}
+Um die diskreten Werte der Partikel zur Berechnung verschiedener kontinuierlicher Felder zu glätten werden Kernelfunktionen \eqref{poly6}, \eqref{gradient_poly6}, \eqref{spiky} und \eqref{spline} verwendet (bzw. der Gradient einer Kernelfunktion für den Gradienten eines Feldes). Diese Fuktionen sind normalisiert und gewichten symmetrisch den Einfluss von Partikel aufeinander abhängig von ihrer Distanz zueinander. Ein Partikel wird nur von anderen innerhalb eines bestimmten Radius $h$ beeinflusst.
 
 \begin{equation}
 \label{poly6}
@@ -161,6 +112,53 @@ W_{poly6}(\vec{r},h) = \frac{315}{64 \pi h^9}
 \end{equation}
 
 
+\paragraph{Dichte und Druck}
+Mit dem für SPH typischen Smoothing Kernel \eqref{poly6} wird die Dichte an den Partikeln interpoliert \eqref{density}.
+Für die Berechnung des Drucks wird anstatt der, aus der idealen Gaszustandsgleichung abgeleiteten, Formel \eqref{pressure} nach Müller et al. \citep{muller2003particle}, welche abhängig von ihrem Parameter $k$ für zu hohe Kompressibilität oder Federverhalten zwischen Partikel sorgt, wird die Tait-Gleichung \eqref{pressure_tait} genutzt. Hier sei $p0$ die Restdichte.
+
+\begin{equation}
+\label{density}
+\rho_i = \sum_i{m_j W(\vec{r}{i}-\vec{r}{j},h)}
+\end{equation}
+
+\begin{equation}
+\label{pressure}
+p_i=k(\rho-\rho_0)
+\end{equation}
+
+\begin{equation}
+\label{pressure_tait}
+p_i = k((\frac{\rho}{\rho_{0}})^{7}-1)
+\end{equation}
+
+
+\paragraph{Kräfte}
+Für jeden Partikel kann jetzt die auf ihn wirkende Kraft bestimmt werden \eqref{force}.
+\eqref{force_pressure} ist eine leicht veränderte Version der normalen interpolierten Kraft für Druck, die sich symmetrisch zwischen Partikeln verhält.
+$\mu$ wird eingeführt um die Viskosität der Flüssigkeit zu kontrollieren.
+
+\begin{equation}
+\label{force}
+\vec{f} = \vec{f}^{pressure} + \vec{f}^{viscosity} + \vec{f}^{external}
+\end{equation}
+
+\begin{equation}
+\label{force_pressure}
+\vec{f}^{pressure}{i} = - \sum{j}m_{j}(\frac{p_{i}}{\rho_{i}^2} +\frac{p_{j}}{\rho_{j}^2})\bigtriangledown W(\vec{r}{i}-\vec{r}{j},h)
+\end{equation}
+
+\begin{equation}
+\label{force_viscosity}
+\vec{f}^{viscosity}{i} = \mu \sum{j}m_{j}\frac{\vec{v}{i} - \vec{v}{j}}{\rho_{j}}\bigtriangledown^2 W(\vec{r}{i}-\vec{r}{j},h)
+\end{equation}
+
+\begin{equation}
+\label{force_external}
+\vec{f}^{external}_{i} = \vec{g}
+\end{equation}
+
+
+
 \subsection{Oberflächenspannung}
 Um ein überzeugendes Verhalten bei Wasserspritzern und an der Wasseroberflaeche zu erzeugen wird zusätzlich die molekulare Attraktion und Repulsion zwischen Wassermolekülen modelliert. Das gewählte Modell folgt der Arbeit von \citep{SurfaceTension}.
 
@@ -199,7 +197,8 @@ C(r) = \frac{32}{64 \pi h^9}
 Um zu verhindern, dass beim Formen eines Tropfens durch Oberflächenspannung, die Ausgangsposition der betroffenen Partikel maßgeblich die finale Form beeinflusst, fügen wir eine weitere Kraft aus \eqref{curvature} hinzu.
 Diese sorgt dafür, dass Partikel-Mengen unabhängig von Ausgangsposition versuchen eine Kugelform einzunehmen und dadurch die Oberfläche ihres Tropfens minimieren.
 
-Zunächst wird für jedes Partikel ein Normal-Vektor wie in \eqref{normal} berechnet. Hier sollen sich Partikel an der Oberfläche von denen innerhalb eines Wasserkörpers dadurch unterscheiden, dass letztere einen Normal-Vektor von $\sim \vec{0}$ besitzen. Hier würde das Benutzen eines geglättetes Feldes optimale Ergebnisse erreichen. (?)
+
+Zunächst wird für jedes Partikel ein Normal-Vektor wie in \eqref{normal} berechnet. Hier sollen sich Partikel an der Oberfläche von denen innerhalb eines Wasserkörpers dadurch unterscheiden, dass letztere einen Normal-Vektor von $\sim \vec{0}$ besitzen. Hier würde das Benutzen eines geglätteten Feldes optimale Ergebnisse erreichen.
 
 \begin{equation}
 \label{normal}
@@ -211,7 +210,7 @@ Zunächst wird für jedes Partikel ein Normal-Vektor wie in \eqref{normal} berec
 \vec{f}_{i\leftarrow j}^{\text{curvature}} = -\gamma m_{i}(\vec{n}_i - \vec{n}_j)
 \end{equation}
 
-Um den Zusammenhalt von wenigen Partikeln an den von grösseren Gruppen anzugleichen, wird in \eqref{surface_tension} ein Korrekturfaktor beim Zusammensetzen (?) der Oberflächenspannung eingeführt.
+Um den Zusammenhalt von wenigen Partikeln an den von grösseren Gruppen anzugleichen, wird in \eqref{surface_tension} außerdem ein Korrekturfaktor eingeführt.
 
 \begin{equation}
 	\label{surface_tension}
@@ -219,10 +218,15 @@ Um den Zusammenhalt von wenigen Partikeln an den von grösseren Gruppen anzuglei
 \end{equation}
 
 
+
 \subsection{Integration}
 
+Die Kraft jedes Partikels wird verwendet um dessen Beschleunigung via $F=ma \Leftrightarrow  a = F/m$ zu ermitteln. Diese wird benutzt um Position und Geschwindigkeit für den nächsten Zeitschritt zu erhalten.
+Um Genauigkeit der Integration und damit Stabilität zu erhöhen wird explizite Euler durch Leapfrog Integration ersetzt, die standardmäßig abwechselnd Geschwindigkeiten $v$ und Positionen $r$ an verschiedenen Zeitpunkten berechnet. Die Größe des Fehlers wird so von $\mathcal{O}(n)$ auf $\mathcal{O}(n^2)$ reduziert. Die energie-erhaltende Eigenschaft der Integration für das System trägt ebenfalls zur Stabilität bei.  
+Für die Implementation von Leapfrog wir eine von Cossins \citep{Leapfrog} vorgestellte Variation benutzt. Die Variante berechnet an einem halben Zeitschritt \ref{leapfrog_r_i+1/2} und \ref{leapfrog_v_i+1/2}, welche benutzt werden um Kräfte und dadurch Beschleunigung $a_{i+1/2}$, für Formeln \ref{leapfrog_r_i+1} und \ref{leapfrog_v_i+1} im nächsten ganzen Zeitschritt, zu erhalten.
 
-Für die Leapfrog-Integration wird die Variante aus \eqref{leapfrog_v_i+1/2}, \eqref{leapfrog_r_i+1/2}, \eqref{leapfrog_v_i+1} und \eqref{leapfrog_r_i+1} benutzt, welche von Cossions vorgestellt wurde. \citep{Leapfrog}
+
+%Für die Leapfrog-Integration wird die Variante aus \eqref{leapfrog_v_i+1/2}, \eqref{leapfrog_r_i+1/2}, \eqref{leapfrog_v_i+1} und \eqref{leapfrog_r_i+1} benutzt, welche von Cossions vorgestellt wurde. \citep{Leapfrog}
 
 \begin{equation}
 \label{leapfrog_v_i+1/2}
@@ -241,7 +245,25 @@ v_{i+1} = v_{i} + \Delta a_{i+1/2}
 r_{i+1} = r_{i} + \frac{\Delta t}{2} (v_{i} + v_{i+1})
 \end{equation}
 
-Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit den Seiten der Box werden durch einfache Positionsabfragen behandelt. Diese verhindern, dass die Partikel die Begrenzungen überschreiten. Ausserdem werden die Geschwindigkeiten der entsprechenden Richtungen umgekehrt, um die Partikel von der Box abprallen zu lassen. Eine Dämpfungsvariable wird eingeführt, die die Geschwindigkeit dabei zusätzlich abmildern kann.
+\paragraph{Boxkollision} Der Raum der Partikel wird durch eine quadratische Box begrenzt. Kollisionen mit den Seiten der Box werden durch einfache Positionsabfragen behandelt. Diese verhindern, dass die Partikel die Begrenzungen überschreiten. Ausserdem werden die Geschwindigkeiten der entsprechenden Richtungen umgekehrt, um die Partikel von der Box abprallen zu lassen. Eine Dämpfungsvariable wird eingeführt, die die Geschwindigkeit dabei zusätzlich abmildern kann.
+
+\subsection{Effiziente Nachbarsuche}
+
+Die Nachbarpartikel eines Partikels sind die Menge der Partikel, welche sich innerhalb von $h$ befinden und somit Einfluss auf den Partikel besitzen. Die Suche dieser Nachbarpartikel stellt einen sehr aufwaendigen Schritt des SPH-Algorithmus dar. Um diese effizient zu finden, teilen wir den Raum in ein uniformes Gitter auf. Eine Zelle besitzt die Grösse des Radius $h$, sodass die Nachbarpartikel nur in den anliegenden 26 Zellen und in der Zelle des Partikels gesucht werden müssen. Durch ihre Positionen im Raum werden die Partikel je einer Zelle zugewiesen. Dies erfolgt zunaechst durch eine Diskretisierung jeder Partikelposition $(x,y,z)$ in \eqref{discretize_position}. 
+\begin{equation}
+\label{discretize_position}
+(i, j, k) = (\floor*{\frac{x}{h}}, \floor*{\frac{y}{h}}, \floor*{\frac{z}{h}})
+\end{equation}
+Anschliessend kann der diskretisierte Zellenwert in Kombination mit der Hash-Funktion aus \eqref{hash_function} eingesetzt werden. Diese bildet eine 3D-Position eines Partikels auf einen flachen 1D-Wert ab.
+
+\begin{equation}
+\label{hash_function}
+hash(i,j,k) = (i\ p_1 \ \boldsymbol{xor} \ j\ p_2\ \boldsymbol{xor}\ k\ p_3)\ \boldsymbol{mod}\ n
+\end{equation}
+Die Variable $n$ stellt die Anzahl der Zellen beziehungsweise der Partikel dar und $p_1$, $p_2$ und $p_3$ sind große Primzahlen. Dies wird Spatial Hashing genannt und wird eingesetzt, damit eine endliche Anzahl an Zellen für einen unendlich grossen Raum ausreicht. \citep{muller2003optimized}
+
+Dann können die Partikel anhand ihrer zugewiesenen Zelle sortiert werden. Für jede Zelle wird der Abstand zu dem ersten Partikel der Zelle gespeichert. Diese Idee wurde 2008 von Nvidia vorgestellt. \citep{Nvidia}
+
 
 \section{Implementierung}
 Das Projekt wird in der Laufzeit und Entwicklungsumgebung Unity implementiert. Dazu wird ein sogenanntes GameObject erstellt, welches ein eigens geschriebenes C\#-Skript zugewiesen wird. Dieses Skript wird verwendet, um die Simulation zu initialisieren und aufzurufen. %Dabei werden zunächst die notwendigen Arrays, Buffer, Partikel und Shader initialisiert.
@@ -266,13 +288,13 @@ Ein Zeitschritt wird mithilfe der Update-Funktion von Unity einmal pro Frame dur
 		\State \textbf{Offset Shader}
 		\State \hskip1.0em \textcolor{gray}{Abstand zu erstem Partikel jeder Zelle}
 		\State \textbf{Density Shader}
-		\State \hskip1.0em \textcolor{gray}{Berechne Dichte mit Formel...}
+		\State \hskip1.0em \textcolor{gray}{Berechne mit Formel \ref{density}}
 		\State \textbf{Normals Shader}
-		\State \hskip1.0em \textcolor{gray}{Oder eine Auflistung der Formeln}
+		\State \hskip1.0em \textcolor{gray}{Berechne mit Formel \ref{normal}}
 		\State \textbf{Force Shader}
-		\State \hskip1.0em \textcolor{gray}{Berechne Kraft mit \ref{force_pressure}, \ref{force_with_surface}}
+		\State \hskip1.0em \textcolor{gray}{Berechne mit \ref{pressure_tait}, \ref{force_pressure}, \ref{force_external}, \ref{force_viscosity},  \ref{force_with_surface}, \ref{spline}, \ref{cohesion}, \ref{curvature}, \ref{surface_tension}}
 		\State \textbf{Integration Shader}
-		\State \hskip1.0em \textcolor{gray}{Leapfrog-/Euler-Integration mit \ref{leapfrog_r_i+1}, \ref{leapfrog_v_i+1}}
+		\State \hskip1.0em \textcolor{gray}{Berechne mit \ref{leapfrog_v_i+1/2}, \ref{leapfrog_r_i+1/2} oder \ref{leapfrog_v_i+1}, \ref{leapfrog_r_i+1}}
 		\EndFor
 		\EndWhile
 	
@@ -313,32 +335,9 @@ Ausserdem werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vor 
 
 \section{Ergebnisse und Evaluierung}
 
-Um die Stabilität und Performance zu Testen wurden mehrere Iterationen der Simulation mit variierendem Zeitschritt und gleichen Parametern ausgeführt und für ca. 30 Minuten laufen gelassen. Getestet wurden Simulationen sowohl mit kontinuierliche Partikel-Erzeugung durch das Rohr, als auch mit Beginn aller Partikel in Boxform. Simulationen, die Leapfrog Integration benutzen, mit einem Zeitschritt $\leq 0.006$ Sekunden blieben dabei stabil. Eine  Simulation mit $\Delta t = 0.005$, dem konstanten Partikelerscheinen, 32.768 Partikeln und angegebenen Parametern beginnt mit $\sim$400 Frames pro Sekunde. Im Verlauf der Simulation sinken mit steigender Partikelzahl die FPS, bleiben aber immer über 60. Sobald der Spawnvorgang abgeschlossen ist, also keine neuen Partikel mehr hinzukommen und das Wasser zur Ruhe kommt, pendelt sich die Simulation bei $\sim$140 FPS ein. 
 
+Um die Stabilität und Performance zu Testen wurden mehrere Iterationen der Simulation mit variierendem Zeitschritt und gleichen Parametern ausgeführt und für ca. 30 Minuten laufen gelassen. Getestet wurden Simulationen sowohl mit kontinuierliche Partikel-Erzeugung durch das Rohr, als auch mit Beginn aller Partikel in Boxform. Simulationen, die Leapfrog Integration benutzen, mit einem Zeitschritt $\leq 0.006$ Sekunden blieben dabei stabil.
 
-
-\paragraph{Test Hardware}\mbox{}\\
-AMD Ryzen 7 3700X \\
-NVIDIA GeForce GTX 1070\\
-32GB RAM\\
-
-Benötigte Daten:\\
-Euler Stabilitätsgrenze\\
-Leapfrog Stabilitätsgrenze\\
-(vll noch je einmal mit/ohne Tait)\\
-
-32768 Partikel, Leapfrog, Timestep X -> FPS\\
-4096 Partikel, Leapfrog, Timestep X -> FPS\\
-32768 Partikel, Euler, Timestep X -> FPS\\
-4096 Partikel, Euler, Timestep X -> FPS\\
-(vll noch mit/ohne Tait und Box/Rohr Test)\\
-
-\begin{figure}[t]
-	\centering
-	\includegraphics[width=1\linewidth]{images/Unstable.png}
-	\caption{Testsimulation wird instabil.}
-	\label{fig:unstable}
-\end{figure}
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=1\linewidth]{images/Pipe_End.png}
@@ -346,7 +345,39 @@ Leapfrog Stabilitätsgrenze\\
 	\label{fig:final_simulation}
 \end{figure}
 
+ Eine  Simulation wie in Bild \ref{fig:final_simulation} mit $\Delta t = 0.005$, dem kontinuierlichen Erscheinen der Partikel, 32.768 Partikeln und angegebenen Parametern beginnt mit $\sim$400 Frames pro Sekunde. Im Verlauf der Simulation sinken mit steigender Partikelzahl die FPS, bleiben aber immer über 60. Sobald der Spawnvorgang abgeschlossen ist, also keine neuen Partikel mehr hinzukommen und das Wasser zur Ruhe kommt, pendelt sich die Simulation bei $\sim$140 FPS ein.
+ Eine ähnliche Simulation mit den gleichen Parametern, ect. aber sofortigem Partikelspawn als Box bleibt konstant über 100 FPS.
 
+
+\paragraph{Test Hardware}\mbox{}\\
+AMD Ryzen 7 3700X \\
+NVIDIA GeForce GTX 1070\\
+32GB RAM\\
+
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=1\linewidth]{images/Unstable.png}
+	\caption{Testsimulation wird instabil.}
+	\label{fig:unstable}
+\end{figure}
+
+
+\paragraph{Parameterwahl}\mbox{}\\
+\begin{center}
+	\begin{tabular}{ c|c }
+	\hline
+	Parameter & Wert \\
+	
+	\hline
+ 	$\mu$ & $0.02$\\
+	$k$ & $1$\\
+	$p0$ & $1$\\
+	$\gamma$ & $1$\\
+$damping$& $0.5$\\
+\hline
+	\end{tabular}
+\end{center}
 
 
 \section{Beiträge}
