@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  1 MAR 2021 22:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.2.24)  1 MAR 2021 22:38
 entering extended mode
 **./main.tex
 (main.tex
@@ -446,12 +446,13 @@ Underfull \hbox (badness 7649) in paragraph at lines 338--339
 []\OT1/cmr/m/n/10 (+20) Zus[]atzlich wer-den zwei Nut-ze-ro-ber-fl[]achen
  []
 
-<images/Pipe_End.png, id=35, 794.97pt x 638.385pt>
+[4 <./images/interface1.png> <./images/interface2.png>]
+<images/Pipe_End.png, id=42, 794.97pt x 638.385pt>
 File: images/Pipe_End.png Graphic file (type png)
 <use images/Pipe_End.png>
 Package pdftex.def Info: images/Pipe_End.png  used on input line 348.
 (pdftex.def)             Requested size: 222.62206pt x 178.76605pt.
-[4 <./images/interface1.png> <./images/interface2.png>]
+
 Underfull \hbox (badness 10000) in paragraph at lines 357--361
 
  []
@@ -459,20 +460,20 @@ Underfull \hbox (badness 10000) in paragraph at lines 357--361
 <images/Unstable.png, id=43, 797.22844pt x 466.74374pt>
 File: images/Unstable.png Graphic file (type png)
 <use images/Unstable.png>
-Package pdftex.def Info: images/Unstable.png  used on input line 365.
+Package pdftex.def Info: images/Unstable.png  used on input line 366.
 (pdftex.def)             Requested size: 222.62206pt x 130.33125pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 371--372
-
- []
-
-
-Underfull \hbox (badness 1275) in paragraph at lines 399--400
+Underfull \hbox (badness 1275) in paragraph at lines 402--403
 \OT1/cmr/m/n/10 (+20) Da in un-se-rem Mo-dell die Ge-schwin-dig-keit $\OML/cmm/
 m/it/10 v$
  []
 
-[5 <./images/Pipe_End.png> <./images/Unstable.png>] (main.bbl
+[5 <./images/Pipe_End.png> <./images/Unstable.png>]
+Underfull \hbox (badness 7777) in paragraph at lines 411--412
+[]\OT1/cmr/m/n/10 (+20) Die In-ter-ak-ti-on mit dem Was-ser durch
+ []
+
+(main.bbl
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `cmtt' (encoding: OT1).
 (microtype)             For optimal results, create family-specific settings.
@@ -495,13 +496,13 @@ Overfull \hbox (33.43803pt too wide) in paragraph at lines 9--13
 
 ) [6] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 7250 strings out of 479334
- 108655 string characters out of 2857084
- 492081 words of memory out of 3000000
- 24446 multiletter control sequences out of 15000+200000
- 417053 words of font info for 138 fonts, out of 3000000 for 9000
+ 7256 strings out of 479334
+ 108715 string characters out of 2857084
+ 492089 words of memory out of 3000000
+ 24448 multiletter control sequences out of 15000+200000
+ 417155 words of font info for 140 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 68i,9n,74p,772b,328s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 68i,10n,74p,771b,328s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/pub
 lic/amsfonts/cm/cmbx10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/
 type1/public/amsfonts/cm/cmex10.pfb><C:/Users/linda/AppData/Local/Programs/MiKT
@@ -524,7 +525,7 @@ nda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:
 .pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
 cm/cmti10.pfb><C:/Users/linda/AppData/Local/Programs/MiKTeX/fonts/type1/public/
 amsfonts/cm/cmtt10.pfb>
-Output written on main.pdf (6 pages, 1805290 bytes).
+Output written on main.pdf (6 pages, 1806446 bytes).
 PDF statistics:
  110 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

@@ -341,7 +341,7 @@ Zusätzlich werden zwei Nutzeroberflächen benötigt, um Parameter einerseits vo
 \section{Ergebnisse und Evaluierung}
 
 
-Um die Stabilität und Performance zu Testen wurden mehrere Iterationen der Simulation mit variierendem Zeitschritt und gleichen Parametern ausgeführt und für ca. 30 Minuten laufen gelassen. Getestet wurden Simulationen sowohl mit kontinuierlicher Partikel-Erzeugung durch das Rohr, als auch mit Beginn aller Partikel in Boxform. Simulationen, die Leapfrog Integration benutzen, mit einem Zeitschritt $\leq 0.006$ Sekunden blieben dabei stabil.
+Um die Stabilität und Performance zu Testen wurden mehrere Iterationen der Simulation mit variierendem Zeitschritt und gleichen Parametern ausgeführt und für ca. 30 Minuten laufen gelassen. Getestet wurden Simulationen sowohl mit kontinuierlicher Partikel-Erzeugung durch das Rohr, als auch mit Beginn aller Partikel in Boxform. Simulationen, die Leapfrog Integration mit einem Zeitschritt von~$\leq 0.006$ Sekunden benutzen, blieben dabei stabil.
 
 \begin{figure}[t]
 	\centering
@@ -350,8 +350,8 @@ Um die Stabilität und Performance zu Testen wurden mehrere Iterationen der Simu
 	\label{fig:final_simulation}
 \end{figure}
 
- Eine  Simulation wie in Bild \ref{fig:final_simulation} mit $\Delta t = 0.005$, dem kontinuierlichen Erscheinen der Partikel, 32.768 Partikeln und angegebenen Parametern beginnt mit $\sim$400 Frames pro Sekunde. Im Verlauf der Simulation sinken mit steigender Partikelzahl die FPS, bleiben aber immer über 60. Sobald der Spawnvorgang abgeschlossen ist, also keine neuen Partikel mehr hinzukommen und das Wasser zur Ruhe kommt, pendelt sich die Simulation bei $\sim$140 FPS ein.
- Eine ähnliche Simulation mit den gleichen Parametern, ect. aber sofortigem Partikelspawn als Box bleibt konstant über 100 FPS.
+ Eine Simulation wie in Bild \ref{fig:final_simulation} mit $\Delta t = 0.005$, dem kontinuierlichen Erscheinen der Partikel, 32.768 Partikeln und den angegebenen Parametern aus Tabelle \ref{Parameterwerte} beginnt mit $\sim$400 Frames pro Sekunde. Im Verlauf der Simulation sinken mit steigender Partikelzahl die FPS, bleiben aber immer über 60. Sobald der Spawnvorgang abgeschlossen ist, also keine neuen Partikel mehr hinzukommen und das Wasser zur Ruhe kommt, pendelt sich die Simulation bei $\sim$140 FPS ein.
+ Eine ähnliche Simulation mit den gleichen Parametern aber sofortigem Partikelspawn als Box bleibt konstant über 100 FPS.
 
 
 \paragraph{Test Hardware}\mbox{}\\
@@ -361,14 +361,15 @@ NVIDIA GeForce GTX 1070\\
 
 
 \begin{figure}[t]
+	
 	\centering
 	\includegraphics[width=1\linewidth]{images/Unstable.png}
 	\caption{Testsimulation wird instabil.}
 	\label{fig:unstable}
 \end{figure}
 
-
-\paragraph{Parameterwahl}\mbox{}\\
+\mbox{}\\
+\begin{table}
 \begin{center}
 	\begin{tabular}{ c|c }
 	\hline
@@ -381,36 +382,41 @@ NVIDIA GeForce GTX 1070\\
 	$\gamma$ & $1$\\
 $damping$& $0.5$\\
 \hline
+	
 	\end{tabular}
+	\caption{\label{Parameterwerte}Parameterwahl für Stabilitätstests.}
 \end{center}
-
+\end{table}
 
 \section{Beiträge}
 Kirill Menke hat über den SPH-Algorithmus recherchiert und die Methode gefunden, wie 
-effizient auf die Nachbarpartikel zugegriffen werden kann. Er hat das Grundgerüst der Simulation in Unity aufgesetzt, sodass die einzelnen Schritte des SPH-Algorithmus auf der GPU ausgeführt werden können. Zusätzlich hat er das Rendering der Partikel implementiert , bei der Umsetzung des SPH-Algorithmus mitgewirkt und einen Modus zum vereinfachten Debuggen eingeführt. Außerdem hat er die Milestonepräsentation erstellt und vorgetragen. 
+effizient auf die Nachbarpartikel zugegriffen werden kann. Er hat das Grundgerüst der Simulation in Unity aufgesetzt, sodass die einzelnen Schritte des SPH-Algorithmus auf der GPU ausgeführt werden können. Zusätzlich hat er das Rendering der Partikel implementiert, bei der Umsetzung des SPH-Algorithmus mitgewirkt und einen Modus zum vereinfachten Debuggen eingeführt. Außerdem hat er die Milestonepräsentation erstellt und vorgetragen. 
 
 Linda Stadter hat ebenfalls bei der Umsetzung des SPH-Algorithmus mitgewirkt. Zusätzlich hat sie sich um das Erzeugen der Box und die Kollisionen der Kugeln mit den Seiten gekümmert. Sie hat die beiden Nutzeroberflächen umgesetzt, die Farbcodierung der Partikel eingeführt und ein kontinuierliches Erzeugen der Partikel umgesetzt. Außerdem hat sie die Projektplanpräsentation erstellt und vorgetragen, bei der Milestonepräsentation mitgewirkt und den finalen Bericht geschrieben.
 
-Peter Wichert hat über die Leapfrog Integration und Oberflächenspannung recherchiert und diese implementiert. Zusätzlich hat er eine automatische Berechnung der Parameter in Kombination mit dem Erzeugen der Partikel eingeführt, den Debug-Modus ergänzt und Stabilitaets-Tests durchgefuehrt. Außerdem hat er die Milestone Präsentation erstellt und vorgetragen und am finalen Bericht mitgewirkt.
+Peter Wichert hat über die Leapfrog Integration und Oberflächenspannung recherchiert und diese implementiert. Zusätzlich hat er eine automatische Berechnung der Parameter in Kombination mit dem Erzeugen der Partikel als Box eingeführt, den Debug-Modus ergänzt und Stabilitäts-Tests durchgeführt. Außerdem hat er die Milestone Präsentation erstellt und vorgetragen und am finalen Bericht mitgewirkt.
 
 
 
 \section{Diskussion}
-Da in unserem Modell die Geschwindigkeit $v$ abhängig von der Beschleunigung $a$ ist, müssen wir für die Leapfrog Integration zwei Berechnungen der Kräfte ausführen. Dieser zusätzliche Rechenaufwand wird jedoch fuer eine erhöhte Stabilität und dadurch größere Zeitschritte in Kauf genommen. 
+Da in unserem Modell die Geschwindigkeit $v$ abhängig von der Beschleunigung $a$ ist, müssen wir für die Leapfrog Integration zwei Berechnungen der Kräfte ausführen. Dieser zusätzliche Rechenaufwand wird jedoch für eine erhöhte Stabilität und dadurch größere Zeitschritte in Kauf genommen. 
 
 
 Hash-Collisions bei der Nachbarsuche lassen sich leider nicht vermeiden und fallen bei einer sehr geringen Anzahl an Partikeln auf. Daher werden diese geringen Partikelanzahlen von der Simulation ausgeschlossen. 
 
-Das Verhalten der Oberflächenspannung koennte durch Glätten des Feldes für die Normalen Berechnung noch verbessert werden.
-Ausserdem ist ungewiss, ob zukünftige Erweiterungen wie eine realistischere Visualisierung des Wassers und Interaktionen mit Festkörpern die aktuelle Echtzeit-Performance signifikant negativ beeinflussen.
+Das Implementieren der Oberflächenspannung machte unsere Simulation deutlich realistischer.
+Allerdings könnte sie noch durch Glätten des Feldes für die Normalen Berechnung etwas verbessert werden.
+Für die physikalische Simulation des Wassers war die Verbesserung der Optik des Wassers durch beispielsweise Space Rendering oder Marching Cubes nicht unbedingt nötig. Es ist ungewiss, ob diese Erweiterung die aktuelle Echtzeit-Performance signifikant negativ beeinflussen.
+
+Die Interaktion mit dem Wasser durch Festkörper konnte aus zeitlichen Gründen nicht umgesetzt werden. Stattdessen lassen sich immerhin Parameter wie zum Beispiel die Geschwindigkeit beim Spawnen aus der Röhre zur Laufzeit anpassen. Dies macht den Eindruck, als könne der Wasserdruck oder Durchmesser des Rohres angepasst werden.
 
 
-Durch die Verwendung von Spatial Hashing und der Sortierung nach Zellen laesst sich die Laufzeit der aufwaendigen Suche der Nachbarpartikel von $O(n^2)$ auf $O(n)$ reduzieren.
-In Kombination mit der parallelen Ausfuehrung des SPH-Algorithmus auf der GPU lassen sich erfolgreich grosse Anzahlen an Partikeln realistisch in Echtzeit simulieren.
+Durch die Verwendung von Spatial Hashing und der Sortierung nach Zellen lässt sich die Laufzeit der aufwändigen Suche der Nachbarpartikel von $O(n^2)$ auf $O(n)$ reduzieren.
+In Kombination mit der parallelen Ausführung des SPH-Algorithmus auf der GPU lassen sich erfolgreich große Anzahlen an Partikeln realistisch in Echtzeit simulieren.
 
 \section{Zusammenfassung}
 
-Das Projekt hat letztendlich die meisten gesetzten, sowie einige optionale, Ziele erreicht. Ein realistisches Wasserverhalten durch SPH mit zusätzlicher Oberflaechenspannung wurde erfolgreich umgesetzt. Die zunächst optionale GPU Implementierung und Spatial Hashing sorgten dafür, dass die gewünschte Menge an Partikeln mit stabiler Frameanzahl simuliert werden konnten. Abstriche mussten allerdings in Sachen Visualisierung gemacht werden, da in dem Projekt der Fokus hauptsächlich auf die physikalische Simulation gelegt wurde. Weitere Zusätze wie die Interaktion mit Objekten und die Komplexität des Wasserstroms wurden aus zeitlichen Gründen nicht implementiert, eigenen sich aber gut, um sie im Rahmen eines weiteren Projekts umzusetzen.
+Das Projekt hat letztendlich die meisten gesetzten, sowie einige optionale Ziele erreicht. Ein realistisches Wasserverhalten durch SPH mit zusätzlicher Oberflächenspannung wurde erfolgreich umgesetzt. Die zunächst optionale GPU Implementierung und Spatial Hashing sorgten dafür, dass die gewünschte Menge an Partikeln mit stabiler Frameanzahl simuliert werden konnten. Abstriche mussten allerdings in Sachen Visualisierung gemacht werden, da in dem Projekt der Fokus hauptsächlich auf die physikalische Simulation gelegt wurde. Weitere Zusätze wie die Interaktion mit Objekten und die Komplexität des Wasserstroms wurden aus zeitlichen Gründen nicht implementiert, eigenen sich aber gut, um sie im Rahmen eines weiteren Projekts umzusetzen.
 \iffalse
 Die anfänglich genannten technischen Herausforderungen GPU Programmierung und Unity Interaktion sind im finalen Produkt fest integriert. Als hinderlich stellten sich im Verlauf des Projekts vor allem die Wahl passender Parameter sowie das Debuggen von GPU Code heraus.
 \fi
