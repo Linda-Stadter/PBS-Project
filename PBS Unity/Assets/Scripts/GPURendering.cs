@@ -154,11 +154,15 @@ public class GPURendering : MonoBehaviour
 
     private int particleNumber = 4096;
 
+    /*
     private void Start()
     {
         DontDestroyOnLoad(this);
         gameObject.SetActive(false);
     }
+    */
+    public void OnEnable() { }
+
 
     /* Initialize all data structures required for SPH simulation on GPU */
     public void EnableSimulation()
@@ -220,24 +224,15 @@ public class GPURendering : MonoBehaviour
         int length = (int)Mathf.Pow(particleNumber, 1f / 3f);
         float rngRange = spawnDistance/2;
         //rngRange = 0.0f;
-        float spawnWidthLength = (spwWidth - 1) * (/*particleRadius * 2 + */ spawnDistance); // add particleRadius * 2 for whole length
-        float spawnDepthLength = (spwDepth - 1) * (/*particleRadius * 2 +*/ spawnDistance); // add particleRadius * 2 for whole length
+        float spawnWidthLength = (spwWidth - 1) * ( spawnDistance); // add particleRadius * 2 for whole length
+        float spawnDepthLength = (spwDepth - 1) * ( spawnDistance); // add particleRadius * 2 for whole length
         float spawnHeightLength = (spwHeight - 1) * (/*particleRadius * 2 +*/ spawnDistance);
 
         for (int i = 0; i < particleNumber; ++i)
         {
 
-            /*
-            float x_pos = ((i % length) + spawnOffset.x) * particleRadius * 2;
-            float y_pos = (((i / length) % length) + spawnOffset.y) * particleRadius * 2;
-            float z_pos = (((i / (length * length))) + spawnOffset.z) * particleRadius * 2;
-            */
-            /*
-            float x_pos = (i % spwWidth) * (2 * particleRadius + spawnDistance) - spawnWidthLength/2 + Random.Range(-rngRange, rngRange);
-            float z_pos = ((i / spwWidth) % spwDepth) * (2 * particleRadius + spawnDistance) - spawnDepthLength / 2 + Random.Range(-rngRange, rngRange);
-            float y_pos = (i / (spwDepth * spwWidth)) * (2 * particleRadius + spawnDistance) + boxHeight/2 - spawnHeightLength / 2 + Random.Range(-rngRange, rngRange);
-           */
-            // new but bad?
+       
+
             float x_pos = (i % spwWidth) * (/*2 * particleRadius +*/ spawnDistance) - spawnWidthLength / 2 + Random.Range(-rngRange, rngRange);
             float z_pos = ((i / spwWidth) % spwDepth) * (/*2 * particleRadius +*/ spawnDistance) - spawnDepthLength / 2 + Random.Range(-rngRange, rngRange);
             float y_pos = (i / (spwDepth * spwWidth)) * (/*2 * particleRadius +*/ spawnDistance) + boxHeight / 2 - spawnHeightLength / 2 + Random.Range(-rngRange, rngRange);
@@ -536,17 +531,26 @@ public class GPURendering : MonoBehaviour
     /* Update is executed on every frame and invokes particle update*/
     
     
+   
+        bool hack = true;
     void Update()
     {
-        if (!spawnAsCube && particlesAlive < particleNumber)
-        {
-            // TODO
-            particlesBuffer.GetData(particlesArray);
-            InstantiateParticlesFromPipe(particlesAlive);
-            particlesBuffer.SetData(particlesArray);
-        }
+            if (hack && !spawnAsCube && particlesAlive < particleNumber)
+            {
+                // TODO
+                particlesBuffer.GetData(particlesArray);
+                InstantiateParticlesFromPipe(particlesAlive);
+                particlesBuffer.SetData(particlesArray);
+                hack = !hack;
+            }
+            else
+            {
+                hack = !hack;
+            }
 
-        if (!debugMode)
+
+
+            if (!debugMode)
         {
             /* Executing one Timestep per frame */
             ExecuteTimeStep();
@@ -688,10 +692,12 @@ public class GPURendering : MonoBehaviour
             /* Leapfrog */
 
             SPHDensity.Dispatch(densityKi1, threadGroups, 1, 1);
+            SPHNormals.Dispatch(normalsKi1, threadGroups, 1, 1);
             SPHForce.Dispatch(forceKi1, threadGroups, 1, 1);
             SPHIntegration.Dispatch(integrationKiLF1, threadGroups, 1, 1);
 
             SPHDensity.Dispatch(densityKi2, threadGroups, 1, 1);
+            SPHNormals.Dispatch(normalsKi2, threadGroups, 1, 1);
             SPHForce.Dispatch(forceKi2, threadGroups, 1, 1);
             SPHIntegration.Dispatch(integrationKiLF2, threadGroups, 1, 1);
 

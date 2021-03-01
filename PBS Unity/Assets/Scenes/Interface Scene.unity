@@ -2366,8 +2366,48 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3985311477633763483, guid: 3e5cbf5598146ed449229f78119200a5,
         type: 3}
+      propertyPath: K
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3985311477633763483, guid: 3e5cbf5598146ed449229f78119200a5,
+        type: 3}
+      propertyPath: p0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3985311477633763483, guid: 3e5cbf5598146ed449229f78119200a5,
+        type: 3}
+      propertyPath: timeStep
+      value: 0.004
+      objectReference: {fileID: 0}
+    - target: {fileID: 3985311477633763483, guid: 3e5cbf5598146ed449229f78119200a5,
+        type: 3}
+      propertyPath: waterSpeed
+      value: 1.31
+      objectReference: {fileID: 0}
+    - target: {fileID: 3985311477633763483, guid: 3e5cbf5598146ed449229f78119200a5,
+        type: 3}
+      propertyPath: ForwardEuler
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3985311477633763483, guid: 3e5cbf5598146ed449229f78119200a5,
+        type: 3}
+      propertyPath: spawnDistance
+      value: 0.035
+      objectReference: {fileID: 0}
+    - target: {fileID: 3985311477633763483, guid: 3e5cbf5598146ed449229f78119200a5,
+        type: 3}
       propertyPath: particleRadius
-      value: 0.03125
+      value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 3985311477633763483, guid: 3e5cbf5598146ed449229f78119200a5,
+        type: 3}
+      propertyPath: referenceNeighbors
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3985311477633763483, guid: 3e5cbf5598146ed449229f78119200a5,
+        type: 3}
+      propertyPath: surface_coefficient
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3985311477633763484, guid: 3e5cbf5598146ed449229f78119200a5,
         type: 3}

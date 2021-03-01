@@ -79,69 +79,67 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 					// SPH Force evaluation:
 					FluidParticle particleB = particlesBuffer[particleIdxB];
-					if (particleB.alive == 1) {
+					if (particleB.alive == 1)
+					{
 						float3 posB = particleB.pos;
 
-					const float3 diff = posA - posB;
-					const float r2 = dot(diff, diff);
-					const float r = sqrt(r2);
-					const float r3 = pow(r,3);
-					const float revdensA2 = 1 / pow(densityA, 2);
+						const float3 diff = posA - posB;
+						const float r2 = dot(diff, diff);
+						const float r = sqrt(r2);
+						const float r3 = pow(r, 3);
+						const float revdensA2 = 1 / pow(densityA, 2);
 
-					if (r > 0 && r < h)
-					{
-						
-						// Normalize distance between particles
-						const float3 rNorm = diff / r;
-						// Spiky kernel smoothing for pressure forces
-						
-
-						//PRESSURE
-						const float3 Wpress = spiky * pow(h - r, 2) * rNorm;
-						float densityB = densityBuffer[particleIdxB];										
-						float pressureB = max((K * p0 / 7) * (pow(((densityB) / p0), 7) - 1), 0);
-						f_press += mass * (pressureA * revdensA2 + pressureB / pow(densityB, 2)) * Wpress;
-
-						//VISCOCITY
-						const float Wvis = -spiky * (h - r);
-						float3 vDiff = particleB.v - particleA.v;
-						f_vis += mass * (vDiff / densityB) * Wvis;
-
-						
-
-						//SURFACE TENSION
-						float spline_C = spline;
-						if (2 * r > h && r <= h)
+						if (r > 0 && r < h)
 						{
-							spline_C *= pow((h-r),3)*r3;
+
+							// Normalize distance between particles
+							const float3 rNorm = diff / r;
+							// Spiky kernel smoothing for pressure forces
+
+
+							//PRESSURE
+							const float3 Wpress = spiky * pow(h - r, 2) * rNorm;
+							float densityB = densityBuffer[particleIdxB];
+							float pressureB = max((K * p0 / 7) * (pow(((densityB) / p0), 7) - 1), 0);
+							f_press += mass * (pressureA * revdensA2 + pressureB / pow(densityB, 2)) * Wpress;
+
+							//VISCOCITY
+							const float Wvis = -spiky * (h - r);
+							float3 vDiff = particleB.v - particleA.v;
+							f_vis += mass * (vDiff / densityB) * Wvis;
+
+
+
+							//SURFACE TENSION
+							float spline_C = spline;
+							if (2 * r > h && r <= h)
+							{
+								spline_C *= pow((h - r), 3) * r3;
+							}
+							else if (2 * r <= h && r > 0)
+							{
+								spline_C *= 2 * pow((h - r), 3) * r3 - spline_sub;
+							}
+							else
+							{
+								spline_C = 0;
+							}
+
+							float3 f_cohesion = -surface_coefficient * mass * mass * spline_C * rNorm;
+
+
+							float3 normalB = normalsBuffer[particleIdxB];
+							float3 f_curvature = -surface_coefficient * mass * (normalA - normalB);
+
+							float corr_fact_K = 2 * p0 / (densityA + densityB);
+
+							f_surface += corr_fact_K * (f_cohesion + f_curvature);
+							
+
+
+
 						}
-						else if (2 * r <= h && r > 0)
-						{
-							spline_C *= 2*pow((h - r), 3) * r3 - spline_sub;
-						}
-						else
-						{
-							spline_C = 0;
-						}
-
-						float3 f_cohesion = -surface_coefficient * mass * mass * spline_C * rNorm;
-						
-
-						float3 normalB = normalsBuffer[particleIdxB];
-						float3 f_curvature = -surface_coefficient*mass*(normalA  - normalB); 
-
-						float corr_fact_K = 2 * p0 / (densityA + densityB);
-
-						f_surface += corr_fact_K*(f_cohesion + f_curvature);
-						//f_surface += f_cohesion;
-						
-						debug1[particleIdxA] = float3(corr_fact_K, corr_fact_K, corr_fact_K); //check corr fakt
-						//debug1[particleIdxA] = f_curvature; //check curvature
-
-
-
 					}
-
 					neighborIterator++;
 				}
 			}
@@ -153,7 +151,7 @@ void calcForce1(uint3 id : SV_DispatchThreadID)
 
 	debug2[particleIdxA] = f_surface;
 
-	force_total = (f_press + f_vis+f_surface) / densityA+g;
+	force_total = (f_press + f_vis+ f_surface) / densityA+g;
 	forceBuffer[particleIdxA] = force_total;
 }
 
@@ -213,62 +211,66 @@ void calcForce2(uint3 id : SV_DispatchThreadID)
 
 					// SPH Force evaluation:
 					FluidParticle particleB = particlesBuffer[particleIdxB];
-					if (particleB.alive == 1) {
+					if (particleB.alive == 1)
+					{
 						float3 posB = particleB.posLF;
 
-					const float3 diff = posA - posB;
-					const float r2 = dot(diff, diff);
-					const float r = sqrt(r2);
-					const float revdensA2 = 1/ pow(densityA, 2);
-					const float r3 = pow(r, 3);
+						const float3 diff = posA - posB;
+						const float r2 = dot(diff, diff);
+						const float r = sqrt(r2);
+						const float revdensA2 = 1 / pow(densityA, 2);
+						const float r3 = pow(r, 3);
 
-					if (r > 0 && r < h)
-					{
-						// Normalize distance between particles
-						const float3 rNorm = diff / r;
-
-
-						//PRESSURE
-						const float3 Wpress = spiky * pow(h - r, 2);
-						float densityB = densityBuffer[particleIdxB];
-						float pressureB = max((K * p0 / 7) * (pow(((densityB) / p0), 7) - 1), 0);
-						
-						f_press += mass * (pressureA *revdensA2  + pressureB / pow(densityB, 2)) * Wpress * rNorm;
-
-						//VISCOCITY
-
-						const float Wvis = -spiky * (h - r);
-						float3 vDiff = particleB.vLF - particleA.vLF;
-						f_vis += mass * (vDiff/ densityB) * Wvis;
-
-
-						//SURFACE TENSION
-						float spline_C = spline;
-						if (2 * r > h && r <= h)
+						if (r > 0 && r < h)
 						{
-							//spline_C *= pow((h - r), 3) * r3;
-							spline_C = 0;
+							// Normalize distance between particles
+							const float3 rNorm = diff / r;
+
+
+							//PRESSURE
+							const float3 Wpress = spiky * pow(h - r, 2);
+							float densityB = densityBuffer[particleIdxB];
+							float pressureB = max((K * p0 / 7) * (pow(((densityB) / p0), 7) - 1), 0);
+
+							f_press += mass * (pressureA * revdensA2 + pressureB / pow(densityB, 2)) * Wpress * rNorm;
+
+							//VISCOCITY
+
+							const float Wvis = -spiky * (h - r);
+							float3 vDiff = particleB.vLF - particleA.vLF;
+							f_vis += mass * (vDiff / densityB) * Wvis;
+
+
+							//SURFACE TENSION
+							float spline_C = spline;
+							if (2 * r > h && r <= h)
+							{
+								//spline_C *= pow((h - r), 3) * r3;
+								spline_C = 0;
+							}
+							else if (2 * r <= h && r > 0)
+							{
+								spline_C *= 2 * pow((h - r), 3) * r3 - spline_sub;
+							}
+							else
+							{
+								spline_C = 0;
+							}
+
+							float3 f_cohesion = -surface_coefficient * mass * mass * spline_C * rNorm;
+
+
+							float3 normalB = normalsBuffer[particleIdxB];
+							float3 f_curvature = -surface_coefficient * mass * (normalA - normalB);
+
+							float corr_fact_K = 2 * p0 / (densityA + densityB);
+
+							f_surface += corr_fact_K * (f_cohesion + f_curvature);
+
 						}
-						else if (2 * r <= h && r > 0)
-						{
-							spline_C *= 2 * pow((h - r), 3) * r3 - spline_sub;
-						}
-						else
-						{
-							spline_C = 0;
-						}
-
-						float3 f_cohesion = -surface_coefficient * mass * mass * spline_C * rNorm; //no mass aswell???
-						float3 normalB = normalsBuffer[particleIdxB];
-						float3 f_curvature = -surface_coefficient * mass * (normalA - normalB); //other formula doesnt use mass
-
-						float corr_fact_K = 2 * p0 / (pressureA + pressureB);
-
-						f_surface += corr_fact_K * (f_cohesion + f_curvature);
-
 					}
-
 					neighborIterator++;
+
 				}
 			}
 		}
