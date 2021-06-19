@@ -122,6 +122,9 @@ public class GPURendering : MonoBehaviour
         boxGround = GameObject.Find("Box/Ground");
         particleMaterial = Resources.Load<Material>("Materials/Sphere Surface");
 
+        // Application.targetFrameRate = 75;
+        // Time.fixedDeltaTime = 0.01f;
+
         InitializeConstants();
         InitializeArrays();
         InitializeParticles();
@@ -361,7 +364,10 @@ public class GPURendering : MonoBehaviour
 
         if (!debugMode) { 
         /* Executing one Timestep per frame */
-            ExecuteTimeStep(); }
+            for (int i = 0; i < 40; ++i)
+                ExecuteTimeStep();
+         
+        }
 
         // densityBuffer.GetData(densityArray);
         // PrintArray("densityArray\t", densityArray);
@@ -481,9 +487,6 @@ public class GPURendering : MonoBehaviour
             case 3: /* Another integration method ...*/
                 break;
         }
-
-        /* Draw Meshes on GPU */
-        Graphics.DrawMeshInstancedProcedural(particleMesh, 0, particleMaterial, particleBound, particleNumber);
     }
 
 
